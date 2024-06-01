@@ -11,5 +11,5 @@ export default function Home() {
     //   .then(() => console.log("ready!"))
     //   .catch((e) => console.error(e));
   });
-  return <main></main>;
+  return <main>hey</main>;
 }

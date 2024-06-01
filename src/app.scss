@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "Inter";
+  src:
+    local("Inter"),
+    url("/inter.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Lexend";
+  src:
+    local("Lexend"),
+    url("/lexend.ttf") format("truetype");
+}
+
+* {
+  font-family: "Inter";
+}
+
+:is([data-kb-theme="dark"]) {
+  --bg: #1c1917;
+  --bg-hover: #292524;
+  background: var(--bg);
+}
+
+:is([data-kb-theme="light"]) {
+  --bg: #fafafa;
+  --bg-hover: #e4e4e7;
+  background: var(--bg);
+}
