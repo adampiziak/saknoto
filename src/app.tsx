@@ -6,6 +6,7 @@ import "./app.scss";
 import { ColorModeProvider, cookieStorageManagerSSR } from "@kobalte/core";
 import { isServer } from "solid-js/web";
 import { getCookie } from "vinxi/server";
+
 function getServerCookies() {
   "use server";
 
@@ -21,8 +22,10 @@ const RootLayout = (props) => {
 
   return (
     <ColorModeProvider storageManager={storageManager}>
-      <Header />
-      <Suspense>{props.children}</Suspense>
+      <div class="flex flex-col h-screen">
+        <Header />
+        <Suspense>{props.children}</Suspense>
+      </div>
     </ColorModeProvider>
   );
 };

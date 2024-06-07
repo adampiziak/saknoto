@@ -7,10 +7,10 @@ export default function SyncDialog() {
     <Dialog>
       <Dialog.Trigger>sync</Dialog.Trigger>
       <Dialog.Portal>
-        <Dialog.Overlay class="fixed inset-0 bg-black/20 z-50 " />
+        <Dialog.Overlay class="fixed inset-0 bg-black/10 z-50 " />
         <div class="fixed inset-0 bg-gray z-50 flex justify-center items-center outline-none">
           <Dialog.Content class="">
-            <div class="w-50 border border-zinc-700 p-5  w-96 rounded flex flex-col gap-4">
+            <div class="bg-main -mt-48 w-50 border border-stone-300 p-5 w-96 rounded flex flex-col gap-4">
               <TextField class="flex flex-col">
                 <TextField.Label class="opacity-90">
                   lichess user
