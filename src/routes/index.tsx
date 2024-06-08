@@ -5,8 +5,6 @@ import { BoardView } from "~/BoardView";
 export default function Home() {
   const [api, setApi] = createSignal<Api | null>(null);
   onMount(async () => {
-    console.log("hey");
-
     // const makeModule = await import("~/../public/sf161-70.js");
     // makeModule
     //   .default({})
@@ -20,7 +18,7 @@ export default function Home() {
           <BoardView setApi={setApi} />
         </div>
       </div>
-      <div class="tools-container flex-grow p-8 flex flex-col *:flex-grow gap-4 *:rounded *:dark:bg-stone-800 *:p-2 max-w-[600px]">
+      <div class="tools-container flex-grow p-8 flex flex-col *:flex-grow gap-4 *:rounded *:bg-main-card *:p-2 max-w-[600px]">
         <div class="">engine</div>
         <div class="">rep</div>
         <div class="">explorer</div>

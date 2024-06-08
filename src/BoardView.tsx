@@ -21,7 +21,6 @@ export const BoardView: Component<{
           Math.min(container.offsetHeight, container.offsetWidth) / 8,
         ) * 8;
 
-      console.log(h);
       setBoardHeight(h);
     }
   };

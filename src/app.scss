@@ -22,12 +22,14 @@
 
 :is([data-kb-theme="dark"]) {
   --bg: #1c1917;
-  --bg-hover: #292524;
+  --bg-card: #292524;
+  --bg-hover: #44403c;
   background: var(--bg);
 }
 
 :is([data-kb-theme="light"]) {
-  --bg: #fafafa;
-  --bg-hover: #e4e4e7;
+  --bg: #fafaf9;
+  --bg-card: #eeedec;
+  --bg-hover: #e0dddc;
   background: var(--bg);
 }
