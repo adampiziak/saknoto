@@ -7,8 +7,8 @@ const Create: Component = () => {
   const context = useSakarboContext();
   const [api, initializeApi] = createSignal<Api | null>(null);
   return (
-    <div class="flex h-full w-full bg-green-500">
-      <BoardView setApi={initializeApi} class="grow bg-red-50" />
+    <div class="flex flex-grow justify-center">
+      <BoardView class="rounded" setApi={initializeApi} />
     </div>
   );
 };

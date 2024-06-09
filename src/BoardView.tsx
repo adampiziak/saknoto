@@ -17,7 +17,7 @@ export const BoardView: Component<{
   let rootEL: HTMLDivElement | undefined;
 
   const [boardHeight, setBoardHeight] = createSignal(2000);
-  const [rootHeight, setRootHeight] = createSignal(100000);
+  const [rootHeight, setRootHeight] = createSignal(0);
 
   const resize = debounce(() => {
     if (container != undefined) {
@@ -30,7 +30,7 @@ export const BoardView: Component<{
 
       // setBoardHeight(h);
     }
-  }, 10);
+  }, 100);
 
   onMount(() => {
     if (element) {
@@ -48,11 +48,11 @@ export const BoardView: Component<{
       ref={container}
       class={
         props.class +
-        " board-view shrink basis-[100%] items-center justify-center"
+        " board-view shrink basis-[100%] items-center justify-center flex"
       }
       style={{ "max-width": `${rootHeight()}px` }}
     >
-      <div class="board-container">
+      <div class="board-container rounded overflow-hidden">
         <div ref={element} class="board"></div>
       </div>
     </div>
