@@ -5,7 +5,7 @@ import { Toast, toaster } from "@kobalte/core/toast";
 import { createSignal, onMount } from "solid-js";
 import { Portal } from "solid-js/web";
 import { debounce } from "~/utils";
-import { useSakarboContext } from "../../Context";
+import { useSakarboContext } from "~/Context";
 
 export default function SyncDialog() {
   return (

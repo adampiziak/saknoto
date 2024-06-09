@@ -4,7 +4,7 @@ import { RefreshIcon } from "~/icons";
 import { createSignal, onMount } from "solid-js";
 import { A } from "@solidjs/router";
 import "../app.scss";
-import { useSakarboContext } from "../../Context";
+import { useSakarboContext } from "~/Context";
 
 export default function Header() {
   const context = useSakarboContext();

@@ -1,5 +1,19 @@
 .board-view {
-  width: round(down, calc(100%), 8px);
-  aspect-ratio: 1;
-  margin: auto;
+  container: board-container / size;
+  display: flex;
+}
+.board-container {
+  height: 100cqw;
+  width: 100cqw;
+}
+
+@container (aspect-ratio > 1) {
+  .board-container {
+    height: 100cqh;
+    width: 100cqh;
+  }
+}
+
+.board {
+  height: 100%;
 }

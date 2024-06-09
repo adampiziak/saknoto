@@ -4,7 +4,7 @@ import { BoardView } from "~/BoardView";
 import * as cg from "chessground/types";
 import { Chess } from "chess.js";
 import { toDests } from "~/utils";
-import { useSakarboContext } from "../../Context";
+import { useSakarboContext } from "~/Context";
 
 export default function Home() {
   const context = useSakarboContext();
@@ -69,13 +69,9 @@ export default function Home() {
   });
 
   return (
-    <main class="flex flex-grow mx-24 gap-4  justify-center">
-      <div class="chessboard-container grow shrink flex p-8 max-h-screen">
-        <div class="flex grow shrink rounded overflow-hidden relative ">
-          <BoardView setApi={initializeApi} />
-        </div>
-      </div>
-      <div class="tools-container justify-between flex-grow p-8 flex flex-col *:grow *:shrink gap-4 *:rounded *:bg-main-card *:p-2 max-w-[600px]">
+    <main class="flex flex-grow mx-24 gap-4 justify-center">
+      <BoardView setApi={initializeApi} class="" />
+      <div class="tools-container justify-between flex-grow p-8 flex flex-col *:grow *:shrink gap-4 *:rounded *:bg-main-card *:p-2 max-w-[600px] min-w-[300px]">
         <div class="">engine</div>
         <div class="">rep</div>
         <div class="shrink">

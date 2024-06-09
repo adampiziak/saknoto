@@ -1,29 +1,36 @@
 import { Chessground } from "chessground";
 import { Api } from "chessground/api";
-import { Component, Setter, createMemo, createSignal, onMount } from "solid-js";
+import { Component, Setter, createSignal, onMount } from "solid-js";
 
 import "~/styles/chessground.base.css";
 import "~/styles/chessground.brown.css";
 import "~/styles/staunty.css";
+import "./BoardView.scss";
+import { debounce } from "./utils";
 
 export const BoardView: Component<{
   setApi: Setter<Api | null>;
+  class: string | undefined;
 }> = (props) => {
-  let element: HTMLDivElement | undefined = undefined;
-  let container: HTMLDivElement | undefined = undefined;
+  let element: HTMLDivElement | undefined;
+  let container: HTMLDivElement | undefined;
+  let rootEL: HTMLDivElement | undefined;
 
-  const [boardHeight, setBoardHeight] = createSignal(0);
+  const [boardHeight, setBoardHeight] = createSignal(2000);
+  const [rootHeight, setRootHeight] = createSignal(100000);
 
-  const resize = () => {
+  const resize = debounce(() => {
     if (container != undefined) {
-      const h =
-        Math.floor(
-          Math.min(container.offsetHeight, container.offsetWidth) / 8,
-        ) * 8;
+      const rootmin = Math.round(container.offsetHeight);
+      setRootHeight(rootmin);
+      // const h =
+      //   Math.floor(
+      //     Math.min(container.offsetHeight, container.offsetWidth) / 8,
+      //   ) * 8;
 
-      setBoardHeight(h);
+      // setBoardHeight(h);
     }
-  };
+  }, 10);
 
   onMount(() => {
     if (element) {
@@ -37,18 +44,17 @@ export const BoardView: Component<{
   });
 
   return (
-    <>
-      <div
-        ref={container}
-        class="grow shrink overflow-hidden relative z-0"
-      ></div>
-
-      <div
-        class="absolute z-30 bg-green-100 left-1/2 top-1/2 transorm -translate-x-1/2 -translate-y-1/2 rounded overflow-hidden"
-        style={{ height: `${boardHeight()}px`, width: `${boardHeight()}px` }}
-      >
-        <div ref={element} class="h-full w-full"></div>
+    <div
+      ref={container}
+      class={
+        props.class +
+        " board-view shrink basis-[100%] items-center justify-center"
+      }
+      style={{ "max-width": `${rootHeight()}px` }}
+    >
+      <div class="board-container">
+        <div ref={element} class="board"></div>
       </div>
-    </>
+    </div>
   );
 };
