@@ -30,7 +30,7 @@ export const BoardView: Component<{
 
       // setBoardHeight(h);
     }
-  }, 100);
+  }, 10);
 
   onMount(() => {
     if (element) {

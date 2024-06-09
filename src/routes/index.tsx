@@ -15,9 +15,11 @@ export default function Home() {
 
   onMount(async () => {
     await context.openingGraph.load_wait();
-    context.openingGraph.getFen(game.fen(), "white", "white").then((e) => {
-      setMoves(Object.entries(e.moves).toSorted((a, b) => b[1] - a[1]));
-    });
+    await context.openingGraph
+      .getFen(game.fen(), "white", "white")
+      .then((e) => {
+        // setMoves(Object.entries(e.moves).toSorted((a, b) => b[1] - a[1]));
+      });
   });
 
   const handleMove = (orig: cg.Key, dest: cg.Key) => {

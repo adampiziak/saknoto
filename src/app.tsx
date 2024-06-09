@@ -13,7 +13,7 @@ import Header from "~/components/Header";
 import { ColorModeProvider, cookieStorageManagerSSR } from "@kobalte/core";
 import { isServer } from "solid-js/web";
 import { getCookie } from "vinxi/server";
-import { SakarboProvider } from "./Context";
+import { SakarboProvider, useSakarboContext } from "./Context";
 
 function getServerCookies() {
   "use server";
@@ -28,6 +28,10 @@ const RootLayout = (props: any) => {
     isServer ? getServerCookies() : document.cookie,
   );
 
+  onMount(() => {
+    const ctx = useSakarboContext();
+    ctx.openingGraph.load();
+  });
   // const storageManager = localStorageManager("kb-color-mode");
 
   return (

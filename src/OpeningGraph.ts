@@ -162,9 +162,14 @@ class OpeningGraph {
         resolve(this.cache[color]);
       } else {
         console.log("loading...");
+        if (!this.db) {
+          console.log("NOT READY");
+        }
         const objectStore = this.db
           ?.transaction(color, "readonly")
           .objectStore(color);
+
+        console.log(objectStore);
 
         if (objectStore) {
           let req = objectStore.getAll();

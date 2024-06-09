@@ -11,25 +11,33 @@ export class Repertoire {
   constructor() {}
 
   load() {
-    const req = window.indexedDB.open("repertoire", 2);
-
-    req.onerror = (e) => {
-      console.error("DB ERROR");
-    };
-
-    req.onsuccess = (e: Event) => {
-      if (!this.db) {
-        this.db = e.target?.result;
+    return new Promise<void>((resolve, reject) => {
+      if (this.db) {
+        resolve();
       }
-    };
+      const req = window.indexedDB.open("repertoire", 2);
+      req.onerror = (e) => {
+        console.error("DB ERROR");
+      };
 
-    req.onupgradeneeded = (e) => {
-      console.log("UPGRADE NEEDED");
+      req.onsuccess = (e: Event) => {
+        if (!this.db) {
+          this.db = e.target?.result;
+        }
 
-      const db = e.target.result;
+        resolve();
+      };
 
-      const objectStore = db.createObjectStore("position", { keyPath: "fen" });
-    };
+      req.onupgradeneeded = (e) => {
+        console.log("UPGRADE NEEDED");
+
+        const db = e.target.result;
+
+        const objectStore = db.createObjectStore("position", {
+          keyPath: "fen",
+        });
+      };
+    });
   }
 
   addLine(fen: string, response: string) {
