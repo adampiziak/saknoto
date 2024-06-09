@@ -4,8 +4,8 @@ import { TextField } from "@kobalte/core/text-field";
 import { Toast, toaster } from "@kobalte/core/toast";
 import { createSignal, onMount } from "solid-js";
 import { Portal } from "solid-js/web";
-import { useSakarboContext } from "~/app";
 import { debounce } from "~/utils";
+import { useSakarboContext } from "../../Context";
 
 export default function SyncDialog() {
   return (
@@ -26,7 +26,7 @@ export default function SyncDialog() {
 const SyncComponent = (props: any) => {
   const sakarbo = useSakarboContext();
   const [username, setUsername] = createSignal<string | null>(null);
-  const [valid, setValid] = createSignal(false);
+  const [valid, setValid] = createSignal(true);
 
   onMount(() => {
     sakarbo.userManager.load();
@@ -75,7 +75,7 @@ const SyncComponent = (props: any) => {
       </TextField>
       <Button
         onClick={storeUsername}
-        class="bg-blue-700  font-medium hover:bg-blue-500 px-5 py-2  rounded self-end"
+        class="bg-blue-700/90 text-stone-100 font-medium hover:bg-blue-500 px-5 py-2  rounded self-end"
       >
         set username
       </Button>

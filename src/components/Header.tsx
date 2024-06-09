@@ -1,11 +1,21 @@
-import { useSakarboContext } from "~/app";
 import SyncDialog from "./SyncDialog";
 import ThemeSelector from "./ThemeSelector";
 import { RefreshIcon } from "~/icons";
 import { createSignal, onMount } from "solid-js";
+import { A } from "@solidjs/router";
+import "../app.scss";
+import { useSakarboContext } from "../../Context";
 
 export default function Header() {
   const context = useSakarboContext();
+  // return (
+  //   <header>
+  //     <nav>
+  //       <A href="/">main</A>
+  //       <A href="/study">study</A>
+  //     </nav>
+  //   </header>
+  // );
 
   const [refreshing, setRefreshing] = createSignal(false);
   const refresh = async () => {
@@ -18,9 +28,9 @@ export default function Header() {
   };
 
   onMount(async () => {
-    if (context.userManager.get()) {
-      await refresh();
-    }
+    // if (context.userManager.get()) {
+    //   await refresh();
+    // }
   });
 
   return (
@@ -31,15 +41,15 @@ export default function Header() {
         </div>
       </div>
       <nav class="flex gap-1 ml-8 *:font-['Lexend']">
-        <a href="/" class="px-2 py-1 hover:bg-main-hover rounded">
+        <A href="/" class="px-2 py-1 hover:bg-main-hover rounded">
           play
-        </a>
-        <a href="/study" class="px-2 py-1 hover:bg-main-hover rounded">
+        </A>
+        <A href="/study" class="px-2 py-1 hover:bg-main-hover rounded">
           study
-        </a>
-        <a href="/create" class="px-2 py-1 hover:bg-main-hover rounded">
+        </A>
+        <A href="/create" class="px-2 py-1 hover:bg-main-hover rounded">
           create
-        </a>
+        </A>
       </nav>
       <div class="items-center flex flex-grow justify-end gap-4">
         <ThemeSelector />

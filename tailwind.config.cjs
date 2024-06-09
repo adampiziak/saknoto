@@ -6,6 +6,7 @@ module.exports = {
     extend: {
       colors: {
         "main": "var(--bg)",
+        "main-card": "var(--bg-card)",
         "main-hover": "var(--bg-hover)"
 
       }

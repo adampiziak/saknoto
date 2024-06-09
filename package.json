@@ -7,15 +7,18 @@
     "start": "vinxi start"
   },
   "dependencies": {
-    "@kobalte/core": "^0.13.1",
+    "@kobalte/core": "^0.13.3",
     "@kobalte/tailwindcss": "^0.9.0",
-    "@solidjs/router": "^0.13.3",
-    "@solidjs/start": "^1.0.0",
+    "@mliebelt/pgn-parser": "^1.4.15",
+    "@solidjs/router": "^0.13.5",
+    "@solidjs/start": "^1.0.1",
     "autoprefixer": "^10.4.19",
+    "chess.js": "1.0.0-beta.8",
     "chessground": "^9.1.1",
     "postcss": "^8.4.38",
     "solid-js": "^1.8.17",
-    "tailwindcss": "^3.4.3",
+    "tailwindcss": "^3.4.4",
+    "ts-fsrs": "^3.5.7",
     "vinxi": "^0.3.11"
   },
   "engines": {

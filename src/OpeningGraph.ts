@@ -1,5 +1,6 @@
 import { parse } from "@mliebelt/pgn-parser";
 import { Chess } from "chess.js";
+import UserManager from "./UserMananger";
 
 export interface Position {
   fen: string;
@@ -35,6 +36,57 @@ class OpeningGraph {
   whiteGames = [];
   blackGames = [];
 
+  ready = false;
+
+  load_wait() {
+    return new Promise<void>((resolve, reject) => {
+      if (this.ready) {
+        resolve();
+      }
+
+      const user_manager = new UserManager();
+      user_manager.load();
+      const name = user_manager.get();
+
+      if (name) {
+        this.username = name;
+      } else {
+        reject();
+        return;
+      }
+
+      const req = window.indexedDB.open(`player-graph-${this.username}`, 2);
+
+      req.onerror = (e) => {
+        console.error("DB ERROR");
+      };
+
+      req.onsuccess = (e: Event) => {
+        if (!this.db) {
+          this.db = e.target?.result;
+        }
+
+        if (this.db) {
+          console.log("db ready!");
+          resolve();
+        } else {
+          reject();
+        }
+      };
+
+      req.onupgradeneeded = (e) => {
+        console.log("UPGRADE NEEDED");
+
+        const db = e.target.result;
+
+        db.createObjectStore("whitewhite", { keyPath: "fen" });
+        db.createObjectStore("whiteblack", { keyPath: "fen" });
+        db.createObjectStore("blackblack", { keyPath: "fen" });
+        db.createObjectStore("blackwhite", { keyPath: "fen" });
+      };
+    });
+  }
+
   load(username: string) {
     this.username = username;
     const req = window.indexedDB.open(`player-graph-${username}`, 2);
@@ -46,6 +98,10 @@ class OpeningGraph {
     req.onsuccess = (e: Event) => {
       if (!this.db) {
         this.db = e.target?.result;
+      }
+
+      if (this.db) {
+        console.log("db ready!");
       }
     };
 
@@ -59,6 +115,36 @@ class OpeningGraph {
       db.createObjectStore("blackblack", { keyPath: "fen" });
       db.createObjectStore("blackwhite", { keyPath: "fen" });
     };
+  }
+
+  async getFen(fen: string, playerColor: string, turn: string): Promise<any> {
+    return new Promise((resolve, reject) => {
+      console.log(fen);
+      const store_name = playerColor + turn;
+      console.log(store_name);
+      const store = this.db
+        ?.transaction(store_name, "readonly")
+        .objectStore(store_name);
+
+      if (store) {
+        let req = store.get(fen);
+
+        req.onsuccess = (e) => {
+          resolve(req.result);
+        };
+
+        req.onerror = (e) => {
+          resolve("error");
+        };
+      } else {
+        console.log(this.db);
+        reject("object store is null");
+      }
+    });
+  }
+
+  isready() {
+    return this.db !== undefined && this.db !== null;
   }
 
   async getAll(): Promise<Position[]> {
@@ -111,7 +197,8 @@ class OpeningGraph {
     const timestamp = last_refresh.getTime();
 
     localStorage.setItem("last_refresh", new Date().toString());
-    const url = `https://lichess.org/api/games/user/${this.username}?since=${timestamp}&max=1000&perfType=blitz`;
+    const url = `https://lichess.org/api/games/user/${this.username}?since=${timestamp}&max=300&perfType=blitz`;
+    // const url = `https://lichess.org/api/games/user/${this.username}?max=10&perfType=blitz`;
     try {
       const res = await fetch(url);
 
