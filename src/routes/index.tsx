@@ -5,6 +5,7 @@ import * as cg from "chessground/types";
 import { Chess } from "chess.js";
 import { toDests } from "~/utils";
 import { useSakarboContext } from "~/Context";
+import { Button } from "@kobalte/core/button";
 
 export default function Home() {
   const context = useSakarboContext();
@@ -18,7 +19,7 @@ export default function Home() {
     await context.openingGraph
       .getFen(game.fen(), "white", "white")
       .then((e) => {
-        // setMoves(Object.entries(e.moves).toSorted((a, b) => b[1] - a[1]));
+        setMoves(Object.entries(e.moves).toSorted((a, b) => b[1] - a[1]));
       });
   });
 
@@ -58,6 +59,42 @@ export default function Home() {
     }
   };
 
+  const getMoves = () => {
+    const color = game.turn() === "w" ? "white" : "black";
+    try {
+      console.log(game.fen());
+      context.openingGraph
+        .getFen(game.fen(), "white", color)
+        .then((e) => {
+          if (e.moves) {
+            console.log(e.moves);
+            setMoves(Object.entries(e.moves).toSorted((a, b) => b[1] - a[1]));
+            // console.log(moves());
+            // console.log(e.moves.entries());
+          }
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const reset = () => {
+    game.reset();
+    getMoves();
+    api()?.set({
+      fen: game.fen(),
+      turnColor: "white",
+      movable: {
+        color: "white",
+        free: false,
+        dests: toDests(game),
+      },
+    });
+  };
+
   createEffect(() => {
     api()?.set({
       movable: {
@@ -71,13 +108,23 @@ export default function Home() {
   });
 
   return (
-    <main class="flex flex-grow mx-24 gap-4 justify-center">
+    <main class="flex flex-grow px-8 gap-6 py-6 justify-center">
       <BoardView setApi={initializeApi} class="" />
-      <div class="tools-container justify-between flex-grow p-8 flex flex-col *:grow *:shrink gap-4 *:rounded *:bg-main-card *:p-2 max-w-[600px] min-w-[300px]">
-        <div class="">engine</div>
-        <div class="">rep</div>
-        <div class="shrink">
-          <div>explorer</div>
+      <div class="tools-container justify-center flex-grow flex  flex-col *:shrink gap-6 max-w-[600px] min-w-[300px]">
+        <div class="card">
+          <div class="card-title">engine</div>
+        </div>
+        <div class="card">
+          <div class="card-title">settings</div>
+          <Button class="button" onClick={() => reset()}>
+            restart
+          </Button>
+        </div>
+        <div class="card grow-0 shrink">
+          <div class="card-title">repertoire</div>
+        </div>
+        <div class="card shrink">
+          <div class="card-title">explorer</div>
           <div>
             <div>
               <span class="inline-block w-24">move</span>

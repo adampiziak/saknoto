@@ -20,10 +20,21 @@
   font-family: "Lexend";
 }
 
+:root {
+  --primary-bg: #2f6bc6;
+  --primary-border: #2c65ba;
+  --primary-fg: #c9daf2;
+}
+
 :is([data-kb-theme="dark"]) {
   --bg: #1c1917;
   --bg-card: #292524;
   --bg-hover: #44403c;
+  --primary-bg: #423f3e;
+  --primary-bg-hover: #4f4b4a;
+  --primary-bg-active: #595554;
+  --primary-border: #474443;
+  --primary-fg: #ebeaea;
   background: var(--bg);
 }
 
@@ -31,5 +42,39 @@
   --bg: #fafaf9;
   --bg-card: #eeedec;
   --bg-hover: #e0dddc;
+  --primary-bg: #dcdee0;
+  --primary-bg-hover: #d4d6d9;
+  --primary-bg-active: #a8afb8;
+  --primary-border: #bcc2c8;
+  --primary-fg: #1e2124;
   background: var(--bg);
+}
+
+.button {
+  padding: 3px 7px;
+  background: var(--primary-bg);
+
+  color: var(--primary-fg);
+  border-radius: 4px;
+  border: 1px solid var(--primary-border);
+
+  &:hover {
+    background: var(--primary-bg-hover);
+  }
+
+  &:active {
+    background: var(--primary-bg-active);
+  }
+}
+
+.card {
+  background: var(--bg-card);
+  padding: 12px;
+  border-radius: 6px;
+}
+
+.card-title {
+  margin-bottom: 4px;
+  opacity: 0.8;
+  font-weight: 500;
 }
