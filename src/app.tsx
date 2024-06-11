@@ -31,6 +31,7 @@ const RootLayout = (props: any) => {
   onMount(() => {
     const ctx = useSakarboContext();
     ctx.openingGraph.load();
+    ctx.engine.start();
   });
   // const storageManager = localStorageManager("kb-color-mode");
 

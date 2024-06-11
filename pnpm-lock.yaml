@@ -32,6 +32,9 @@ importers:
       chessground:
         specifier: ^9.1.1
         version: 9.1.1
+      lila-stockfish-web:
+        specifier: ^0.0.5
+        version: 0.0.5
       postcss:
         specifier: ^8.4.38
         version: 8.4.38
@@ -1843,6 +1846,9 @@ packages:
   lazystream@1.0.1:
     resolution: {integrity: sha512-b94GiNHQNy6JNTrt5w6zNyffMrNkXZb3KTkCZJb2V1xaEGCk093vkZ2jk3tpaeP33/OiXC+WvK9AxUebnf5nbw==}
     engines: {node: '>= 0.6.3'}
+
+  lila-stockfish-web@0.0.5:
+    resolution: {integrity: sha512-ktMdF060U6KlV3hQYLbR7z/dW4t0zMuBNiHwH5/ZVXAyOJAZauyUMiNmZebT7d/5Ii2PWBhC5+iJOThkJ9pffA==}
 
   lilconfig@2.1.0:
     resolution: {integrity: sha512-utWOt/GHzuUxnLKxB6dk81RoOeoNeHgbrXiuGk4yyF5qlRz+iIVWu56E2fqGHFrXz0QNUhLB/8nKqvRH66JKGQ==}
@@ -4557,6 +4563,8 @@ snapshots:
   lazystream@1.0.1:
     dependencies:
       readable-stream: 2.3.8
+
+  lila-stockfish-web@0.0.5: {}
 
   lilconfig@2.1.0: {}
 

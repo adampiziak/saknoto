@@ -67,7 +67,6 @@ class OpeningGraph {
         }
 
         if (this.db) {
-          console.log("db ready!");
           resolve();
         } else {
           reject();
@@ -99,10 +98,6 @@ class OpeningGraph {
       if (!this.db) {
         this.db = e.target?.result;
       }
-
-      if (this.db) {
-        console.log("db ready!");
-      }
     };
 
     req.onupgradeneeded = (e) => {
@@ -119,9 +114,7 @@ class OpeningGraph {
 
   async getFen(fen: string, playerColor: string, turn: string): Promise<any> {
     return new Promise((resolve, reject) => {
-      console.log(fen);
       const store_name = playerColor + turn;
-      console.log(store_name);
       const store = this.db
         ?.transaction(store_name, "readonly")
         .objectStore(store_name);

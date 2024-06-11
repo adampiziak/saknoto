@@ -13,19 +13,29 @@ export default function Home() {
   const game = new Chess();
 
   const [moves, setMoves] = createSignal([]);
+  const [evl, setEval] = createSignal({});
 
   onMount(async () => {
     await context.openingGraph.load_wait();
     await context.openingGraph
       .getFen(game.fen(), "white", "white")
       .then((e) => {
-        setMoves(Object.entries(e.moves).toSorted((a, b) => b[1] - a[1]));
+        if (e) {
+          setMoves(Object.entries(e.moves).toSorted((a, b) => b[1] - a[1]));
+        }
       });
+
+    context.engine.subscribe_main((evaluation) => {
+      setEval(evaluation);
+    });
+
+    context.engine.add_task(game.fen());
   });
 
   const handleMove = (orig: cg.Key, dest: cg.Key) => {
     const move = orig + dest;
     game.move(move);
+    context.engine.add_task(game.fen());
     const color = game.turn() === "w" ? "white" : "black";
 
     api()?.set({
@@ -44,7 +54,7 @@ export default function Home() {
       context.openingGraph
         .getFen(game.fen(), "white", color)
         .then((e) => {
-          if (e.moves) {
+          if (e?.moves) {
             console.log(e.moves);
             setMoves(Object.entries(e.moves).toSorted((a, b) => b[1] - a[1]));
             // console.log(moves());
@@ -113,6 +123,16 @@ export default function Home() {
       <div class="tools-container justify-center flex-grow flex  flex-col *:shrink gap-6 max-w-[600px] min-w-[300px]">
         <div class="card">
           <div class="card-title">engine</div>
+          <div>{evl().depth ?? 0}</div>
+          <div>
+            <For each={evl()?.pvs ?? []}>
+              {(item, index) => (
+                <div class="bg-main-hover my-2 p-2 rounded">
+                  {item.cp / 100} : {item.moves}
+                </div>
+              )}
+            </For>
+          </div>
         </div>
         <div class="card">
           <div class="card-title">settings</div>
