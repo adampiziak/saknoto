@@ -1,4 +1,6 @@
 import type StockfishWeb from "lila-stockfish-web";
+import Stockfish from "./sf161-70";
+import { parse_moves } from "./utils";
 
 export class Engine {
   subscribers = new Map<string, any[]>();
@@ -6,12 +8,14 @@ export class Engine {
   queue: string[] = [];
   current_position: string | null = null;
   last_cloud_request = Date.now();
+  main_position = "";
 
   async start() {
-    const stockfishModule = await import("~/../public/sf161-70.js");
+    // const makeModule = await import('npm/lila-stockfish-web/sf161-70.js')
+    const sf = await Stockfish({});
+    this.engine = sf;
 
     try {
-      this.engine = await stockfishModule.default({});
       if (this.engine) {
         this.engine.listen = (event: any) => {
           this.handle_message(event);
@@ -25,6 +29,8 @@ export class Engine {
 
         this.engine.uci("ucinewgame");
         this.engine.uci("isready");
+      } else {
+        console.error("ENGINE UNDEFINED");
       }
     } catch (e) {
       console.error(e);
@@ -43,6 +49,13 @@ export class Engine {
 
   emit(fen: string, evaluation: any) {
     const listeners = this.subscribers.get("main");
+    console.log(fen);
+    for (const i in evaluation.pvs) {
+      evaluation.pvs[i].moves = parse_moves(
+        this.main_position,
+        evaluation.pvs[i].moves.split(" "),
+      ).join(" ");
+    }
 
     for (const sub of listeners) {
       sub(evaluation);
@@ -51,6 +64,7 @@ export class Engine {
 
   add_task(fen: string) {
     this.queue.push(fen);
+    this.main_position = fen;
     this.engine.uci("isready");
     // this.engine.postMessage("isready");
   }

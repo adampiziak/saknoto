@@ -2,13 +2,7 @@ import "./app.scss";
 import { Router } from "@solidjs/router";
 
 import { FileRoutes } from "@solidjs/start/router";
-import {
-  Context,
-  Suspense,
-  createContext,
-  onMount,
-  useContext,
-} from "solid-js";
+import { Suspense, onMount } from "solid-js";
 import Header from "~/components/Header";
 import { ColorModeProvider, cookieStorageManagerSSR } from "@kobalte/core";
 import { isServer } from "solid-js/web";
@@ -28,12 +22,11 @@ const RootLayout = (props: any) => {
     isServer ? getServerCookies() : document.cookie,
   );
 
-  onMount(() => {
+  onMount(async () => {
     const ctx = useSakarboContext();
-    ctx.openingGraph.load();
+    await ctx.openingGraph.load_wait();
     ctx.engine.start();
   });
-  // const storageManager = localStorageManager("kb-color-mode");
 
   return (
     <SakarboProvider>
@@ -48,21 +41,11 @@ const RootLayout = (props: any) => {
 };
 
 export default function App() {
-  // onMount(() => {
-  //   setTimeout(() => {
-  //     context.userManager.load();
-  //     const username = context.userManager.get();
-  //     if (username) {
-  //       console.log("loading " + username);
-  //       context.openingGraph.load(username);
-  //     }
-  //     context.repertoire.load();
-  //   }, 1000);
-  // });
-
   return (
-    <Router root={RootLayout}>
-      <FileRoutes />
-    </Router>
+    <>
+      <Router root={RootLayout}>
+        <FileRoutes />
+      </Router>
+    </>
   );
 }

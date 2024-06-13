@@ -3,9 +3,13 @@ import { For, createEffect, createSignal, onMount } from "solid-js";
 import { BoardView } from "~/BoardView";
 import * as cg from "chessground/types";
 import { Chess } from "chess.js";
-import { toDests } from "~/utils";
+import { parse_moves, toDests } from "~/utils";
 import { useSakarboContext } from "~/Context";
 import { Button } from "@kobalte/core/button";
+import { getRequestEvent } from "solid-js/web";
+
+const e = getRequestEvent();
+console.log("request");
 
 export default function Home() {
   const context = useSakarboContext();
@@ -19,18 +23,31 @@ export default function Home() {
     await context.openingGraph.load_wait();
     await context.openingGraph
       .getFen(game.fen(), "white", "white")
-      .then((e) => {
-        if (e) {
-          setMoves(Object.entries(e.moves).toSorted((a, b) => b[1] - a[1]));
-        }
+      .then((position_moves) => {
+        setMoves(position_moves);
       });
 
     context.engine.subscribe_main((evaluation) => {
+      console.log(evaluation);
       setEval(evaluation);
     });
 
-    context.engine.add_task(game.fen());
+    setTimeout(() => configurePosition(), 1000);
   });
+
+  const configurePosition = () => {
+    const fen = game.fen();
+    const color = game.turn() === "w" ? "white" : "black";
+    context.engine.add_task(fen);
+    context.openingGraph
+      .getFen(fen, "white", color)
+      .then((e) => {
+        setMoves(e);
+      })
+      .catch((e) => {
+        console.error(e);
+      });
+  };
 
   const handleMove = (orig: cg.Key, dest: cg.Key) => {
     const move = orig + dest;
@@ -54,12 +71,7 @@ export default function Home() {
       context.openingGraph
         .getFen(game.fen(), "white", color)
         .then((e) => {
-          if (e?.moves) {
-            console.log(e.moves);
-            setMoves(Object.entries(e.moves).toSorted((a, b) => b[1] - a[1]));
-            // console.log(moves());
-            // console.log(e.moves.entries());
-          }
+          setMoves(e);
         })
         .catch((e) => {
           console.log(e);

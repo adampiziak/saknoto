@@ -123,7 +123,13 @@ class OpeningGraph {
         let req = store.get(fen);
 
         req.onsuccess = (e) => {
-          resolve(req.result);
+          const moves = req.result?.moves;
+          if (!moves) {
+            resolve([]);
+            return;
+          }
+          const list = Object.entries(moves).toSorted((a, b) => b[1] - a[1]);
+          resolve(list);
         };
 
         req.onerror = (e) => {

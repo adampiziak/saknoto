@@ -1,4 +1,4 @@
-import { SQUARES } from "chess.js";
+import { Chess, SQUARES } from "chess.js";
 
 export const debounce = (callback: any, wait: any) => {
   let timeoutId: number | null | undefined = null;
@@ -21,4 +21,31 @@ export function toDests(chess) {
       );
   });
   return dests;
+}
+
+export function parse_moves(fen, moves) {
+  const game = new Chess();
+
+  game.load(fen);
+  const moveCount = game.moveNumber();
+  for (let move of moves) {
+    const m = make_valid(move);
+    game.move(m);
+  }
+  return game.history();
+}
+
+export function make_valid(move: string) {
+  switch (move) {
+    case "e8h8":
+      return "e8g8";
+    case "e8a8":
+      return "e8c8";
+    case "e1h1":
+      return "e1g1";
+    case "e1a1":
+      return "e1c1";
+    default:
+      return move;
+  }
 }
