@@ -23,6 +23,10 @@ export function toDests(chess) {
   return dests;
 }
 
+export function drawArrows(api: Api, position: string, arrows: string[]) {
+  return;
+}
+
 export function parse_moves(fen, moves) {
   const game = new Chess();
 

@@ -16,8 +16,15 @@
     url("/lexend.ttf") format("truetype");
 }
 
+@font-face {
+  font-family: "Inter Tight";
+  src:
+    local("Inter Tight"),
+    url("/intertight.ttf") format("truetype");
+}
+
 * {
-  font-family: "Lexend";
+  font-family: "Inter Tight";
 }
 
 :root {
@@ -27,27 +34,65 @@
 }
 
 :is([data-kb-theme="dark"]) {
-  --bg: #1c1917;
-  --bg-card: #292524;
-  --bg-hover: #44403c;
-  --primary-bg: #423f3e;
-  --primary-bg-hover: #4f4b4a;
-  --primary-bg-active: #595554;
-  --primary-border: #474443;
-  --primary-fg: #ebeaea;
+    --bg: #141415;
+    --level-1: #242424;
+    --level-1-border: #363636;
+    --level-1-hover: #303031;
+    --level-2: #333333;
+    --level-2-border: #454545;
+    --level-2-hover: #404040;
+    --level-3: #424243;
+    --level-3-border: #545454;
+    --level-3-hover: #4f4f4f;
+    background: var(--bg);
+}
+:is([data-kb-theme="light"]) {
+  --bg: #fefeff;
+  --level-1: #f1f1f3;
+  --level-1-border: #d5d5dc;
+  --level-1-hover: #d5d5dc;
+  --level-2: #e0e0e5;
+  --level-2-border: #c4c4cd;
+  --level-2-hover: #c4c4cd;
+  --level-3: #d0d0d7;
+  --level-3-border: #b4b4bf;
+  --level-3-hover: #b4b4bf;
   background: var(--bg);
 }
 
-:is([data-kb-theme="light"]) {
-  --bg: #fafaf9;
-  --bg-card: #eeedec;
-  --bg-hover: #e0dddc;
-  --primary-bg: #dcdee0;
-  --primary-bg-hover: #d4d6d9;
-  --primary-bg-active: #a8afb8;
-  --primary-border: #bcc2c8;
-  --primary-fg: #1e2124;
-  background: var(--bg);
+.hoverable {
+  cursor: pointer;
+}
+
+.lvl-1 {
+  background: var(--level-1);
+  border-color: var(--level-1-border);
+
+  &.hoverable:hover {
+    background: var(--level-1-hover);
+  }
+}
+.lvl-2 {
+  background: var(--level-2);
+  border-color: var(--level-2-border);
+
+  &.hoverable:hover {
+    background: var(--level-2-hover);
+  }
+}
+.lvl-3 {
+  background: var(--level-3);
+  border-color: var(--level-3-border);
+
+  &.hoverable:hover {
+    background: var(--level-3-hover);
+  }
+}
+
+.sk-list-item {
+  &:not(:last-child) {
+    border-bottom-width: 1px;
+  }
 }
 
 .button {
@@ -67,14 +112,19 @@
   }
 }
 
+/* .card { */
+/* padding: 7px 10px; */
+/* border-radius: 4px; */
+/* background: var(--level-1); */
+/* border: 1px solid var(--lvl-one-border); */
+/* } */
+
 .card {
-  background: var(--bg-card);
-  padding: 12px;
-  border-radius: 6px;
+  overflow: hidden;
+  border-radius: 4px;
 }
 
 .card-title {
   margin-bottom: 4px;
-  opacity: 0.8;
-  font-weight: 500;
+  opacity: 0.9;
 }

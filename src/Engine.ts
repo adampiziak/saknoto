@@ -7,11 +7,11 @@ export class Engine {
   engine: StockfishWeb | undefined;
   queue: string[] = [];
   current_position: string | null = null;
-  last_cloud_request = Date.now();
+  last_cloud_request = new Date(0);
   main_position = "";
+  initialize_wait_queue: any[] = [];
 
   async start() {
-    // const makeModule = await import('npm/lila-stockfish-web/sf161-70.js')
     const sf = await Stockfish({});
     this.engine = sf;
 
@@ -29,6 +29,10 @@ export class Engine {
 
         this.engine.uci("ucinewgame");
         this.engine.uci("isready");
+
+        for (const resolver of this.initialize_wait_queue) {
+          resolver();
+        }
       } else {
         console.error("ENGINE UNDEFINED");
       }
@@ -37,8 +41,17 @@ export class Engine {
     }
   }
 
+  wait() {
+    return new Promise<void>((resolve, _reject) => {
+      if (this.engine) {
+        resolve();
+      } else {
+        this.initialize_wait_queue.push(resolve);
+      }
+    });
+  }
+
   async handle_message(message: string) {
-    console.log(message);
     if (message.includes("readyok")) {
       const task = this.queue.pop();
       if (task) {
@@ -49,7 +62,6 @@ export class Engine {
 
   emit(fen: string, evaluation: any) {
     const listeners = this.subscribers.get("main");
-    console.log(fen);
     for (const i in evaluation.pvs) {
       evaluation.pvs[i].moves = parse_moves(
         this.main_position,
@@ -63,10 +75,11 @@ export class Engine {
   }
 
   add_task(fen: string) {
+    console.log("NEW TASK");
+    console.log(fen);
     this.queue.push(fen);
     this.main_position = fen;
     this.engine.uci("isready");
-    // this.engine.postMessage("isready");
   }
 
   subscribe_main(callback: () => void) {
@@ -100,8 +113,7 @@ export class Engine {
     const json = await response.json();
 
     if (json) {
-      console.log(json);
-      this.emit("main", json);
+      this.emit(fen, json);
     }
   }
 }

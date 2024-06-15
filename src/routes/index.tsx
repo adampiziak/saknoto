@@ -1,15 +1,11 @@
 import { Api } from "chessground/api";
-import { For, createEffect, createSignal, onMount } from "solid-js";
+import { Component, For, createEffect, createSignal, onMount } from "solid-js";
 import { BoardView } from "~/BoardView";
 import * as cg from "chessground/types";
 import { Chess } from "chess.js";
-import { parse_moves, toDests } from "~/utils";
+import { toDests } from "~/utils";
 import { useSakarboContext } from "~/Context";
 import { Button } from "@kobalte/core/button";
-import { getRequestEvent } from "solid-js/web";
-
-const e = getRequestEvent();
-console.log("request");
 
 export default function Home() {
   const context = useSakarboContext();
@@ -28,11 +24,11 @@ export default function Home() {
       });
 
     context.engine.subscribe_main((evaluation) => {
-      console.log(evaluation);
       setEval(evaluation);
     });
 
-    setTimeout(() => configurePosition(), 1000);
+    await context.engine.wait();
+    configurePosition();
   });
 
   const configurePosition = () => {
@@ -132,49 +128,82 @@ export default function Home() {
   return (
     <main class="flex flex-grow px-8 gap-6 py-6 justify-center">
       <BoardView setApi={initializeApi} class="" />
-      <div class="tools-container justify-center flex-grow flex  flex-col *:shrink gap-6 max-w-[600px] min-w-[300px]">
-        <div class="card">
-          <div class="card-title">engine</div>
-          <div>{evl().depth ?? 0}</div>
-          <div>
-            <For each={evl()?.pvs ?? []}>
-              {(item, index) => (
-                <div class="bg-main-hover my-2 p-2 rounded">
-                  {item.cp / 100} : {item.moves}
-                </div>
-              )}
-            </For>
-          </div>
-        </div>
-        <div class="card">
-          <div class="card-title">settings</div>
-          <Button class="button" onClick={() => reset()}>
-            restart
-          </Button>
-        </div>
-        <div class="card grow-0 shrink">
-          <div class="card-title">repertoire</div>
-        </div>
-        <div class="card shrink">
-          <div class="card-title">explorer</div>
-          <div>
-            <div>
-              <span class="inline-block w-24">move</span>
-              <span>games</span>
-            </div>
-          </div>
-          <For each={moves()}>
-            {(item, index) => (
-              <div>
-                <div>
-                  <span class="inline-block w-24">{item[0]} </span>
-                  {item[1]}
-                </div>
-              </div>
-            )}
-          </For>
-        </div>
+      <div class="tools-container justify-start flex-grow flex  flex-col *:shrink gap-4 max-w-[500px] min-w-[300px]">
+        <EngineCard evl={evl()} />
+        <ExplorerCard moves={moves()} />
       </div>
     </main>
   );
 }
+
+const SettingsCard: Component = (props) => {
+  return (
+    <div class="lvl-1">
+      <div class="card-title">settings</div>
+      <Button class="button" onClick={() => reset()}>
+        restart
+      </Button>
+    </div>
+  );
+};
+
+const RepertoireCard: Component = (props) => {
+  return (
+    <div class="card grow-0 shrink">
+      <div class="card-title">repertoire</div>
+    </div>
+  );
+};
+
+const EngineCard: Component = (props) => {
+  const line = (l) => {
+    const score = l.cp / 100;
+    const rounded_score = Math.round(score * 10) / 10;
+    let sign = " ";
+    if (score > 0) {
+      sign = "+";
+    }
+    if (score < 0) {
+      sign = "-";
+    }
+
+    const score_string = `${sign}${Math.abs(rounded_score)}`;
+    return (
+      <div class="lvl-1 hoverable sk-list-item  py-2 px-2 flex gap-4 items-center">
+        <div class="w-8 font-semibold text-right">{score_string}</div>
+        <div>{l.moves}</div>
+      </div>
+    );
+  };
+  return (
+    <div class="card lvl-1 border">
+      <div class="lvl-1 border-b">
+        <For each={props.evl?.pvs ?? []}>{(item, index) => line(item)}</For>
+      </div>
+      <div class="lvl-2  py-1 px-2 text-right">Depth: {props.evl?.depth}</div>
+    </div>
+  );
+};
+
+const ExplorerCard: Component = (props) => {
+  return (
+    <div class="lvl-1 card border">
+      <div class="lvl-2 py-1 font-medium">
+        <div>
+          <span class="inline-block w-14 text-right mr-4">move</span>
+          <span>games</span>
+        </div>
+      </div>
+      <div class="flex flex-col">
+        <For each={props.moves}>
+          {(item, index) => (
+            <div class="lvl-1 hoverable sk-list-item py-2">
+              <span class="inline-block w-14 text-right mr-4">{item[0]} </span>
+              {item[1]}
+            </div>
+          )}
+        </For>
+      </div>
+    </div>
+  );
+};

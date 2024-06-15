@@ -48,7 +48,7 @@ export const BoardView: Component<{
       ref={container}
       class={
         props.class +
-        " board-view shrink basis-[100%] items-center justify-center flex"
+        " board-view shrink basis-[100%] items-start justify-start flex"
       }
       style={{ "max-width": `${rootHeight()}px` }}
     >
