@@ -1,5 +1,9 @@
 import { Chess, SQUARES } from "chess.js";
 
+export function startingFen() {
+  return new Chess().fen();
+}
+
 export const debounce = (callback: any, wait: any) => {
   let timeoutId: number | null | undefined = null;
   return (...args: any) => {

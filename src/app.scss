@@ -47,17 +47,17 @@
     background: var(--bg);
 }
 :is([data-kb-theme="light"]) {
-  --bg: #fefeff;
-  --level-1: #f1f1f3;
-  --level-1-border: #d5d5dc;
-  --level-1-hover: #d5d5dc;
-  --level-2: #e0e0e5;
-  --level-2-border: #c4c4cd;
-  --level-2-hover: #c4c4cd;
-  --level-3: #d0d0d7;
-  --level-3-border: #b4b4bf;
-  --level-3-hover: #b4b4bf;
-  background: var(--bg);
+    --bg: #FAFAFB;
+    --level-1: #f3f3f3;
+    --level-1-border: #d9d9da;
+    --level-1-hover: #e8e8e9;
+    --level-2: #e8e8e9;
+    --level-2-border: #cfcfd0;
+    --level-2-hover: #dededf;
+    --level-3: #dededf;
+    --level-3-border: #c4c4c5;
+    --level-3-hover: #d4d4d5;
+    background: var(--bg);
 }
 
 .hoverable {

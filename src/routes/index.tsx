@@ -6,6 +6,8 @@ import { Chess } from "chess.js";
 import { toDests } from "~/utils";
 import { useSakarboContext } from "~/Context";
 import { Button } from "@kobalte/core/button";
+import EngineCard from "~/components/EngineCard";
+import { Evaluation, createEmptyEvaluation } from "~/Engine";
 
 export default function Home() {
   const context = useSakarboContext();
@@ -13,7 +15,7 @@ export default function Home() {
   const game = new Chess();
 
   const [moves, setMoves] = createSignal([]);
-  const [evl, setEval] = createSignal({});
+  const [evl, setEval] = createSignal<Evaluation>(createEmptyEvaluation());
 
   onMount(async () => {
     await context.openingGraph.load_wait();
@@ -129,7 +131,7 @@ export default function Home() {
     <main class="flex flex-grow px-8 gap-6 py-6 justify-center">
       <BoardView setApi={initializeApi} class="" />
       <div class="tools-container justify-start flex-grow flex  flex-col *:shrink gap-4 max-w-[500px] min-w-[300px]">
-        <EngineCard evl={evl()} />
+        <EngineCard evaluation={evl()} />
         <ExplorerCard moves={moves()} />
       </div>
     </main>
@@ -155,35 +157,37 @@ const RepertoireCard: Component = (props) => {
   );
 };
 
-const EngineCard: Component = (props) => {
-  const line = (l) => {
-    const score = l.cp / 100;
-    const rounded_score = Math.round(score * 10) / 10;
-    let sign = " ";
-    if (score > 0) {
-      sign = "+";
-    }
-    if (score < 0) {
-      sign = "-";
-    }
+// const EngineCard: Component = (props) => {
+//   const line = (l) => {
+//     const score = l.cp / 100;
+//     const rounded_score = Math.round(score * 10) / 10;
+//     let sign = " ";
+//     if (score > 0) {
+//       sign = "+";
+//     }
+//     if (score < 0) {
+//       sign = "-";
+//     }
 
-    const score_string = `${sign}${Math.abs(rounded_score)}`;
-    return (
-      <div class="lvl-1 hoverable sk-list-item  py-2 px-2 flex gap-4 items-center">
-        <div class="w-8 font-semibold text-right">{score_string}</div>
-        <div>{l.moves}</div>
-      </div>
-    );
-  };
-  return (
-    <div class="card lvl-1 border">
-      <div class="lvl-1 border-b">
-        <For each={props.evl?.pvs ?? []}>{(item, index) => line(item)}</For>
-      </div>
-      <div class="lvl-2  py-1 px-2 text-right">Depth: {props.evl?.depth}</div>
-    </div>
-  );
-};
+//     const score_string = `${sign}${Math.abs(rounded_score)}`;
+//     return (
+//       <div class="lvl-1 hoverable sk-list-item  py-2 px-2 flex gap-4 items-center">
+//         <div class="w-8 font-semibold text-right">{score_string}</div>
+//         <div>{l.moves}</div>
+//       </div>
+//     );
+//   };
+//   return (
+//     <div class="card lvl-1 border">
+//       <div class="lvl-1 border-b">
+//         <For each={props.evl?.pvs ?? []}>{(item, index) => line(item)}</For>
+//       </div>
+//       <div class="lvl-2  py-1 px-2 text-right font-medium">
+//         depth: {props.evl?.depth}
+//       </div>
+//     </div>
+//   );
+// };
 
 const ExplorerCard: Component = (props) => {
   return (

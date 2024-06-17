@@ -1,6 +1,28 @@
 import type StockfishWeb from "lila-stockfish-web";
 import Stockfish from "./sf161-70";
-import { parse_moves } from "./utils";
+import { startingFen, parse_moves } from "./utils";
+
+export interface Evaluation {
+  fen: string;
+  depth: number;
+  mode: "cloud" | "local";
+  lines: EvaluationLine[];
+}
+
+export interface EvaluationLine {
+  score: number;
+  san: string[];
+  lan: string[];
+}
+
+export function createEmptyEvaluation(): Evaluation {
+  return {
+    fen: startingFen(),
+    depth: 0,
+    mode: "local",
+    lines: [],
+  };
+}
 
 export class Engine {
   subscribers = new Map<string, any[]>();
@@ -60,17 +82,23 @@ export class Engine {
     }
   }
 
-  emit(fen: string, evaluation: any) {
+  emit_mainline(evaluation: Evaluation) {
     const listeners = this.subscribers.get("main");
-    for (const i in evaluation.pvs) {
-      evaluation.pvs[i].moves = parse_moves(
-        this.main_position,
-        evaluation.pvs[i].moves.split(" "),
-      ).join(" ");
+    for (const callback of listeners) {
+      callback(evaluation);
+    }
+  }
+
+  emit(evaluation: Evaluation) {
+    const listeners = this.subscribers.get("main");
+
+    if (!listeners) {
+      return;
     }
 
-    for (const sub of listeners) {
-      sub(evaluation);
+    for (const callback of listeners) {
+      console.log("CALLBAXCK");
+      callback(evaluation);
     }
   }
 
@@ -82,7 +110,7 @@ export class Engine {
     this.engine.uci("isready");
   }
 
-  subscribe_main(callback: () => void) {
+  subscribe_main(callback: (arg0: Evaluation) => void) {
     const existing = this.subscribers.get("main") ?? [];
     existing.push(callback);
     this.subscribers.set("main", existing);
@@ -113,7 +141,21 @@ export class Engine {
     const json = await response.json();
 
     if (json) {
-      this.emit(fen, json);
+      let evaluation = createEmptyEvaluation();
+      evaluation.depth = json.depth ?? 0;
+      evaluation.fen = json.fen ?? STARTING_FEN;
+      evaluation.mode = "cloud";
+
+      for (const line of json.pvs) {
+        let moves = line.moves.split(" ");
+        evaluation.lines.push({
+          score: Math.round(line.cp / 10) / 10,
+          lan: moves,
+          san: parse_moves(evaluation.fen, moves),
+        });
+      }
+
+      this.emit(evaluation);
     }
   }
 }
