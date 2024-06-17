@@ -146,7 +146,7 @@ export class Engine {
       evaluation.fen = json.fen ?? STARTING_FEN;
       evaluation.mode = "cloud";
 
-      for (const line of json.pvs) {
+      for (const line of json.pvs.slice(0, 3)) {
         let moves = line.moves.split(" ");
         evaluation.lines.push({
           score: Math.round(line.cp / 10) / 10,

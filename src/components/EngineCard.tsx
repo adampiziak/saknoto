@@ -53,8 +53,11 @@ const EngineCard: Component<{ evaluation: Evaluation | undefined | null }> = (
       <div class="lvl-1 border-b">
         <For each={evaluation().lines}>{(item, _) => Line(item)}</For>
       </div>
-      <div class="lvl-2  py-1 px-2 text-right font-medium">
-        depth: {evaluation().depth}
+      <div class="lvl-2  py-1 px-3 flex gap-2 justify-between font-medium">
+        <div class="dark:text-violet-300 text-indigo-600">
+          {evaluation().mode}
+        </div>
+        <div>depth: {evaluation().depth}</div>
       </div>
     </div>
   );
