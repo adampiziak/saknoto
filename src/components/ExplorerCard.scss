@@ -1,0 +1,48 @@
+.sk-table {
+  /* width: 100%; */
+  /* margin-top: 0.25rem; */
+  /* table-layout: auto !important; */
+
+  td:not(:last-child),
+  th:not(:last-child) {
+    padding-right: 1rem;
+  }
+
+  th {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--level-1-border);
+    opacity: 0.9;
+  }
+
+  th,
+  td {
+    text-align: left;
+    width: auto;
+
+    &:first-child {
+      padding-left: 0.5rem;
+      text-align: left;
+    }
+
+    &:nth-child(2) {
+      text-align: right;
+    }
+
+    &:last-child {
+      width: 100%;
+    }
+  }
+
+  td {
+    height: fit-content;
+    padding: 0.35rem 0;
+  }
+
+  tr:not(:last-child) {
+    border-bottom: 1px solid var(--level-1-border);
+  }
+
+  /* tr:nth-child(even) { */
+  /* background: var(--level-1-hover); */
+  /* } */
+}

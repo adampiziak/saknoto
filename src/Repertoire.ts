@@ -2,13 +2,17 @@ import { Card, createEmptyCard } from "ts-fsrs";
 
 export interface RepCard {
   fen: string;
-  response: string;
+  response: string[];
   card: Card;
 }
 export class Repertoire {
   db: IDBDatabase | null = null;
 
   constructor() {}
+
+  ready() {
+    return this.db !== null && this.db !== undefined;
+  }
 
   load() {
     return new Promise<void>((resolve, reject) => {
@@ -40,6 +44,23 @@ export class Repertoire {
     });
   }
 
+  load_json(repertoires: RepCard[]) {
+    for (const r of repertoires) {
+      const transaction = this.db.transaction("position", "readwrite");
+      const objectStore = transaction.objectStore("position");
+      const typed_rep: RepCard = {
+        card: {
+          due: new Date(r.card.due),
+          last_review: new Date(r.card.last_review),
+          ...r.card,
+        },
+        ...r,
+      };
+      console.log(typed_rep);
+      objectStore.put(typed_rep);
+    }
+  }
+
   addLine(fen: string, response: string) {
     console.log("adding response to LINE");
     if (this.db) {
@@ -48,7 +69,7 @@ export class Repertoire {
       const objectStore = transaction.objectStore("position");
       const card = createEmptyCard();
 
-      objectStore.put({ fen, response, card });
+      objectStore.put({ fen, response: [response], card });
     }
   }
 
@@ -84,27 +105,23 @@ export class Repertoire {
   }
 
   getLine(fen: string) {
-    console.log("GETTING POSITION");
-    if (this.db) {
+    return new Promise(async (resolve, reject) => {
+      if (!this.db) {
+        await this.load();
+      }
+
       const transaction = this.db.transaction("position", "readonly");
       const objectStore = transaction.objectStore("position");
       const req = objectStore.get(fen);
 
-      return new Promise((resolve, reject) => {
-        req.onsuccess = (event) => {
-          console.log("RESPONSE");
-          console.log(fen);
-          resolve(req.result);
-        };
+      req.onsuccess = (event) => {
+        const result = req.result ?? [];
+        resolve(result);
+      };
 
-        req.onerror = (e) => {
-          reject();
-        };
-      });
-    } else {
-      return new Promise((resolve, reject) => {
-        reject();
-      });
-    }
+      req.onerror = (e) => {
+        reject(e);
+      };
+    });
   }
 }

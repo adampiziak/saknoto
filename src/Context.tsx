@@ -3,37 +3,44 @@ import {
   Context,
   ParentProps,
   createContext,
+  createSignal,
   useContext,
 } from "solid-js";
 import OpeningGraph from "~/OpeningGraph";
 import { Repertoire } from "~/Repertoire";
 import UserManager from "~/UserMananger";
 import { Engine } from "./Engine";
+import { UIManager } from "./data/UIManager";
+import ThemeManager from "./data/ThemeManager";
 
 const context = {
   userManager: new UserManager(),
   openingGraph: new OpeningGraph(),
   repertoire: new Repertoire(),
   engine: new Engine(),
+  ui: new UIManager(),
+  themeManager: new ThemeManager(),
 };
 
-const SakarboContext: Context<Sakarbo> = createContext(context);
+const SaknotoContext: Context<SaknotoContextKind> = createContext(context);
 
-export interface Sakarbo {
+export interface SaknotoContextKind {
   userManager: UserManager;
   openingGraph: OpeningGraph;
   repertoire: Repertoire;
   engine: Engine;
+  ui: UIManager;
+  themeManager: ThemeManager;
 }
 
-export const useSakarboContext = (): Sakarbo => {
-  return useContext(SakarboContext);
+export const useSaknotoContext = (): SaknotoContextKind => {
+  return useContext(SaknotoContext);
 };
 
-export const SakarboProvider: Component<ParentProps> = (props) => {
+export const SaknotoProvider: Component<ParentProps> = (props) => {
   return (
-    <SakarboContext.Provider value={context}>
+    <SaknotoContext.Provider value={context}>
       {props.children}
-    </SakarboContext.Provider>
+    </SaknotoContext.Provider>
   );
 };

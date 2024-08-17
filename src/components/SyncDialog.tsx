@@ -5,7 +5,7 @@ import { Toast, toaster } from "@kobalte/core/toast";
 import { createSignal, onMount } from "solid-js";
 import { Portal } from "solid-js/web";
 import { debounce } from "~/utils";
-import { useSakarboContext } from "~/Context";
+import { useSaknotoContext } from "~/Context";
 
 export default function SyncDialog() {
   return (
@@ -24,7 +24,7 @@ export default function SyncDialog() {
 }
 
 const SyncComponent = (props: any) => {
-  const sakarbo = useSakarboContext();
+  const sakarbo = useSaknotoContext();
   const [username, setUsername] = createSignal<string | null>(null);
   const [valid, setValid] = createSignal(true);
 

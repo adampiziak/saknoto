@@ -2,41 +2,63 @@ import "./app.scss";
 import { Router } from "@solidjs/router";
 
 import { FileRoutes } from "@solidjs/start/router";
-import { Suspense, onMount } from "solid-js";
+import { Suspense, createSignal, onMount } from "solid-js";
 import Header from "~/components/Header";
-import { ColorModeProvider, cookieStorageManagerSSR } from "@kobalte/core";
-import { isServer } from "solid-js/web";
-import { getCookie } from "vinxi/server";
-import { SakarboProvider, useSakarboContext } from "./Context";
-
-function getServerCookies() {
-  "use server";
-
-  const colorMode = getCookie("kb-color-mode");
-
-  return colorMode ? `kb-color-mode=${colorMode}` : "";
-}
+import { SaknotoProvider, useSaknotoContext } from "./Context";
+import SideBar from "./components/SideBar";
+import { applyColorfulTheme, applyNeutralTheme } from "./lib/theme_utils";
 
 const RootLayout = (props: any) => {
-  const storageManager = cookieStorageManagerSSR(
-    isServer ? getServerCookies() : document.cookie,
-  );
+  const ctx = useSaknotoContext();
+  const [saknotoMode, setSaknotoMode] = createSignal("light");
+  const [saknotoColor, setSaknotoColor] = createSignal("hue-0");
+  let rootContainer: HTMLDivElement | undefined;
+  const [skv, setskn] = createSignal("");
 
-  onMount(async () => {
-    const ctx = useSakarboContext();
-    await ctx.openingGraph.load_wait();
-    ctx.engine.start();
+  onMount(() => {
+    ctx.openingGraph.load_wait();
+    if (rootContainer) {
+      // let hue = Math.floor(Math.random() * 360);
+      // applyTheme(rootContainer, hue, false);
+      let v = rootContainer.style.getPropertyValue("--saknoto-accent-500");
+      setskn(v);
+    }
+    ctx.themeManager.onChange((mode: "light" | "dark", color: string) => {
+      setSaknotoColor(color);
+      setSaknotoMode(mode);
+
+      let [color_type, value] = color.split("-");
+
+      if (color_type === "hue") {
+        const number = parseInt(value.match(/\d+/)[0], 10);
+        applyColorfulTheme(rootContainer, number, mode);
+      }
+      if (color_type === "neutral") {
+        const number = parseInt(value.match(/\d+/)[0], 10);
+        applyNeutralTheme(rootContainer, number, mode);
+      }
+    });
+    setTimeout(() => {
+      ctx.engine.start();
+    }, 1000);
   });
 
   return (
-    <SakarboProvider>
-      <ColorModeProvider storageManager={storageManager}>
-        <div class="flex flex-col h-screen">
-          <Header />
+    <SaknotoProvider>
+      <div
+        id="saknoto"
+        ref={rootContainer}
+        saknoto_color={saknotoColor()}
+        saknoto_mode={saknotoMode()}
+        class="flex flex-col h-screen relative overflow-hidden"
+      >
+        <Header />
+        <div class="flex grow shrink min-h-0 [&>*]:grow [&>*]:shrink">
           <Suspense>{props.children}</Suspense>
         </div>
-      </ColorModeProvider>
-    </SakarboProvider>
+        <SideBar />
+      </div>
+    </SaknotoProvider>
   );
 };
 

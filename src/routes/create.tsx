@@ -1,11 +1,11 @@
 import { Component, createSignal, onMount } from "solid-js";
 import { BoardView } from "~/BoardView";
 import { Api } from "chessground/api";
-import { useSakarboContext } from "~/Context";
+import { useSaknotoContext } from "~/Context";
 import { Chess } from "chess.js";
 
 const Create: Component = () => {
-  const context = useSakarboContext();
+  const context = useSaknotoContext();
   const [api, initializeApi] = createSignal<Api | null>(null);
   const [position, setPosition] = createSignal(new Chess().fen());
 

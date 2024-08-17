@@ -1,4 +1,5 @@
 import { Chess, SQUARES } from "chess.js";
+import * as cg from "chessground/types";
 
 export function startingFen() {
   return new Chess().fen();
@@ -11,6 +12,82 @@ export const debounce = (callback: any, wait: any) => {
     timeoutId = window.setTimeout(() => {
       callback(...args);
     }, wait);
+  };
+};
+
+export const debounce_async = (callback: any, wait: any) => {
+  let timeoutId: number | null | undefined = null;
+  return (...args: any) => {
+    window.clearTimeout(timeoutId);
+    timeoutId = window.setTimeout(async () => {
+      await callback(...args);
+    }, wait);
+  };
+};
+
+export const colorScheme = () => {
+  const root = document.querySelector("html");
+  const scheme = root?.style.colorScheme ?? "light";
+
+  return scheme;
+};
+
+// Run instantly if not run for a while
+// Run at least every interval
+// Always run the last invocation
+export const throttle = (callback, delay) => {
+  let timeoutId: any = null;
+  let lastInvocation = new Date(0);
+  let lastCompletion = new Date(0);
+
+  return (...args: any) => {
+    const time_since_invocation = new Date() - lastInvocation;
+    const time_since_completion = new Date() - lastCompletion;
+    lastInvocation = new Date();
+    window.clearInterval(timeoutId);
+
+    if (Math.max(time_since_invocation, time_since_completion) > delay) {
+      callback(...args);
+      lastCompletion = new Date();
+    } else {
+      timeoutId = window.setTimeout(() => {
+        callback(...args);
+        lastCompletion = new Date();
+      }, delay);
+    }
+  };
+};
+
+export const getTurn = (fen: string) => {
+  const game = new Chess();
+  game.load(fen);
+
+  return game.turn() === "w" ? "white" : "black";
+};
+
+export const dest_fen = (fen: string, move: string) => {
+  const game = new Chess();
+  game.load(fen);
+  game.move(move);
+  return game.fen();
+};
+
+export const debounce_instant = (callback: any, delay: any) => {
+  let timeoutId: any = null;
+  let lastInvocation = new Date(0);
+
+  return (...args: any) => {
+    const duration = new Date() - lastInvocation;
+    lastInvocation = new Date();
+
+    if (duration > delay) {
+      callback(...args);
+    } else {
+      window.clearInterval(timeoutId);
+      timeoutId = window.setTimeout(() => {
+        callback(...args);
+      }, delay);
+    }
   };
 };
 
@@ -29,6 +106,28 @@ export function toDests(chess) {
 
 export function drawArrows(api: Api, position: string, arrows: string[]) {
   return;
+}
+
+export function parse_move(fen, move) {
+  const game = new Chess();
+
+  game.load(fen);
+  const m = make_valid(move);
+  game.move(m);
+  return game.history().at(-1);
+}
+
+export function san_to_lan(fen, move): { orig: cg.Key; dest: cg.Key } {
+  const game = new Chess();
+
+  game.load(fen);
+  const m = make_valid(move);
+  game.move(m);
+  const lan = game.history({ verbose: true }).at(0)?.lan;
+  return {
+    orig: lan?.slice(0, 2) as cg.Key,
+    dest: lan?.slice(2, 4) as cg.Key,
+  };
 }
 
 export function parse_moves(fen, moves) {

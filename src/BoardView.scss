@@ -1,5 +1,6 @@
 .board-view {
   container: board-container / size;
+  color: var(accent-50);
 }
 .board-container {
   height: round(down, 100cqw, 8px);
