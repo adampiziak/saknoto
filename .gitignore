@@ -6,6 +6,7 @@ dist
 .netlify
 .vinxi
 ./public/nn*
+server.py
 
 # Environment
 .env

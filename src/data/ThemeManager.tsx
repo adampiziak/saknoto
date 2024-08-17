@@ -40,12 +40,6 @@ export default class ThemeManager {
     onMount(() => {
       this.loadSaved();
       this.emit();
-      // window
-      //   .matchMedia("(prefers-color-scheme: dark)")
-      //   .addEventListener("change", (e) => {
-      //     const colorscheme = e.matches ? "dark" : "light";
-      //     alert(colorscheme);
-      //   });
     });
   }
 
@@ -69,10 +63,14 @@ export default class ThemeManager {
         | "dark";
       if (saved_color) {
         this.color = saved_color;
+      } else {
+        this.set_color("neutral-266");
       }
 
       if (saved_mode) {
         this.mode = saved_mode;
+      } else {
+        this.set_mode("light");
       }
     }
   }

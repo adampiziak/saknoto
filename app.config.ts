@@ -2,10 +2,11 @@ import { defineConfig } from "@solidjs/start/config";
 
 export default defineConfig({
   server: {
+    static: true,
     // preset: "static",
-    // prerender: {
-    //   crawlLinks: true,
-    // },
+    prerender: {
+      crawlLinks: true,
+    },
     routeRules: {
       "/**": {
         cors: true,
