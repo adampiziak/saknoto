@@ -1,0 +1,469 @@
+{
+  "_BoardImage-Cl8ODxES.js": {
+    "file": "assets/BoardImage-Cl8ODxES.js",
+    "name": "BoardImage",
+    "imports": [
+      "_web-DuEVvOp5.js",
+      "_BoardView-BhTIAIwV.js",
+      "_chess-lriRiorr.js"
+    ]
+  },
+  "_BoardView-!~{00s}~.js": {
+    "file": "assets/BoardView-avK_zy3L.css",
+    "src": "_BoardView-!~{00s}~.js"
+  },
+  "_BoardView-BhTIAIwV.js": {
+    "file": "assets/BoardView-BhTIAIwV.js",
+    "name": "BoardView",
+    "imports": [
+      "_web-DuEVvOp5.js",
+      "_Context-D0aeQrfF.js"
+    ],
+    "css": [
+      "assets/BoardView-avK_zy3L.css"
+    ]
+  },
+  "_Context-D0aeQrfF.js": {
+    "file": "assets/Context-D0aeQrfF.js",
+    "name": "Context",
+    "imports": [
+      "_web-DuEVvOp5.js",
+      "_chess-lriRiorr.js"
+    ]
+  },
+  "_ExploreNav-B1zBIz9K.js": {
+    "file": "assets/ExploreNav-B1zBIz9K.js",
+    "name": "ExploreNav",
+    "imports": [
+      "_web-DuEVvOp5.js",
+      "_components-SRTsakbS.js"
+    ]
+  },
+  "_FN6EICGO-iZF3THgN.js": {
+    "file": "assets/FN6EICGO-iZF3THgN.js",
+    "name": "FN6EICGO",
+    "imports": [
+      "_web-DuEVvOp5.js",
+      "_UKTBL2JL-CnBKWN1M.js"
+    ]
+  },
+  "_FilterOptionsComponent-xt4HpjGg.js": {
+    "file": "assets/FilterOptionsComponent-xt4HpjGg.js",
+    "name": "FilterOptionsComponent",
+    "imports": [
+      "_web-DuEVvOp5.js",
+      "_QJIB6BDF-BszDVaDs.js",
+      "_UKTBL2JL-CnBKWN1M.js",
+      "_JNCCF6MP-yLk7z_SF.js"
+    ]
+  },
+  "_GameInterfaceCard-Dd9D52Wt.js": {
+    "file": "assets/GameInterfaceCard-Dd9D52Wt.js",
+    "name": "GameInterfaceCard",
+    "imports": [
+      "_web-DuEVvOp5.js",
+      "_UKTBL2JL-CnBKWN1M.js",
+      "_FN6EICGO-iZF3THgN.js",
+      "_RepertoireCard-DZ_THEJ2.js"
+    ]
+  },
+  "_JNCCF6MP-yLk7z_SF.js": {
+    "file": "assets/JNCCF6MP-yLk7z_SF.js",
+    "name": "JNCCF6MP",
+    "imports": [
+      "_web-DuEVvOp5.js",
+      "_UKTBL2JL-CnBKWN1M.js"
+    ]
+  },
+  "_QJIB6BDF-BszDVaDs.js": {
+    "file": "assets/QJIB6BDF-BszDVaDs.js",
+    "name": "QJIB6BDF",
+    "imports": [
+      "_web-DuEVvOp5.js",
+      "_JNCCF6MP-yLk7z_SF.js",
+      "_UKTBL2JL-CnBKWN1M.js",
+      "_FN6EICGO-iZF3THgN.js",
+      "_index-HbBCBvHV.js"
+    ]
+  },
+  "_RepertoireCard-!~{00m}~.js": {
+    "file": "assets/RepertoireCard-DWfcNWB6.css",
+    "src": "_RepertoireCard-!~{00m}~.js"
+  },
+  "_RepertoireCard-DZ_THEJ2.js": {
+    "file": "assets/RepertoireCard-DZ_THEJ2.js",
+    "name": "RepertoireCard",
+    "imports": [
+      "_index-HbBCBvHV.js",
+      "_web-DuEVvOp5.js",
+      "_Context-D0aeQrfF.js",
+      "_chess-lriRiorr.js",
+      "_UKTBL2JL-CnBKWN1M.js"
+    ],
+    "css": [
+      "assets/RepertoireCard-DWfcNWB6.css"
+    ]
+  },
+  "_UKTBL2JL-CnBKWN1M.js": {
+    "file": "assets/UKTBL2JL-CnBKWN1M.js",
+    "name": "UKTBL2JL",
+    "imports": [
+      "_web-DuEVvOp5.js"
+    ]
+  },
+  "_chess-lriRiorr.js": {
+    "file": "assets/chess-lriRiorr.js",
+    "name": "chess"
+  },
+  "_clientOnly-DsafAS6x.js": {
+    "file": "assets/clientOnly-DsafAS6x.js",
+    "name": "clientOnly",
+    "imports": [
+      "_web-DuEVvOp5.js"
+    ]
+  },
+  "_components-SRTsakbS.js": {
+    "file": "assets/components-SRTsakbS.js",
+    "name": "components",
+    "imports": [
+      "_web-DuEVvOp5.js",
+      "_routing-Bp67eWU0.js"
+    ]
+  },
+  "_index-HbBCBvHV.js": {
+    "file": "assets/index-HbBCBvHV.js",
+    "name": "index",
+    "imports": [
+      "_web-DuEVvOp5.js",
+      "_UKTBL2JL-CnBKWN1M.js"
+    ]
+  },
+  "_preload-helper-N37mDRhq.js": {
+    "file": "assets/preload-helper-N37mDRhq.js",
+    "name": "preload-helper"
+  },
+  "_routing-Bp67eWU0.js": {
+    "file": "assets/routing-Bp67eWU0.js",
+    "name": "routing",
+    "imports": [
+      "_web-DuEVvOp5.js"
+    ]
+  },
+  "_web-DuEVvOp5.js": {
+    "file": "assets/web-DuEVvOp5.js",
+    "name": "web"
+  },
+  "src/ClientOnlyGraph.tsx": {
+    "file": "assets/ClientOnlyGraph-CIdXmOrN.js",
+    "name": "ClientOnlyGraph",
+    "src": "src/ClientOnlyGraph.tsx",
+    "isDynamicEntry": true,
+    "imports": [
+      "_web-DuEVvOp5.js",
+      "_Context-D0aeQrfF.js",
+      "_chess-lriRiorr.js"
+    ]
+  },
+  "src/routes/[...404].tsx?pick=default&pick=$css": {
+    "file": "assets/_...404_-BvibfYUU.js",
+    "name": "_...404_",
+    "src": "src/routes/[...404].tsx?pick=default&pick=$css",
+    "isEntry": true,
+    "isDynamicEntry": true,
+    "imports": [
+      "_web-DuEVvOp5.js"
+    ]
+  },
+  "src/routes/about.tsx?pick=default&pick=$css": {
+    "file": "assets/about-2p-jjIc5.js",
+    "name": "about",
+    "src": "src/routes/about.tsx?pick=default&pick=$css",
+    "isEntry": true,
+    "isDynamicEntry": true,
+    "imports": [
+      "_web-DuEVvOp5.js",
+      "_components-SRTsakbS.js",
+      "_routing-Bp67eWU0.js"
+    ]
+  },
+  "src/routes/board/[...fen].tsx?pick=default&pick=$css": {
+    "file": "assets/_...fen_-CVzksGVX.js",
+    "name": "_...fen_",
+    "src": "src/routes/board/[...fen].tsx?pick=default&pick=$css",
+    "isEntry": true,
+    "isDynamicEntry": true,
+    "imports": [
+      "_web-DuEVvOp5.js",
+      "_chess-lriRiorr.js",
+      "_routing-Bp67eWU0.js"
+    ]
+  },
+  "src/routes/board/[[fen]].tsx?pick=default&pick=$css": {
+    "file": "assets/__fen__-BK09q1XA.js",
+    "name": "__fen__",
+    "src": "src/routes/board/[[fen]].tsx?pick=default&pick=$css",
+    "isEntry": true,
+    "isDynamicEntry": true,
+    "imports": [
+      "_web-DuEVvOp5.js",
+      "_BoardView-BhTIAIwV.js",
+      "_chess-lriRiorr.js",
+      "_Context-D0aeQrfF.js",
+      "_RepertoireCard-DZ_THEJ2.js",
+      "_GameInterfaceCard-Dd9D52Wt.js",
+      "_routing-Bp67eWU0.js",
+      "_index-HbBCBvHV.js",
+      "_UKTBL2JL-CnBKWN1M.js",
+      "_FN6EICGO-iZF3THgN.js"
+    ]
+  },
+  "src/routes/create.tsx?pick=default&pick=$css": {
+    "file": "assets/create-D0m3zFO4.js",
+    "name": "create",
+    "src": "src/routes/create.tsx?pick=default&pick=$css",
+    "isEntry": true,
+    "isDynamicEntry": true,
+    "imports": [
+      "_web-DuEVvOp5.js",
+      "_BoardView-BhTIAIwV.js",
+      "_Context-D0aeQrfF.js",
+      "_chess-lriRiorr.js"
+    ]
+  },
+  "src/routes/explore.tsx?pick=default&pick=$css": {
+    "file": "assets/explore-D-TMbrop.js",
+    "name": "explore",
+    "src": "src/routes/explore.tsx?pick=default&pick=$css",
+    "isEntry": true,
+    "isDynamicEntry": true,
+    "imports": [
+      "_preload-helper-N37mDRhq.js",
+      "_web-DuEVvOp5.js",
+      "_FilterOptionsComponent-xt4HpjGg.js",
+      "_Context-D0aeQrfF.js",
+      "_clientOnly-DsafAS6x.js",
+      "_BoardImage-Cl8ODxES.js",
+      "_QJIB6BDF-BszDVaDs.js",
+      "_JNCCF6MP-yLk7z_SF.js",
+      "_UKTBL2JL-CnBKWN1M.js",
+      "_FN6EICGO-iZF3THgN.js",
+      "_index-HbBCBvHV.js",
+      "_chess-lriRiorr.js",
+      "_BoardView-BhTIAIwV.js"
+    ],
+    "dynamicImports": [
+      "src/ClientOnlyGraph.tsx",
+      "src/ClientOnlyGraph.tsx"
+    ]
+  },
+  "src/routes/graph.tsx?pick=default&pick=$css": {
+    "file": "assets/graph-DD5_HFB2.js",
+    "name": "graph",
+    "src": "src/routes/graph.tsx?pick=default&pick=$css",
+    "isEntry": true,
+    "isDynamicEntry": true,
+    "imports": [
+      "_preload-helper-N37mDRhq.js",
+      "_web-DuEVvOp5.js",
+      "_Context-D0aeQrfF.js",
+      "_clientOnly-DsafAS6x.js",
+      "_chess-lriRiorr.js"
+    ],
+    "dynamicImports": [
+      "src/ClientOnlyGraph.tsx"
+    ]
+  },
+  "src/routes/index.tsx?pick=default&pick=$css": {
+    "file": "assets/index-BVba0hBf.js",
+    "name": "index",
+    "src": "src/routes/index.tsx?pick=default&pick=$css",
+    "isEntry": true,
+    "isDynamicEntry": true,
+    "imports": [
+      "_web-DuEVvOp5.js",
+      "_UKTBL2JL-CnBKWN1M.js",
+      "_BoardView-BhTIAIwV.js",
+      "_RepertoireCard-DZ_THEJ2.js",
+      "_Context-D0aeQrfF.js",
+      "_chess-lriRiorr.js",
+      "_index-HbBCBvHV.js"
+    ]
+  },
+  "src/routes/old_board.tsx?pick=default&pick=$css": {
+    "file": "assets/old_board-DehSfk1T.js",
+    "name": "old_board",
+    "src": "src/routes/old_board.tsx?pick=default&pick=$css",
+    "isEntry": true,
+    "isDynamicEntry": true,
+    "imports": [
+      "_web-DuEVvOp5.js",
+      "_BoardView-BhTIAIwV.js",
+      "_chess-lriRiorr.js",
+      "_Context-D0aeQrfF.js",
+      "_RepertoireCard-DZ_THEJ2.js",
+      "_GameInterfaceCard-Dd9D52Wt.js",
+      "_routing-Bp67eWU0.js",
+      "_index-HbBCBvHV.js",
+      "_UKTBL2JL-CnBKWN1M.js",
+      "_FN6EICGO-iZF3THgN.js"
+    ]
+  },
+  "src/routes/old_dir_explore/[...catchall].tsx?pick=default&pick=$css": {
+    "file": "assets/_...catchall_-pjzsSbF3.js",
+    "name": "_...catchall_",
+    "src": "src/routes/old_dir_explore/[...catchall].tsx?pick=default&pick=$css",
+    "isEntry": true,
+    "isDynamicEntry": true,
+    "imports": [
+      "_web-DuEVvOp5.js",
+      "_routing-Bp67eWU0.js"
+    ]
+  },
+  "src/routes/old_dir_explore/graph.tsx?pick=default&pick=$css": {
+    "file": "assets/graph-CVKJ6pc5.js",
+    "name": "graph",
+    "src": "src/routes/old_dir_explore/graph.tsx?pick=default&pick=$css",
+    "isEntry": true,
+    "isDynamicEntry": true,
+    "imports": [
+      "_web-DuEVvOp5.js",
+      "_ExploreNav-B1zBIz9K.js",
+      "_components-SRTsakbS.js",
+      "_routing-Bp67eWU0.js"
+    ]
+  },
+  "src/routes/old_dir_explore/list.tsx?pick=default&pick=$css": {
+    "file": "assets/list-C9jGxO0E.js",
+    "name": "list",
+    "src": "src/routes/old_dir_explore/list.tsx?pick=default&pick=$css",
+    "isEntry": true,
+    "isDynamicEntry": true,
+    "imports": [
+      "_web-DuEVvOp5.js",
+      "_BoardImage-Cl8ODxES.js",
+      "_ExploreNav-B1zBIz9K.js",
+      "_FilterOptionsComponent-xt4HpjGg.js",
+      "_Context-D0aeQrfF.js",
+      "_routing-Bp67eWU0.js",
+      "_BoardView-BhTIAIwV.js",
+      "_chess-lriRiorr.js",
+      "_components-SRTsakbS.js",
+      "_QJIB6BDF-BszDVaDs.js",
+      "_JNCCF6MP-yLk7z_SF.js",
+      "_UKTBL2JL-CnBKWN1M.js",
+      "_FN6EICGO-iZF3THgN.js",
+      "_index-HbBCBvHV.js"
+    ]
+  },
+  "src/routes/old_dir_explore/tree.tsx?pick=default&pick=$css": {
+    "file": "assets/tree-Dpa66PEk.js",
+    "name": "tree",
+    "src": "src/routes/old_dir_explore/tree.tsx?pick=default&pick=$css",
+    "isEntry": true,
+    "isDynamicEntry": true,
+    "imports": [
+      "_web-DuEVvOp5.js",
+      "_ExploreNav-B1zBIz9K.js",
+      "_components-SRTsakbS.js",
+      "_routing-Bp67eWU0.js"
+    ]
+  },
+  "src/routes/old_explore.tsx?pick=default&pick=$css": {
+    "file": "assets/old_explore-wVKRrYX5.js",
+    "name": "old_explore",
+    "src": "src/routes/old_explore.tsx?pick=default&pick=$css",
+    "isEntry": true,
+    "isDynamicEntry": true,
+    "imports": [
+      "_web-DuEVvOp5.js",
+      "_BoardImage-Cl8ODxES.js",
+      "_Context-D0aeQrfF.js",
+      "_BoardView-BhTIAIwV.js",
+      "_chess-lriRiorr.js"
+    ]
+  },
+  "src/routes/study/flashcards.tsx?pick=default&pick=$css": {
+    "file": "assets/flashcards-B0pzq9KG.js",
+    "name": "flashcards",
+    "src": "src/routes/study/flashcards.tsx?pick=default&pick=$css",
+    "isEntry": true,
+    "isDynamicEntry": true,
+    "imports": [
+      "_web-DuEVvOp5.js",
+      "_chess-lriRiorr.js",
+      "_Context-D0aeQrfF.js",
+      "_BoardView-BhTIAIwV.js"
+    ]
+  },
+  "src/routes/study/repertoire.tsx?pick=default&pick=$css": {
+    "file": "assets/repertoire-QfEE5_-H.js",
+    "name": "repertoire",
+    "src": "src/routes/study/repertoire.tsx?pick=default&pick=$css",
+    "isEntry": true,
+    "isDynamicEntry": true,
+    "imports": [
+      "_web-DuEVvOp5.js",
+      "_BoardImage-Cl8ODxES.js",
+      "_BoardView-BhTIAIwV.js",
+      "_Context-D0aeQrfF.js",
+      "_chess-lriRiorr.js"
+    ]
+  },
+  "src/routes/tools/builder.tsx?pick=default&pick=$css": {
+    "file": "assets/builder-rJv53jPb.js",
+    "name": "builder",
+    "src": "src/routes/tools/builder.tsx?pick=default&pick=$css",
+    "isEntry": true,
+    "isDynamicEntry": true,
+    "imports": [
+      "_web-DuEVvOp5.js",
+      "_JNCCF6MP-yLk7z_SF.js",
+      "_UKTBL2JL-CnBKWN1M.js",
+      "_Context-D0aeQrfF.js",
+      "_chess-lriRiorr.js"
+    ]
+  },
+  "virtual:$vinxi/handler/client": {
+    "file": "assets/client-DQjka9YR.js",
+    "name": "client",
+    "src": "virtual:$vinxi/handler/client",
+    "isEntry": true,
+    "imports": [
+      "_web-DuEVvOp5.js",
+      "_preload-helper-N37mDRhq.js",
+      "_Context-D0aeQrfF.js",
+      "_RepertoireCard-DZ_THEJ2.js",
+      "_QJIB6BDF-BszDVaDs.js",
+      "_FN6EICGO-iZF3THgN.js",
+      "_UKTBL2JL-CnBKWN1M.js",
+      "_JNCCF6MP-yLk7z_SF.js",
+      "_GameInterfaceCard-Dd9D52Wt.js",
+      "_BoardView-BhTIAIwV.js",
+      "_chess-lriRiorr.js",
+      "_routing-Bp67eWU0.js",
+      "_index-HbBCBvHV.js"
+    ],
+    "dynamicImports": [
+      "src/routes/[...404].tsx?pick=default&pick=$css",
+      "src/routes/about.tsx?pick=default&pick=$css",
+      "src/routes/create.tsx?pick=default&pick=$css",
+      "src/routes/explore.tsx?pick=default&pick=$css",
+      "src/routes/graph.tsx?pick=default&pick=$css",
+      "src/routes/index.tsx?pick=default&pick=$css",
+      "src/routes/old_board.tsx?pick=default&pick=$css",
+      "src/routes/old_explore.tsx?pick=default&pick=$css",
+      "src/routes/board/[...fen].tsx?pick=default&pick=$css",
+      "src/routes/board/[[fen]].tsx?pick=default&pick=$css",
+      "src/routes/old_dir_explore/[...catchall].tsx?pick=default&pick=$css",
+      "src/routes/old_dir_explore/graph.tsx?pick=default&pick=$css",
+      "src/routes/old_dir_explore/list.tsx?pick=default&pick=$css",
+      "src/routes/old_dir_explore/tree.tsx?pick=default&pick=$css",
+      "src/routes/study/flashcards.tsx?pick=default&pick=$css",
+      "src/routes/study/repertoire.tsx?pick=default&pick=$css",
+      "src/routes/tools/builder.tsx?pick=default&pick=$css"
+    ],
+    "css": [
+      "assets/client-Bf4a4wWB.css"
+    ]
+  }
+}

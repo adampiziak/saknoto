@@ -1,0 +1,1 @@
+import{getOwner as o,onCleanup as n,DEV as s}from"solid-js";import{isServer as c}from"solid-js/web";var i=!c,e=i&&!!s;function y(r){return(...t)=>{for(const a of r)a&&a(...t)}}var m=r=>typeof r=="function"&&!r.length?r():r,h=r=>Array.isArray(r)?r:r?[r]:[];function u(r,...t){return typeof r=="function"?r(...t):r}var A=e?r=>o()?n(r):r:n;export{m as a,h as b,y as c,u as d,A as t};

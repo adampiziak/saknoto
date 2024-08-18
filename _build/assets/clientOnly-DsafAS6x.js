@@ -1,0 +1,1 @@
+import{e as r,v as f,I as s,k as i,a as p,u as d}from"./web-DuEVvOp5.js";function x(c){const[n,l]=r();return c().then(e=>l(()=>e.default)),e=>{let t,a;const[,o]=f(e,["fallback"]);if((t=n())&&!s.context)return t(o);const[u,m]=r(!s.context);return i(()=>m(!0)),p(()=>(t=n(),a=u(),d(()=>t&&a?t(o):e.fallback)))}}export{x as c};

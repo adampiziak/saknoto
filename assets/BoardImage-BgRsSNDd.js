@@ -1,0 +1,1 @@
+import{createComponent as a}from"solid-js/web";import{createSignal as n,createEffect as i}from"solid-js";import{B as s}from"./BoardView-BseuZEdN.js";import{Chess as c}from"chess.js";const m=e=>{const[o,r]=n(null);return i(()=>{const t=new c;t.load(e.fen),o()?.set({fen:e.fen,orientation:t.turn()==="w"?"white":"black"})}),a(s,{setApi:r,get class(){return e.class}})},B=m;export{B};

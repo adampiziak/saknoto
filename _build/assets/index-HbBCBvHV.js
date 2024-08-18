@@ -1,0 +1,1 @@
+import{n as o,z as E}from"./web-DuEVvOp5.js";import{H as m,I as c,a as f}from"./UKTBL2JL-CnBKWN1M.js";function u(e,n,r,t){return e.addEventListener(n,r,t),m(e.removeEventListener.bind(e,n,r,t))}function d(e,n,r,t){const a=()=>{c(f(e)).forEach(s=>{s&&c(f(n)).forEach(i=>u(s,i,r,t))})};typeof e=="function"?o(a):E(a)}export{d as c,u as m};

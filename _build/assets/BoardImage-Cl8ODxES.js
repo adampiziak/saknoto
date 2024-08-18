@@ -1,0 +1,1 @@
+import{e as r,n as i,b as o}from"./web-DuEVvOp5.js";import{B as s}from"./BoardView-BhTIAIwV.js";import{C as c}from"./chess-lriRiorr.js";const g=e=>{const[a,n]=r(null);return i(()=>{const t=new c;t.load(e.fen),a()?.set({fen:e.fen,orientation:t.turn()==="w"?"white":"black"})}),o(s,{setApi:n,get class(){return e.class}})};export{g as B};
