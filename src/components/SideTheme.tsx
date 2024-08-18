@@ -5,6 +5,7 @@ import { useSaknotoContext } from "~/Context";
 import { applyTheme } from "~/lib/theme_utils";
 import SaknotoSwitch from "./SaknotoSwitch";
 import { neutral } from "tailwindcss/colors";
+import { Button } from "@kobalte/core/button";
 
 const SideTheme: Component = (props: any) => {
   const context = useSaknotoContext();
@@ -45,8 +46,14 @@ const SideTheme: Component = (props: any) => {
 
   return (
     <div class="w-96">
-      <div class="font-semibold text-accent-700 bg-accent-100 dark:bg-accent-800 dark:text-accent-200  p-2 border-b border-accent-200 dark:border-accent-700">
-        Theme: {selected()}
+      <div class="font-semibold text-accent-700 bg-accent-100 dark:bg-accent-800 dark:text-accent-200  p-2 border-b border-accent-200 dark:border-accent-700 flex justify-between items-center">
+        <div>Theme: {selected()}</div>
+        <Button
+          class="button"
+          onClick={() => context.ui.sidebar.set({ active: false })}
+        >
+          close
+        </Button>
       </div>
       <div class="p-2 flex flex-col gap-2">
         <SaknotoSwitch
