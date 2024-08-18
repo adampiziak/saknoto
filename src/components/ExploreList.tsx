@@ -93,7 +93,7 @@ const ExploreList: Component<{
                 data: p.fen,
               })
             }
-            class="flex border-b lvl-1 hoverable"
+            class="flex border-b dark:border-accent-900 dark:text-accent-50 hover:bg-accent-500"
           >
             <BoardImage fen={p.fen} class="w-48 h-48" />
             <div class="px-2">

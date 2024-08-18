@@ -35,7 +35,7 @@ const RepertoireCard: Component<{
         </Button>
         <For each={responses()}>
           {(item, index) => (
-            <div class="font-semibold p-2 lvl-2 my-2 rounded hoverable">
+            <div class="font-semibold p-2 dark:bg-accent-700 bg-accent-200 my-2 rounded hoverable">
               {item}
             </div>
           )}

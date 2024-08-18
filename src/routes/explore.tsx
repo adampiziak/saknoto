@@ -64,7 +64,7 @@ export default function ExploreListPage() {
   });
 
   return (
-    <div class="flex grow shrink min-h-0 min-w-0 justify-start w-screen">
+    <div class="flex grow shrink min-h-0 min-w-0 justify-start w-screen bg-accent-50 dark:bg-accent-950">
       <Show when={ready()} fallback={<div>loading...</div>}>
         <FilterOptionsComponent options={optionsSignal} />
         <Show when={options().view === "list"}>

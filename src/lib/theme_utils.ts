@@ -5,6 +5,7 @@ import {
   Color,
   Oklch,
   formatCss,
+  formatHex,
 } from "culori";
 
 const toGamut = _toGamut as (...args: unknown[]) => (color: string) => Color;
@@ -30,14 +31,11 @@ const chroma = [
 
 const shades = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
 
-export function applyColorfulTheme(
-  el: HTMLDivElement,
-  hue: number,
-  mode: "light" | "dark",
-) {
+export function applyColorfulTheme(hue: number, mode: "light" | "dark") {
   const oklch = converter("oklch");
   let accents = [];
   let mains = [];
+  let hexstrings = [];
   console.log(hue);
 
   for (let i = 0; i < shades.length; i++) {
@@ -49,26 +47,31 @@ export function applyColorfulTheme(
     let cssshade = formatCss(
       oklch(toGamut("p3", "oklch", differenceEuclidean("oklch"), 0)(clr)),
     );
+    let hexstring = formatHex(
+      toGamut("p3", "oklch", differenceEuclidean("oklch"), 0)(clr),
+    );
     accents.push(d);
     mains.push(cssshade);
+    hexstrings.push(hexstring);
   }
 
-  for (let i = 0; i < shades.length; i++) {
-    console.log(accents[i]);
-    el.style.setProperty(`--accent-serial-${shades[i]}`, accents[i]);
-    el.style.setProperty(`--accent-${shades[i]}`, mains[i]);
+  if (document?.body) {
+    const el = document.body;
+    for (let i = 0; i < shades.length; i++) {
+      console.log(accents[i]);
+      el.style.setProperty(`--accent-serial-${shades[i]}`, accents[i]);
+      el.style.setProperty(`--accent-${shades[i]}`, mains[i]);
+      el.style.setProperty(`--hex-accent-${shades[i]}`, hexstrings[i]);
+    }
+    el.style.colorScheme = mode;
   }
-  el.style.colorScheme = mode;
 }
 
-export function applyNeutralTheme(
-  el: HTMLDivElement,
-  hue: number,
-  mode: "light" | "dark",
-) {
+export function applyNeutralTheme(hue: number, mode: "light" | "dark") {
   const oklch = converter("oklch");
   let accents = [];
   let mains = [];
+  let hexstrings = [];
   console.log(hue);
 
   for (let i = 0; i < shades.length; i++) {
@@ -80,17 +83,25 @@ export function applyNeutralTheme(
     let cssshade = formatCss(
       oklch(toGamut("p3", "oklch", differenceEuclidean("oklch"), 0)(clr)),
     );
+    let hexstring = formatHex(
+      toGamut("p3", "oklch", differenceEuclidean("oklch"), 0)(clr),
+    );
     accents.push(d);
     mains.push(cssshade);
+    hexstrings.push(hexstring);
   }
 
-  for (let i = 0; i < shades.length; i++) {
-    console.log(accents[i]);
-    el.style.setProperty(`--accent-serial-${shades[i]}`, accents[i]);
-    el.style.setProperty(`--accent-${shades[i]}`, mains[i]);
+  if (document?.body) {
+    const el = document.body;
+    for (let i = 0; i < shades.length; i++) {
+      console.log(accents[i]);
+      el.style.setProperty(`--accent-serial-${shades[i]}`, accents[i]);
+      el.style.setProperty(`--accent-${shades[i]}`, mains[i]);
+      el.style.setProperty(`--hex-accent-${shades[i]}`, hexstrings[i]);
+    }
+    el.style.colorScheme = mode;
+    el.style.colorScheme = mode;
   }
-  el.style.colorScheme = mode;
-  el.style.colorScheme = mode;
 }
 
 function serializeColor(c: Oklch) {

@@ -32,6 +32,7 @@ export class Game {
   }
 
   listeners: any[] = [];
+  once_listeners: any[] = [];
 
   attach(element: HTMLElement) {
     this.api = Chessground(element, {});
@@ -110,12 +111,20 @@ export class Game {
     this.listeners.push(callback);
   }
 
+  get_next(callback: any) {
+    this.once_listeners.push(callback);
+  }
+
   emit() {
     const fen = this.state.fen();
     const history = this.history.moves;
     for (const callback of this.listeners) {
       callback({ fen, history });
     }
+    for (const callback of this.once_listeners) {
+      callback({ fen, history });
+    }
+    this.once_listeners = [];
   }
 
   handle_move(move: string) {

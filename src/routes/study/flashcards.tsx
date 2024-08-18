@@ -154,13 +154,12 @@ const Study: Component = (_props: any) => {
   });
 
   return (
-    <div class="flex-grow flex px-24 gap-4 py-8 items-start justify-center relative bg-main">
+    <div class="flex-grow flex px-24 gap-4 py-8 items-start justify-center relative dark:bg-accent-950 bg-accent-50">
       <Show when={flashcard()}>
         <BoardView setApi={initializeApi} class="h-full z-20 relative" />
-        <div class="lvl-1 border h-auto w-[400px] rounded overflow-hidden">
-          {attempts()}
+        <div class="bg-accent-200 border dark:bg-accent-800 dark:border-accent-600 border-accent-300 h-auto w-[400px] rounded overflow-hidden p-3">
           <Show when={progress()}>
-            <div class="flex p-2 gap-4">
+            <div class="flex gap-4 font-bold">
               <div class="text-red-400">{progress().todo}</div>
               <div class="text-yellow-500">{progress().doing}</div>
               <div class="text-blue-400">{progress().done}</div>
@@ -170,7 +169,9 @@ const Study: Component = (_props: any) => {
             when={flashcard()}
             fallback={<div class="p-2">done for today!</div>}
           >
-            <div class="p-2">{flashcard()?.card?.due.toLocaleString()}</div>
+            <div class="mt-1 text-accent-800 dark:text-accent-100">
+              {flashcard()?.card?.due.toLocaleString()}
+            </div>
           </Show>
           <div
             class="font-medium"

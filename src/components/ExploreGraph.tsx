@@ -5,6 +5,7 @@ import { RepCard } from "~/Repertoire";
 import { colorScheme, debounce, dest_fen, getTurn } from "~/utils";
 import { STARTING_FEN } from "~/constants";
 import { clientOnly } from "@solidjs/start";
+import { useSaknotoContext } from "~/Context";
 
 const MyClientOnlyGraph = clientOnly(() => import("~/ClientOnlyGraph"));
 
@@ -13,7 +14,9 @@ const ExploreGraph: Component<{
   split: Split;
   repertoire: RepCard[];
 }> = (props) => {
+  let context = useSaknotoContext();
   let containerRef: HTMLDivElement | undefined;
+  let [mode, setMode] = createSignal<"light" | "dark">("light");
 
   let [size, setSize] = createSignal<[number, number]>([0, 0]);
 
@@ -29,11 +32,19 @@ const ExploreGraph: Component<{
 
   createEffect(() => {
     setData(
-      forceDirectedGraph(props.split, props.repertoire, props.options.color),
+      forceDirectedGraph(
+        props.split,
+        props.repertoire,
+        props.options.color,
+        mode(),
+      ),
     );
   });
 
   onMount(() => {
+    context.themeManager.onChange((mode, theme) => {
+      setMode(mode);
+    });
     if (containerRef) {
       new ResizeObserver(() => {
         updateGraph();
@@ -54,6 +65,7 @@ const forceDirectedGraph = (
   split: Split,
   reps: RepCard[],
   playercolor: "black" | "white" | "both",
+  mode: "light" | "dark",
 ) => {
   const nodeMap = new Map();
   const nodes = [];
@@ -69,7 +81,7 @@ const forceDirectedGraph = (
 
   let count = 0;
 
-  const scheme = colorScheme();
+  const scheme = mode;
 
   const node_color = scheme === "light" ? "#333333" : "#CCCCCC";
   const key = `${playercolor}white`;

@@ -22,7 +22,7 @@ const FilterOptionsComponent: Component<{ options: Signal<FilterOptions> }> = (
   };
 
   return (
-    <div class="px-8 py-2 w-fit flex gap-2 flex-col  mt-4">
+    <div class="px-8 py-2 w-fit flex gap-2 flex-col  mt-4 text-accent-950 dark:text-accent-50">
       <SelectDropdown
         label="view"
         options={["list", "graph"]}

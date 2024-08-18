@@ -87,7 +87,10 @@ export default class ThemeManager {
     this.emit();
   }
 
-  get() {
+  get_color() {
     return this.color;
+  }
+  get_mode() {
+    return this.mode;
   }
 }

@@ -28,18 +28,18 @@ const SelectDropdown: Component<SelectDropdownProps> = (props) => {
         itemComponent={(props) => (
           <Select.Item
             item={props.item}
-            class="px-1 py-1 lvl-2 hoverable cursor-default"
+            class="dark:text-accent-50 text-accent-900 dark:bg-accent-800 bg-accent-200 hover:cursor-pointer dark:hover:bg-accent-700 hover:bg-accent-300 px-2 py-1"
           >
             <Select.ItemLabel>{props.item.rawValue}</Select.ItemLabel>
           </Select.Item>
         )}
       >
-        <Select.Trigger class="px-2 py-1 lvl-2 hoverable w-full rounded  text-left text-nowrap grow">
+        <Select.Trigger class="px-2 py-1 bg-accent-200 dark:bg-accent-700 hoverable w-full rounded  text-left text-nowrap grow">
           <Select.Value>{(state) => state.selectedOption()}</Select.Value>
         </Select.Trigger>
         <Select.Portal>
           <Select.Content>
-            <Select.Listbox class="lvl-2 rounded shadow border" />
+            <Select.Listbox class="bg-accent-200 dark:bg-accent-700  rounded shadow border" />
           </Select.Content>
         </Select.Portal>
       </Select>

@@ -44,97 +44,104 @@ export default function Header() {
   });
 
   return (
-    <header class="relative px-6 z-40 py-4  border-accent-300 dark:border-zinc-700 flex flex-wrap items-center  dark:text-accent-100 text-accent-900 dark:bg-accent-950 bg-accent-50">
-      <div class="basis-0 grow flex">
-        <div class="text-2xl sn-logo  text-right grow text-accent-700 ">
-          <span class="font-medium dark:text-accent-300  text-accent-700 ">
-            ŝak
-          </span>
-          <span class="font-medium dark:text-accent-400 text-accent-600">
-            noto.org
-          </span>
+    <header class="relative px-12 z-40 py-4  border-accent-300 dark:border-zinc-700 flex flex-wrap items-center  justify-center dark:text-accent-100 text-accent-900 dark:bg-accent-950 bg-accent-50 w-full">
+      <div class="flex w-full justify-between">
+        <div class="basis-0 grow flex">
+          <div class="text-2xl sn-logo   text-accent-700 ">
+            <span class="font-medium dark:text-accent-300  text-accent-700 ">
+              ŝak
+            </span>
+            <span class="font-medium dark:text-accent-400 text-accent-600">
+              noto.org
+            </span>
+          </div>
         </div>
-      </div>
-      <NavigationMenu
-        delayDuration={0}
-        class="flex justify-center items-center w-[max-content] grow gap-3 ml-8"
-      >
-        <NavigationMenu.Trigger as="a" href="/" class="sn-menu-trigger">
-          play
-        </NavigationMenu.Trigger>
-        <NavigationMenu.Menu>
-          <NavigationMenu.Trigger
-            class="sn-menu-trigger"
-            as="a"
-            href="/study/flashcards"
-          >
-            study
+        <NavigationMenu delayDuration={0} class="sn-nav-root">
+          <NavigationMenu.Trigger as="a" href="/" class="sn-menu-trigger">
+            play
           </NavigationMenu.Trigger>
-          <NavigationMenu.Portal>
-            <NavigationMenu.Content class="sn-nav-content">
-              <NavigationMenu.Item class="sn-nav-item" href="/study/flashcards">
-                <NavigationMenu.ItemLabel class="sn-nav-label">
-                  practice
-                </NavigationMenu.ItemLabel>
-                <NavigationMenu.ItemDescription class="sn-nav-desc">
-                  quiz yourself on positions from your repertoire
-                </NavigationMenu.ItemDescription>
-              </NavigationMenu.Item>
-              <NavigationMenu.Item class="sn-nav-item" href="/study/repertoire">
-                <NavigationMenu.ItemLabel class="sn-nav-label">
-                  repertoire
-                </NavigationMenu.ItemLabel>
-                <NavigationMenu.ItemDescription class="sn-nav-desc">
-                  Your saved positions
-                </NavigationMenu.ItemDescription>
-              </NavigationMenu.Item>
-            </NavigationMenu.Content>
-          </NavigationMenu.Portal>
-        </NavigationMenu.Menu>
-        <NavigationMenu.Menu>
-          <NavigationMenu.Trigger
-            as="a"
-            href="/explore"
-            class="sn-menu-trigger"
+          <NavigationMenu.Menu>
+            <NavigationMenu.Trigger
+              class="sn-menu-trigger"
+              as="a"
+              href="/study/flashcards"
+            >
+              study
+            </NavigationMenu.Trigger>
+            <NavigationMenu.Portal>
+              <NavigationMenu.Content class="sn-nav-content content-1">
+                <NavigationMenu.Item
+                  class="sn-nav-item"
+                  href="/study/flashcards"
+                >
+                  <NavigationMenu.ItemLabel class="sn-nav-label">
+                    practice
+                  </NavigationMenu.ItemLabel>
+                  <NavigationMenu.ItemDescription class="sn-nav-desc">
+                    quiz yourself on positions from your repertoire
+                  </NavigationMenu.ItemDescription>
+                </NavigationMenu.Item>
+                <NavigationMenu.Item
+                  class="sn-nav-item"
+                  href="/study/repertoire"
+                >
+                  <NavigationMenu.ItemLabel class="sn-nav-label">
+                    repertoire
+                  </NavigationMenu.ItemLabel>
+                  <NavigationMenu.ItemDescription class="sn-nav-desc">
+                    Your saved positions
+                  </NavigationMenu.ItemDescription>
+                </NavigationMenu.Item>
+              </NavigationMenu.Content>
+            </NavigationMenu.Portal>
+          </NavigationMenu.Menu>
+          <NavigationMenu.Menu>
+            <NavigationMenu.Trigger
+              as="a"
+              href="/explore"
+              class="sn-menu-trigger"
+            >
+              tools
+            </NavigationMenu.Trigger>
+            <NavigationMenu.Portal>
+              <NavigationMenu.Content class="sn-nav-content content-2">
+                <NavigationMenu.Item class="sn-nav-item" href="/explore">
+                  <NavigationMenu.ItemLabel class="sn-nav-label">
+                    position explorer
+                  </NavigationMenu.ItemLabel>
+                  <NavigationMenu.ItemDescription class="sn-nav-desc">
+                    Table of played positions
+                  </NavigationMenu.ItemDescription>
+                </NavigationMenu.Item>
+                <NavigationMenu.Item class="sn-nav-item" href="/tools/builder">
+                  <NavigationMenu.ItemLabel class="sn-nav-label">
+                    repertoire builder
+                  </NavigationMenu.ItemLabel>
+                  <NavigationMenu.ItemDescription class="sn-nav-desc">
+                    find positions to improve your openings
+                  </NavigationMenu.ItemDescription>
+                </NavigationMenu.Item>
+              </NavigationMenu.Content>
+            </NavigationMenu.Portal>
+          </NavigationMenu.Menu>
+          <NavigationMenu.Viewport class="sn-viewport">
+            <NavigationMenu.Arrow size={20} class="sn-arrow" />
+          </NavigationMenu.Viewport>
+        </NavigationMenu>
+        <div class="items-center flex flex-grow justify-end gap-4">
+          <ThemeSelector />
+          <RefreshIcon
+            class={`w-5 h-5 ${refreshing() ? "animate-spin" : ""}`}
+            onClick={() => refresh()}
+          />
+          <div
+            onClick={() =>
+              context.ui.sidebar.set({ active: true, view: "user" })
+            }
+            class="border border-accent-100 dark:border-accent-600 px-3 py-0.5 rounded-full hover:bg-accent-500 hover:cursor-pointer"
           >
-            tools
-          </NavigationMenu.Trigger>
-          <NavigationMenu.Portal>
-            <NavigationMenu.Content class="sn-nav-content">
-              <NavigationMenu.Item class="sn-nav-item" href="/explore">
-                <NavigationMenu.ItemLabel class="sn-nav-label">
-                  position explorer
-                </NavigationMenu.ItemLabel>
-                <NavigationMenu.ItemDescription class="sn-nav-desc">
-                  Table of played positions
-                </NavigationMenu.ItemDescription>
-              </NavigationMenu.Item>
-              <NavigationMenu.Item class="sn-nav-item" href="/tools/builder">
-                <NavigationMenu.ItemLabel class="sn-nav-label">
-                  repertoire builder
-                </NavigationMenu.ItemLabel>
-                <NavigationMenu.ItemDescription class="sn-nav-desc">
-                  find positions to improve your openings
-                </NavigationMenu.ItemDescription>
-              </NavigationMenu.Item>
-            </NavigationMenu.Content>
-          </NavigationMenu.Portal>
-        </NavigationMenu.Menu>
-        <NavigationMenu.Viewport class="flex items-center justify-center saknoto-nav-viewport rounded lvl-2 outline-none shadow border">
-          <NavigationMenu.Arrow />
-        </NavigationMenu.Viewport>
-      </NavigationMenu>
-      <div class="items-center flex flex-grow justify-end gap-4">
-        <ThemeSelector />
-        <RefreshIcon
-          class={`w-5 h-5 ${refreshing() ? "animate-spin" : ""}`}
-          onClick={() => refresh()}
-        />
-        <div
-          onClick={() => context.ui.sidebar.set({ active: true, view: "user" })}
-          class="border border-accent-100 dark:border-accent-600 px-3 py-0.5 rounded-full hover:bg-accent-500 hover:cursor-pointer"
-        >
-          {user()}
+            {user()}
+          </div>
         </div>
       </div>
     </header>

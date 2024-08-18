@@ -31,11 +31,11 @@ const RootLayout = (props: any) => {
 
       if (color_type === "hue") {
         const number = parseInt(value.match(/\d+/)[0], 10);
-        applyColorfulTheme(rootContainer, number, mode);
+        applyColorfulTheme(number, mode);
       }
       if (color_type === "neutral") {
         const number = parseInt(value.match(/\d+/)[0], 10);
-        applyNeutralTheme(rootContainer, number, mode);
+        applyNeutralTheme(number, mode);
       }
     });
     setTimeout(() => {

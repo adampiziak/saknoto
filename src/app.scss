@@ -413,7 +413,7 @@
   border-radius: 0.25rem;
 
   &:hover {
-    background: var(--accent-200);
+    background: light-dark(var(--accent-200), var(--accent-600));
     /* border: 1px solid var(--level-2-border); */
   }
 }
@@ -422,6 +422,13 @@
   color: light-dark(var(--accent-800), var(--accent-400));
   outline: none;
   font-weight: 600;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+
+  &:hover {
+    background: light-dark(var(--accent-300), var(--accent-600));
+    color: light-dark(var(--accent-900), var(--accent-100));
+  }
 }
 
 .sn-logo * {
@@ -430,15 +437,150 @@
   /* letter-spacing: -0.04rem; */
 }
 
+.sn-arrow {
+  color: red;
+  transition: transform 0.15s ease-out;
+}
+
+.sn-viewport {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow-x: clip;
+  overflow-y: visible;
+  width: var(--kb-navigation-menu-viewport-width);
+  height: var(--kb-navigation-menu-viewport-height);
+  transition:
+    width,
+    height,
+    250ms ease;
+  opacity: 0;
+  background: light-dark(var(--accent-100), var(--accent-800));
+  transform-origin: var(--kb-menu-content-transform-origin);
+  box-shadow:
+    0 4px 6px -1px rgb(0 0 0 / 0.1),
+    0 2px 4px -2px rgb(0 0 0 / 0.1);
+  animation: viewportHide 250ms ease-in forwards;
+  &[data-expanded] {
+    border-radius: 6px;
+    animation: viewportShow 250ms ease-out;
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+.sn-nav-content {
+  position: absolute;
+  top: 0;
+  left: 0;
+  box-sizing: border-box;
+  outline: none;
+  margin: 0;
+  animation-duration: 250ms;
+  animation-timing-function: ease;
+  animation-fill-mode: forwards;
+  pointer-events: none;
+  padding: 0.75rem;
+
+  &[data-motion="from-start"] {
+    animation-name: enterFromLeft;
+  }
+  &[data-motion="from-end"] {
+    animation-name: enterFromRight;
+  }
+  &[data-motion="to-start"] {
+    animation-name: exitToLeft;
+  }
+  &[data-motion="to-end"] {
+    animation-name: exitToRight;
+  }
+
+  &[data-expanded] {
+    pointer-events: auto;
+  }
+
+  &.content-1 {
+    width: 300px;
+  }
+  &.content-2 {
+    width: 200px;
+  }
+}
+
+.sn-nav-root {
+  width: max-content;
+  display: flex;
+  gap: 0.5rem;
+  margin-left: 1rem;
+  padding: 4px;
+  justify-content: center;
+  align-items: center;
+}
+
+@keyframes viewportShow {
+  from {
+    opacity: 0;
+    transform: rotateX(-20deg) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: rotateX(0deg) scale(1);
+  }
+}
+@keyframes viewportHide {
+  from {
+    opacity: 1;
+    transform: rotateX(0deg) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: rotateX(-10deg) scale(0.96);
+  }
+}
+
+@keyframes enterFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(200px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes enterFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-200px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+@keyframes exitToRight {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(200px);
+  }
+}
+@keyframes exitToLeft {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-200px);
+  }
+}
+
 .sk-fit {
   min-height: 0;
   flex-shrink: 1;
-}
-
-.sn-nav-content {
-  outline: none;
-  padding: 0.5rem;
-  background: var(--accent-100);
 }
 
 .sk-tree-line {

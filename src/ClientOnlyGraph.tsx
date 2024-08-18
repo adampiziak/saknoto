@@ -10,9 +10,9 @@ export default function ClientOnlyGraph(props) {
   const mygraph = ForceGraph3D();
 
   onMount(() => {
-    const root = document.querySelector("html");
-    const scheme = root?.style.colorScheme ?? "light";
-    setDarkMode(scheme);
+    context.themeManager.onChange((mode, _theme) => {
+      setDarkMode(mode);
+    });
     mygraph(graphRef);
   });
 
@@ -49,9 +49,16 @@ export default function ClientOnlyGraph(props) {
         mygraph.nodeResolution(32);
 
         if (darkMode() === "light") {
-          mygraph.backgroundColor("#EEEEEE");
+          let color = getComputedStyle(document.body).getPropertyValue(
+            "--hex-accent-50",
+          );
+          mygraph.backgroundColor(color);
         } else {
-          mygraph.backgroundColor("#141415");
+          let color = getComputedStyle(document.body).getPropertyValue(
+            "--hex-accent-950",
+          );
+          mygraph.backgroundColor(color);
+          // mygraph.backgroundColor("#141415");
         }
       }
     }

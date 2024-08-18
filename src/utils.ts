@@ -26,8 +26,9 @@ export const debounce_async = (callback: any, wait: any) => {
 };
 
 export const colorScheme = () => {
-  const root = document.querySelector("html");
-  const scheme = root?.style.colorScheme ?? "light";
+  const root = document.getElementById("#saknoto");
+  const scheme = root?.getAttribute("saknoto_mode");
+  alert(scheme);
 
   return scheme;
 };
