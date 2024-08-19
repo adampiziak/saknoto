@@ -40,4 +40,6 @@ export class UIManager {
     view: "user",
     data: undefined,
   });
+
+  mobilenav = new ComponentManager<{ active: boolean }>({ active: false });
 }

@@ -67,19 +67,19 @@ const PlayPage: Component = () => {
   );
 
   return (
-    <div class="flex min-h-0 shrink justify-center pb-4 px-4 dark:bg-accent-950 bg-accent-50">
-      <div class="flex sk-fit shrink overflow-visible">
+    <div class="flex min-h-0 shrink pb-4 px-4 dark:bg-accent-950 bg-accent-50 sn-main ">
+      <div class="flex sk-fit shrink overflow-visible sn-opening-card">
         <OpeningCard
           pgn={history()}
           on_select={(move) => game.handle_move(move)}
         />
       </div>
       <BoardView
-        class={`${isRepState() ? "border-4 border-red-500 -ml-2 -mt-0.5" : ""}`}
+        class={`sn-board-view ${isRepState() ? "border-4 border-red-500 -ml-2 -mt-0.5" : ""}`}
         game={game}
         rounded={true}
       />
-      <div class="flex flex-col gap-4 w-[500px] h-[100%] min-h-0 shrink px-4">
+      <div class="flex flex-col gap-4 w-[500px] h-[100%] min-h-0 shrink px-4 sn-info-card">
         <EngineCard />
         <RepertoireCard fen={fen()} requestLine={() => setIsRepState(true)} />
         <ExplorerCard fen={fen()} playerColor="white" />

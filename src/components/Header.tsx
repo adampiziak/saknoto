@@ -6,17 +6,10 @@ import { A } from "@solidjs/router";
 import "../app.scss";
 import { useSaknotoContext } from "~/Context";
 import { NavigationMenu } from "@kobalte/core/navigation-menu";
+import { BsGrid, BsGrid3x2Gap, BsGridFill } from "solid-icons/bs";
 
 export default function Header() {
   const context = useSaknotoContext();
-  // return (
-  //   <header>
-  //     <nav>
-  //       <A href="/">main</A>
-  //       <A href="/study">study</A>
-  //     </nav>
-  //   </header>
-  // );
 
   const [refreshing, setRefreshing] = createSignal(false);
   const [user, setUser] = createSignal("user");
@@ -44,8 +37,8 @@ export default function Header() {
   });
 
   return (
-    <header class="relative px-12 z-40 py-4  border-accent-300 dark:border-zinc-700 flex flex-wrap items-center  justify-center dark:text-accent-100 text-accent-900 dark:bg-accent-950 bg-accent-50 w-full">
-      <div class="flex w-full justify-between">
+    <header class="relative z-40 py-4   border-accent-300 dark:border-zinc-700 flex flex-wrap items-center  justify-center dark:text-accent-100 text-accent-900 dark:bg-accent-950 bg-accent-50 w-full">
+      <div class="flex w-full justify-between items-center">
         <div class="basis-0 grow flex">
           <div class="text-2xl sn-logo   text-accent-700 ">
             <span class="font-medium dark:text-accent-300  text-accent-700 ">
@@ -56,7 +49,7 @@ export default function Header() {
             </span>
           </div>
         </div>
-        <NavigationMenu delayDuration={0} class="sn-nav-root">
+        <NavigationMenu delayDuration={0} class="sn-nav-root desktop-view">
           <NavigationMenu.Trigger as="a" href="/" class="sn-menu-trigger">
             play
           </NavigationMenu.Trigger>
@@ -128,7 +121,7 @@ export default function Header() {
             <NavigationMenu.Arrow size={20} class="sn-arrow" />
           </NavigationMenu.Viewport>
         </NavigationMenu>
-        <div class="items-center flex flex-grow justify-end gap-4">
+        <div class="items-center flex flex-grow justify-end gap-4 desktop-view">
           <ThemeSelector />
           <RefreshIcon
             class={`w-5 h-5 ${refreshing() ? "animate-spin" : ""}`}
@@ -142,6 +135,12 @@ export default function Header() {
           >
             {user()}
           </div>
+        </div>
+        <div
+          class="mobile-view hover:bg-accent-200 p-2 rounded-full cursor-pointer text-accent-800"
+          onClick={() => context.ui.mobilenav.set({ active: true })}
+        >
+          <BsGridFill size={24} />
         </div>
       </div>
     </header>

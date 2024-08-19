@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+$mobile-width: 1200px;
+
 @font-face {
   font-family: "Inter";
   src:
@@ -28,6 +30,11 @@
   src:
     local("Noto Sans Mono"),
     url("/notosans.ttf") format("truetype");
+}
+
+.sn-link {
+  font-weight: 500;
+  font-size: 2rem;
 }
 
 * {
@@ -516,6 +523,27 @@
   align-items: center;
 }
 
+header {
+  padding-left: 3rem;
+  padding-right: 3rem;
+}
+
+@media (width <= $mobile-width) {
+  .desktop-view {
+    display: none;
+  }
+
+  header {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+@media (width > $mobile-width) {
+  .mobile-view {
+    display: none;
+  }
+}
+
 @keyframes viewportShow {
   from {
     opacity: 0;
@@ -610,6 +638,29 @@ $position_duration: 0.15s;
 
   &.active {
     transform: translateX(0%);
+  }
+}
+
+.sn-main {
+  flex-direction: row;
+}
+
+@media (width <= $mobile-width) {
+  .sn-main {
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .sn-board-view {
+    order: -1;
+  }
+
+  .sn-opening-card {
+    display: none;
+  }
+
+  .sn-info-card {
+    display: none;
   }
 }
 

@@ -7,6 +7,7 @@ import Header from "~/components/Header";
 import { SaknotoProvider, useSaknotoContext } from "./Context";
 import SideBar from "./components/SideBar";
 import { applyColorfulTheme, applyNeutralTheme } from "./lib/theme_utils";
+import MobileNav from "./MobileNav";
 
 const RootLayout = (props: any) => {
   const ctx = useSaknotoContext();
@@ -57,6 +58,7 @@ const RootLayout = (props: any) => {
           <Suspense>{props.children}</Suspense>
         </div>
         <SideBar />
+        <MobileNav />
       </div>
     </SaknotoProvider>
   );
