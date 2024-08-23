@@ -1,4 +1,3 @@
-import { Content } from "@kobalte/core/dialog";
 import { Chess } from "chess.js";
 import {
   Accessor,
@@ -11,7 +10,6 @@ import {
   Show,
 } from "solid-js";
 import { useSaknotoContext } from "~/Context";
-import { getTurn } from "~/utils";
 
 interface NextMove {
   move: string;
@@ -32,14 +30,21 @@ interface Variation {
   name: string;
 }
 
+interface PositionTreeRoot {
+  fen: string;
+  move_count: number;
+  openings: PositionTreeNode[];
+}
+
 interface PositionTree {
   count: number;
   openings: { [key: string]: PositionTreeNode };
 }
 
 interface PositionTreeNode {
+  name: string[];
   count: number;
-  variations: { [key: string]: PositionTreeNode };
+  moves: string[];
 }
 
 const OpeningCard: Component<{
@@ -50,16 +55,32 @@ const OpeningCard: Component<{
   const [opening, setOpening] = createSignal([]);
 
   const names: Map<string, any> = new Map();
-  const [omap, setOMap] = createSignal(new Map());
-  const [positionTree, setPositionTree] = createSignal<
-    [string, PositionTreeNode][]
-  >([]);
+  const [omap, setOMap] = createSignal<Map<string, PositionTreeRoot>>(
+    new Map(),
+  );
+  const [positionTree, setPositionTree] = createSignal<PositionTreeNode[]>([]);
   const [totalGames, setTotalGames] = createSignal(1);
   const [winrate, setWinrate] = createSignal(50);
 
   createEffect(async () => {
     await update(props.pgn);
   });
+
+  const flatten_openings = (nodes: PositionTreeNode[], level: number) => {
+    const groups = {};
+
+    for (const n of nodes) {
+      let basename = n.name.at(level);
+      if (basename) {
+        if (!(basename in groups)) {
+          groups[basename] = [];
+        }
+        groups[basename].push(n);
+      }
+    }
+
+    return groups;
+  };
 
   const update = async (history: string[]) => {
     console.log("new history");
@@ -90,7 +111,14 @@ const OpeningCard: Component<{
     const f = game.fen();
     const found = omap().get(f);
     if (found) {
-      setTotalGames(found.games);
+      let opening_nodes: PositionTreeNode[] = found.openings;
+      opening_nodes.sort((a, b) => b.count - a.count);
+      let total = 0;
+      opening_nodes.forEach((n) => {
+        total += n.count;
+      });
+      setTotalGames(found.move_count);
+      setPositionTree(flatten_openings(opening_nodes, 0));
       const c: [string, any][] = [...Object.entries(found.openings)];
 
       const nodes: [string, PositionTreeNode][] = c;
@@ -99,79 +127,9 @@ const OpeningCard: Component<{
       for (const n of nodes) {
         t += n[1].count;
       }
-      setPositionTree(nodes);
     } else {
       setPositionTree([]);
     }
-    // await context.openingGraph.load_wait();
-    // const p = await context.openingGraph.getPosition(f, "white", getTurn(f));
-    // if (p) {
-    //   let pwr = p.result.white + p.result.black + p.result.draw;
-    //   pwr = Math.round((p.result.white / pwr) * 100);
-    //   setWinrate(pwr);
-    // }
-    // const a = omap().get(f);
-    // if (!a) {
-    //   setContinuations([]);
-    //   return;
-    // }
-
-    // const by_move = new Map<string, NextMove>();
-
-    // for (const o of a) {
-    //   const move = o[0];
-
-    //   if (!by_move.has(move)) {
-    //     by_move.set(move, { move, openings: new Map() });
-    //   }
-    //   const existing: NextMove = by_move.get(move)!;
-
-    //   const fullname: string = o[1].name;
-    //   const parts = [];
-    //   const colon_split = fullname.split(":");
-    //   parts.push(colon_split[0].trim());
-
-    //   if (colon_split.length > 1) {
-    //     const comma_split = colon_split[1].split(",");
-    //     for (const p of comma_split) {
-    //       parts.push(p.trim());
-    //     }
-    //   }
-
-    //   let parent_map = existing.openings;
-
-    //   let name = parts[0];
-    //   if (!parent_map.has(name)) {
-    //     parent_map.set(name, { name, next: new Map() });
-    //   }
-    //   // alert(JSON.stringify(parent_map.get(name)));
-    //   parent_map = parent_map.get(name)!.next;
-
-    //   for (let i = 1; i < parts.length; i++) {
-    //     let name = parts[i];
-    //     if (!parent_map.has(name)) {
-    //       parent_map.set(name, { name, next: new Map() });
-    //     }
-    //     parent_map = parent_map.get(name)!.next;
-    //   }
-
-    // let mainname = parts[0];
-    // let variation = parts.length > 1 ? parts[1] : null;
-
-    // const existing_opening = existing.openings.get(mainname) ?? {
-    //   name: mainname,
-    //   variations: [],
-    // };
-
-    // if (variation) {
-    //   existing_opening.variations.push(variation);
-    // }
-
-    // existing.openings.set(mainname, existing_opening);
-    // by_move.set(move, existing);
-    // }
-    // const openarray = [...by_move.values()];
-    // alert(JSON.stringify(openarray[0].move));
   };
 
   const selectMove = (move: string) => {
@@ -181,7 +139,7 @@ const OpeningCard: Component<{
   };
 
   onMount(async () => {
-    const res = await fetch("/rust_tree.json");
+    const res = await fetch("/opening_tree.json");
 
     const json = await res.json();
 
@@ -197,80 +155,12 @@ const OpeningCard: Component<{
       }
 
       names.set(moves.join(""), o);
-      // let game = new Chess();
-      // for (const m of moves) {
-      //   const fen = game.fen();
-
-      //   const existing = tmp.get(fen) ?? [];
-      //   existing.push([m, o]);
-      //   tmp.set(fen, existing);
-      //   try {
-      //     game.move(m);
-      //   } catch (e) {
-      //     alert(JSON.stringify(o));
-      //     console.error(e);
-      //     console.error(m);
-      //   }
-      // }
     }
 
     setOMap(new Map(Object.entries(json)));
     await update(props.pgn);
   });
 
-  const MoveElement = (move: NextMove) => {
-    // const move_openings = move.openings;
-
-    let move_openings = [...move.openings.values()];
-
-    let single_basename: string[] = [];
-    if (move_openings.length == 1) {
-      let parent: OpeningNode = move.openings.values().next().value;
-      let basename = [parent.name];
-      let count = parent.next.size;
-      while (count == 1) {
-        parent = parent.next.values().next().value;
-        count = parent.next.size;
-        basename.push(`${parent.name}`);
-      }
-
-      single_basename = basename;
-      move_openings = [...parent.next.values()];
-    }
-
-    return (
-      <div
-        class="lvl-1 border-white/0 border hover:border-accent-500"
-        onClick={() => selectMove(move.move)}
-      >
-        <div class="p-3  rounded-lg inline-block  text-lg font-bold">
-          {move.move}
-        </div>
-
-        <Show when={move_openings.length > 0}>
-          <div class=" overflow-hidden flex  flex-col gap-3 dark:border-zinc-700 border-zinc-300">
-            <For each={move_openings}>
-              {(v, i) => OpeningNameElement(v, 1, single_basename)}
-            </For>
-          </div>
-        </Show>
-      </div>
-    );
-  };
-
-  // <Show when={single_basename.length > 0}>
-  //   <div class="flex flex-wrap">
-  //     <For each={single_basename}>
-  //       {(bn, bni) => (
-  //         <div class=" mb-2 font-medium [&:not(:last-child)]:opacity-50  whitespace-nowrap">
-  //           {bni() < single_basename.length - 1
-  //             ? `${bn.trim()}->`
-  //             : `${bn.trim()}`}
-  //         </div>
-  //       )}
-  //     </For>
-  //   </div>
-  // </Show>
   const svgCircle = () => {
     let size = 5;
     return (
@@ -337,53 +227,8 @@ const OpeningCard: Component<{
     return count;
   };
 
-  const OpeningNameElement = (
-    node: OpeningNode,
-    lvl: number,
-    basename: string,
-  ) => {
-    let step = 20;
-
-    let variation_count = countNodes(node);
-    let children = [...node.next.values()];
-
-    return (
-      <div class="relative lvl-2">
-        <div class="relative">
-          <div class="flex">
-            <div
-              class={`` + " w-full px-2  py-2"}
-              style={{ "text-indent": `${lvl - 1}rem` }}
-            >
-              {node.name}
-            </div>
-          </div>
-        </div>
-        <div class="">
-          <For each={children}>
-            {(v, i) => {
-              let over = false;
-              return (
-                <div class="flex items-center pl-4 hoverable lvl-2">
-                  <div
-                    class=""
-                    onMouseOver={() => (over = true)}
-                    onMouseLeave={() => (over = false)}
-                  >
-                    {svgLine(i(), children.length, over)}
-                  </div>
-                  <div class="ml-4">{v.name}</div>
-                </div>
-              );
-            }}
-          </For>
-        </div>
-      </div>
-    );
-  };
-
   const PositionName = (
-    name: string,
+    basename: string,
     node: PositionTreeNode,
     total: number,
     index: number,
@@ -391,10 +236,7 @@ const OpeningCard: Component<{
     set_selected: Setter<number | null>,
     size: number,
   ) => {
-    let children: any[] = [];
-    if (node.variations) {
-      children = [...Object.entries(node.variations)];
-    }
+    let children: any[] = node;
 
     let [isFirst, setIsFirst] = createSignal(false);
     let [isLast, setIsLast] = createSignal(false);
@@ -414,7 +256,16 @@ const OpeningCard: Component<{
     });
 
     let over = false;
-    let childcount = children.slice(0, 5).length;
+    let max_count = 0;
+    for (const c of children) {
+      max_count = Math.max(max_count, c.count);
+    }
+    let childcount = node.slice(0, 5).length;
+    let percentage = (max_count * 100) / total;
+    let fmt_per =
+      percentage > 10
+        ? Math.round(percentage)
+        : Math.round(percentage * 10) / 10;
 
     return (
       <div
@@ -430,9 +281,9 @@ const OpeningCard: Component<{
           <div
             class={`text-md ${active() ? "text-lg font-semibold dark:text-accent-300" : "font-normal"} grow`}
           >
-            {name}
+            {basename}
           </div>
-          <div class="">{Math.round((node.count * 100) / total)}%</div>
+          <div class="">{fmt_per}%</div>
         </div>
         <div
           style={{
@@ -446,8 +297,8 @@ const OpeningCard: Component<{
           class={`sk-position-child rounded-b-lg flex flex-col gap-1 overflow-hidden bg-accent-100 dark:bg-accent-700 dark:text-accent-300 ${active() ? "" : ""}`}
         >
           <For each={children.slice(0, 5)}>
-            {([k, v], index) =>
-              FirstLevelChild(k, v, index() === children.length - 1, 0)
+            {(n, index) =>
+              FirstLevelChild(n, index() === children.length - 1, 0, total)
             }
           </For>
         </div>
@@ -456,27 +307,29 @@ const OpeningCard: Component<{
   };
 
   const FirstLevelChild = (
-    name: string,
     node: PositionTreeNode,
     last: boolean,
     level: number,
+    total: number,
   ) => {
-    return <div class="font-medium  h-[20px] leading-[20px]">• {name}</div>;
-    // const children = [...Object.entries(node.variations)];
-    // const [open, setOpen] = createSignal(false);
-
+    let percentage = (node.count * 100) / total;
+    let fmt_per =
+      percentage > 10
+        ? Math.round(percentage)
+        : Math.round(percentage * 10) / 10;
+    let mainline = node.name.length > 1 ? "" : "Mainline";
     return (
-      <div
-        class="sk-bg2 p-2 text-accent-400 font-semibold hover:cursor-pointer  hover:sk-border5 sk-border3"
-        // onClick={() => setOpen((p) => !p)}
-      >
-        <div class="flex items-center">
-          <div class={`ml-2 ${open() ? "font-bold" : "font-medium"}`}>
-            {name}
-          </div>
+      <div class="font-medium  h-[20px] leading-[20px] flex gap-3">
+        <div class="w-11 px-0 text-center rounded-lg dark:bg-accent-600 bg-accent-200 dark:text-accent-300">
+          {fmt_per}%
+        </div>
+        <div>
+          {mainline} {node.name.slice(1).join(", ")}
         </div>
       </div>
     );
+    // const children = [...Object.entries(node.variations)];
+    // const [open, setOpen] = createSignal(false);
   };
   // <Show when={open()}>
   //   <div class="">
@@ -535,11 +388,11 @@ const OpeningCard: Component<{
   return (
     <div class="flex flex-col shrink grow min-h-0  w-[20vw] overflow-visible">
       <div class="flex flex-col shrink min-h-0 overflow-visible overflow-y-scroll px-4">
-        <For each={positionTree()}>
-          {([k, v], i) =>
+        <For each={Object.entries(positionTree())}>
+          {([basename, node], i) =>
             PositionName(
-              k,
-              v,
+              basename,
+              node,
               totalGames(),
               i(),
               selected,

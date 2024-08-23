@@ -206,7 +206,7 @@ export class Engine {
       console.log(this.current_evaluation.depth);
       const line = parse_moves(this.current_evaluation.fen, info.line);
       this.current_evaluation.lines[info.multipv - 1] = {
-        score: Math.round(info.cp / 10) / 10 ?? 10,
+        score: Math.round(info.cp / 10) / 10,
         san: line,
         lan: info.line,
       };

@@ -3,10 +3,21 @@ import { Api } from "chessground/api";
 import { Chessground } from "chessground";
 import { Chess } from "chess.js";
 import { LRUCache } from "./data/Cache";
+import { ChessColor } from "./lib/common";
 
 interface History {
   index: number;
   moves: string[];
+}
+
+enum PlayerKind {
+  Computer,
+  Human,
+}
+
+interface Side {
+  white: PlayerKind;
+  black: PlayerKind;
 }
 
 export class Game {
@@ -14,15 +25,17 @@ export class Game {
   api: Api | null = null;
   starting_position;
   history: History;
-  ai;
+  orientation: ChessColor;
+  side: Side;
   cache?: LRUCache<any>;
 
   constructor() {
     this.state = new Chess();
     this.starting_position = startingFen();
-    this.ai = {
-      white: false,
-      black: true,
+    this.orientation = ChessColor.White;
+    this.side = {
+      white: PlayerKind.Human,
+      black: PlayerKind.Human,
     };
 
     this.history = {
@@ -127,14 +140,31 @@ export class Game {
     this.once_listeners = [];
   }
 
+  set_player_type(color: ChessColor, player_type: PlayerKind) {
+    this.side[color] = player_type;
+  }
+
+  set_orientation(color: ChessColor) {
+    this.orientation = color;
+    this.update_board();
+  }
+
+  toggle_orientation() {
+    this.orientation =
+      this.orientation === ChessColor.White
+        ? ChessColor.Black
+        : ChessColor.Black;
+    this.update_board();
+  }
+
   handle_move(move: string) {
     this.state.move(move);
     this.history.moves = this.state.history();
     this.history.index = this.history.moves.length;
     this.update_board();
 
-    if (this.ai[this.turncolor()]) {
-      // this.play_common_move();
+    if (this.side[this.turncolor()] == PlayerKind.Computer) {
+      this.play_common_move();
     }
   }
 
@@ -212,6 +242,7 @@ export class Game {
     this.api?.set({
       fen: this.state.fen(),
       turnColor: color,
+      orientation: this.orientation,
       movable: {
         color,
         free: false,

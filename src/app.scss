@@ -5,13 +5,6 @@
 $mobile-width: 1200px;
 
 @font-face {
-  font-family: "Inter";
-  src:
-    local("Inter"),
-    url("/inter.ttf") format("truetype");
-}
-
-@font-face {
   font-family: "Lexend";
   src:
     local("Lexend"),
@@ -24,12 +17,11 @@ $mobile-width: 1200px;
     local("Inter Tight"),
     url("/intertight.ttf") format("truetype");
 }
-
 @font-face {
-  font-family: "Noto Sans Mono";
+  font-family: "Inter";
   src:
-    local("Noto Sans Mono"),
-    url("/notosans.ttf") format("truetype");
+    local("Inter"),
+    url("/inter.ttf") format("truetype");
 }
 
 .sn-link {

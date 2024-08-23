@@ -89,6 +89,12 @@ const PlayPage: Component = () => {
         <Button class="button" onClick={() => game.play_common_move()}>
           Play
         </Button>
+        <Button class="button" onClick={() => game.play_common_move()}>
+          Play
+        </Button>
+        <Button class="button" onClick={() => game.toggle_orientation()}>
+          toggle orientation
+        </Button>
       </div>
     </div>
   );
