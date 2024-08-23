@@ -317,64 +317,17 @@ const OpeningCard: Component<{
       percentage > 10
         ? Math.round(percentage)
         : Math.round(percentage * 10) / 10;
-    let mainline = node.name.length > 1 ? "" : "Mainline";
+    let mainline = node.name.length > 1 ? "" : node.name.at(0);
     return (
-      <div class="font-medium  h-[20px] leading-[20px] flex gap-3">
-        <div class="w-11 px-0 text-center rounded-lg dark:bg-accent-600 bg-accent-200 dark:text-accent-300">
-          {fmt_per}%
-        </div>
-        <div>
+      <div class="font-medium  h-[20px] leading-[20px] flex gap-3 items-center ">
+        <div class="ml-2 font-bold ">{node.moves.at(0)}</div>
+        <div class="ml-2 font-bold ">{node.eco}</div>
+
+        <div class="grow">
           {mainline} {node.name.slice(1).join(", ")}
         </div>
-      </div>
-    );
-    // const children = [...Object.entries(node.variations)];
-    // const [open, setOpen] = createSignal(false);
-  };
-  // <Show when={open()}>
-  //   <div class="">
-  //     <For each={children}>
-  //       {([k, v], idx) =>
-  //         PositionChild(k, v, idx(), children.length, level + 1)
-  //       }
-  //     </For>
-  //   </div>
-  // </Show>
-
-  // <div class="ml-4">
-  //   <For each={children}>
-
-  const PositionChild = (
-    name: string,
-    node: PositionTreeNode,
-    i: number,
-    len: number,
-    level: number,
-  ) => {
-    const children = [...Object.entries(node.variations)];
-    children.sort((a, b) => b[1].count - a[1].count);
-
-    let [over, setOver] = createSignal(false);
-
-    return (
-      <div
-        class="pl-3 sk-fg4 font-normal rounded-full hover:font-bold hover:cursor-pointer hover:sk-bg3"
-        onMouseEnter={() => setOver(true)}
-        onMouseLeave={() => setOver(false)}
-      >
-        <div class="flex items-center ">
-          {svgLine(i, len, over())}
-          <div class="ml-4 sk-fg3">{name}</div>
-          <Show when={node.count > 1}>
-            <div class="ml-2 rounded-full  text-sm font-medium sk-fg7 grow text-right mr-4">
-              +{node.count} variations
-            </div>
-          </Show>
-        </div>
-        <div class="flex relative">
-          <Show when={i < len - 1}>
-            <div class="sk-tree-line"></div>
-          </Show>
+        <div class="w-11 px-0 text-center rounded-lg  dark:text-accent-300">
+          {fmt_per}%
         </div>
       </div>
     );
@@ -407,35 +360,3 @@ const OpeningCard: Component<{
 };
 
 export default OpeningCard;
-// <Show when={opening().length > 0}>
-//   <div class="sk-bg1 p-4 border sk-border1">
-//     <div class="text-lg font-bold">{opening().at(0)}</div>
-//     <For each={opening().slice(1)}>
-//       {(it, ix) => (
-//         <div>
-//           <div>{it}</div>
-//         </div>
-//       )}
-//     </For>
-//   </div>
-// </Show>
-
-// <div class="p-2">
-//   <div class="p-2 font-semibold lvl-3 inline-block text-lg rounded-md border">
-//     {v.move}
-//   </div>
-// </div>
-// <For each={[...v.openings.values()]}>
-//   {(openingx, j) => (
-//     <div>
-//       <div class="px-2 py-1 lvl-2 hoverable">
-//         - {openingx.name}
-//       </div>
-//       <For each={openingx.variations}>
-//         {(vari, p) => (
-//           <div class="px-4 hoverable lvl-1">- {vari}</div>
-//         )}
-//       </For>
-//     </div>
-//   )}
-// </For>

@@ -94,6 +94,7 @@ export class Game {
     }
     this.history.index = Math.max(0, this.history.index - 1);
     this.update_board();
+    this.emit();
   }
 
   redoMove() {
@@ -107,6 +108,7 @@ export class Game {
       this.history.index + 1,
     );
     this.update_board();
+    this.emit();
   }
 
   restart() {
@@ -130,7 +132,7 @@ export class Game {
 
   emit() {
     const fen = this.state.fen();
-    const history = this.history.moves;
+    const history = this.history.moves.slice(0, this.history.index);
     for (const callback of this.listeners) {
       callback({ fen, history });
     }
