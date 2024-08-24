@@ -26,8 +26,16 @@ export class Game {
   starting_position;
   history: History;
   orientation: ChessColor;
+  playOpponent: boolean = false;
   side: Side;
   cache?: LRUCache<any>;
+  listeners: any[] = [];
+  once_listeners: any[] = [];
+
+  set_opponent(val: boolean) {
+    this.playOpponent = val;
+    this.checkIfComputerMove();
+  }
 
   constructor() {
     this.state = new Chess();
@@ -44,8 +52,13 @@ export class Game {
     };
   }
 
-  listeners: any[] = [];
-  once_listeners: any[] = [];
+  checkIfComputerMove() {
+    setTimeout(() => {
+      if (this.turncolor() !== this.orientation && this.playOpponent) {
+        this.play_common_move();
+      }
+    }, 800);
+  }
 
   attach(element: HTMLElement) {
     this.api = Chessground(element, {});
@@ -75,6 +88,7 @@ export class Game {
         this.redoMove();
       }
     });
+    this.checkIfComputerMove();
   }
 
   setStartingPosition(pgn: string) {
@@ -120,6 +134,7 @@ export class Game {
     this.api?.set({
       lastMove: undefined,
     });
+    this.checkIfComputerMove();
   }
 
   subscribe(callback: any) {
@@ -149,13 +164,14 @@ export class Game {
   set_orientation(color: ChessColor) {
     this.orientation = color;
     this.update_board();
+    this.checkIfComputerMove();
   }
 
   toggle_orientation() {
     this.orientation =
       this.orientation === ChessColor.White
         ? ChessColor.Black
-        : ChessColor.Black;
+        : ChessColor.White;
     this.update_board();
   }
 
@@ -165,9 +181,7 @@ export class Game {
     this.history.index = this.history.moves.length;
     this.update_board();
 
-    if (this.side[this.turncolor()] == PlayerKind.Computer) {
-      this.play_common_move();
-    }
+    this.checkIfComputerMove();
   }
 
   async play_common_move() {
@@ -235,8 +249,8 @@ export class Game {
     this.update_board();
   }
 
-  turncolor() {
-    return this.state.fen() === "w" ? "white" : "black";
+  turncolor(): ChessColor {
+    return this.state.turn() === "w" ? ChessColor.White : ChessColor.Black;
   }
 
   update_board() {

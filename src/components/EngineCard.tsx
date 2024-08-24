@@ -68,7 +68,7 @@ const EngineCard: Component<{
 
   return (
     <div class="border border-accent-200 dark:border-accent-700 bg-accent-100 dark:bg-accent-900 rounded">
-      <div class="card-header text-accent-600 bg-accent-900 flex justify-between dark:text-accent-50 items-center">
+      <div class="card-header text-lum-900 bg-lum-200 flex justify-between dark:text-accent-50 items-center">
         <DraggableIcon class="w-4 text-accent-600 mr-1" />
         <div class="mr-2 ">Engine</div>
         <div class="font-normal ">{evaluation().mode}</div>

@@ -141,7 +141,7 @@ const ExplorerCard: Component<{
 
   return (
     <div class="bg-accent-100 text-accent-800 dark:bg-accent-800 dark:text-accent-100 border border-accent-200 dark:border-accent-700 rounded">
-      <div class="bg-accent-200 card-header flex  items-center">
+      <div class="bg-lum-200 card-header flex  items-center">
         <DraggableIcon class=" mr-1" />
         <div>Explorer</div>
       </div>

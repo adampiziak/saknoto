@@ -19,6 +19,7 @@ import OpeningNameCard from "../../OpeningNameCard";
 import OpeningCard from "~/components/OpeningCard";
 import { useKeyDownEvent } from "@solid-primitives/keyboard";
 import { Chess } from "chess.js";
+import GameInterfaceCard from "~/components/GameInterfaceCard";
 // import { Game } from "~/Game";
 
 const PlayPage: Component = () => {
@@ -80,21 +81,10 @@ const PlayPage: Component = () => {
         rounded={true}
       />
       <div class="flex flex-col gap-4 w-[500px] h-[100%] min-h-0 shrink px-4 sn-info-card">
+        <GameInterfaceCard game={game} />
         <EngineCard />
         <RepertoireCard fen={fen()} requestLine={() => setIsRepState(true)} />
         <ExplorerCard fen={fen()} playerColor="white" />
-        <Button class="button" onClick={() => game.restart()}>
-          Restart
-        </Button>
-        <Button class="button" onClick={() => game.play_common_move()}>
-          Play
-        </Button>
-        <Button class="button" onClick={() => game.play_common_move()}>
-          Play
-        </Button>
-        <Button class="button" onClick={() => game.toggle_orientation()}>
-          toggle orientation
-        </Button>
       </div>
     </div>
   );

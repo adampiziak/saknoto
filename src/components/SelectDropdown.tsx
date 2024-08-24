@@ -5,13 +5,15 @@ export interface SelectDropdownProps {
   label: string | undefined;
   options: string[];
   value: string;
-  on_update: (arg0: string) => any;
+  on_update?: (arg0: string) => any;
 }
 
 const SelectDropdown: Component<SelectDropdownProps> = (props) => {
   const update_value = (val: any) => {
     if (val) {
-      props.on_update(val);
+      if (props.on_update) {
+        props.on_update(val);
+      }
     }
   };
 

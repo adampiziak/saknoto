@@ -1,71 +1,45 @@
+import { Component, createSignal } from "solid-js";
+import { Game } from "~/Game";
+import SelectDropdown from "./SelectDropdown";
+import { ChessColor } from "~/lib/common";
 import { Button } from "@kobalte/core/button";
-import { Select } from "@kobalte/core/select";
-import { ToggleButton } from "@kobalte/core/toggle-button";
-import { Accessor, Component, For, Show, createSignal } from "solid-js";
-import { ComputerIcon, DraggableIcon } from "~/icons";
 
 const GameInterfaceCard: Component<{
-  history: Accessor<string[]>;
-  restart: undefined | (() => any);
-  setOrientation: undefined | (() => any);
+  game: Game;
 }> = (props) => {
-  const [color, setColor] = createSignal<"white" | "black">("white");
+  const [playerColor, setPlayerColor] = createSignal(ChessColor.White);
+  const [opponent, setOpponent] = createSignal<string>("none");
 
-  const update_color = (c) => {
-    if (!c) {
-      return;
-    }
-    setColor(c);
-    if (props.setOrientation) {
-      props.setOrientation(c);
-    }
+  const set_opponent = (val: string) => {
+    setOpponent(val);
+    props.game.set_opponent(val === "computer" ? true : false);
   };
 
-  const setLastColor = () => {
-    const lastgame = JSON.parse(localStorage.getItem("lastgame"));
-    const username = localStorage.getItem("username");
-    console.log(lastgame);
-    if (lastgame?.tags.White === username) {
-      update_color("white");
-    } else {
-      update_color("black");
-    }
+  const set_color = (color: ChessColor) => {
+    setPlayerColor(color);
+    props.game.set_orientation(color);
   };
 
   return (
-    <div class="card lvl-1">
-      <div class="card-header flex items-center">
-        <DraggableIcon class="text-zinc-300/50 mr-1" />
-        <div class="">Settings</div>
-      </div>
-      <Button
-        class="py-2 px-3 rounded hoverable lvl-2 m-2"
-        onClick={() => props.restart()}
-      >
-        restart
-      </Button>
-      <Button
-        class="py-2 px-3 rounded hoverable lvl-2 m-2"
-        onClick={setLastColor}
-      >
-        Load last game color
-      </Button>
-      <ToggleButton
-        class="p-2 lvl-2 rounded border font-medium"
-        onChange={() => update_color(color() === "white" ? "black" : "white")}
-      >
-        {(state) => color()}
-      </ToggleButton>
+    <div class="card bg-lum-100 border-lum-200 text-lum-900">
+      <div class="card-header bg-lum-200">Game</div>
 
-      <div class="flex gap-2 m-4">
-        <For each={props.history()}>
-          {(item, index) => (
-            <div>
-              {index() % 2 == 0 ? `${index() / 2 + 1}.` : ""}
-              {item}
-            </div>
-          )}
-        </For>
+      <div class="p-2">
+        <SelectDropdown
+          label="Color"
+          options={[ChessColor.White, ChessColor.Black]}
+          value={playerColor()}
+          on_update={(c) => set_color(c as ChessColor)}
+        ></SelectDropdown>
+        <SelectDropdown
+          label="Opponent"
+          options={["computer", "none"]}
+          value={opponent()}
+          on_update={set_opponent}
+        ></SelectDropdown>
+        <Button class="button mt-2" onClick={() => props.game.restart()}>
+          Restart
+        </Button>
       </div>
     </div>
   );
