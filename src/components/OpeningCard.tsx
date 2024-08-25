@@ -10,6 +10,7 @@ import {
   Show,
 } from "solid-js";
 import { useSaknotoContext } from "~/Context";
+import { Game } from "~/Game";
 
 interface NextMove {
   move: string;
@@ -50,6 +51,7 @@ interface CurrentPosition {
 const OpeningCard: Component<{
   pgn: string[];
   on_select?: (move: string) => void;
+  game: Game;
 }> = (props) => {
   const context = useSaknotoContext();
   const [opening, setOpening] = createSignal<CurrentPosition | null>(null);
@@ -82,7 +84,9 @@ const OpeningCard: Component<{
     return groups;
   };
 
+  const arrows = new Set<string>();
   const update = async (history: string[]) => {
+    arrows.clear();
     console.log("new history");
     console.log(props.pgn);
     const key = props.pgn.join("");
@@ -344,6 +348,24 @@ const OpeningCard: Component<{
     console.log(selected());
   });
 
+  const addArrow = (move: string) => {
+    arrows.add(move);
+    if (props.game) {
+      props.game.drawArrows([...arrows.values()]);
+    }
+  };
+  const removeArrow = (move: string) => {
+    arrows.delete(move);
+    if (props.game) {
+      props.game.drawArrows([...arrows.values()]);
+    }
+  };
+
+  const playMove = (move: string) => {
+    if (props.game) {
+      props.game.play_move(move);
+    }
+  };
   const CurrentOpeningCard = (op: CurrentPosition) => {
     const basename = op.name.at(0);
     const current_len = op.name.length;
@@ -371,8 +393,19 @@ const OpeningCard: Component<{
         variation_name = `${it.eco}: ${it.name.slice(current_len).join(", ")}`;
       }
       return (
-        <div class="flex gap-3  bg-lum-200 rounded">
-          <div class="p-2 bg-lum-300 rounded items-center text-lum-800 justify-center flex min-w-12">
+        <div
+          class="flex gap-3  bg-lum-200 rounded-lg hover:bg-lum-300 hover:cursor-pointer hover:[border-8 ]"
+          onmouseenter={() => {
+            addArrow(it.moves.at(0));
+          }}
+          onmouseleave={() => {
+            removeArrow(it.moves.at(0));
+          }}
+          onclick={() => {
+            playMove(it.moves.at(0));
+          }}
+        >
+          <div class="p-2 bg-lum-300 rounded-lg items-center text-lum-800 justify-center flex min-w-12">
             {it.moves.at(0)}
           </div>
           <div class="grow flex items-center text-lum-700 font-medium">
@@ -386,12 +419,12 @@ const OpeningCard: Component<{
     };
 
     return (
-      <div class="max-h-full text-lum-900  bg-lum-300 mx-4  rounded border-lum-200 border  mb-4 h-fit min-h-fit">
-        <div class="px-3 pt-2 pb-1 bg-lum-100">
+      <div class="max-h-full text-lum-900  bg-lum-100 mx-4  rounded-lg border-lum-200 border  mb-6 h-fit min-h-fit">
+        <div class="px-3 pt-1 pb-2 bg-lum-100 my-2 mx-1 rounded-lg">
           <div class="text-2xl font-medium text-lum-800">{basename}</div>
           <div class="text-lg text-lum-700">{variations.join(", ")}</div>
         </div>
-        <div class="flex flex-col gap-2 pt-1 py-3 px-2 bg-lum-100 h-fit min-h-fit">
+        <div class="flex flex-col gap-2 py-3 pt-0 px-2 bg-lum-100 h-fit min-h-fit">
           <For each={continuations.slice(0, 5)}>
             {(it, ix) => ContinuationElement(it)}
           </For>
@@ -402,10 +435,7 @@ const OpeningCard: Component<{
 
   return (
     <div class="flex flex-col shrink grow min-h-0  w-[20vw] overflow-visible">
-      <Show when={opening() !== null}>
-        <div class="text-lum-600 mx-5 my-1">Current opening</div>
-        {CurrentOpeningCard(opening())}
-      </Show>
+      <Show when={opening() !== null}>{CurrentOpeningCard(opening())}</Show>
       <div class="text-lum-600 mx-5 my-1">Named openings in this position</div>
       <div class="flex flex-col shrink min-h-0 overflow-visible overflow-y-scroll px-4">
         <For each={Object.entries(positionTree())}>

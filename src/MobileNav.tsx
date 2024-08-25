@@ -21,7 +21,7 @@ const MobileNav: Component = () => {
   return (
     <div
       class={
-        "sn-mobile-nav bg-accent-50 absolute h-screen w-screen left-0 top-0 " +
+        "sn-mobile-nav bg-lum-50 text-lum-800 absolute h-screen w-screen left-0 top-0 " +
         `${active() ? "z-50" : "-z-10"}`
       }
     >

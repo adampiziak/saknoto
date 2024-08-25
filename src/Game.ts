@@ -92,6 +92,14 @@ export class Game {
     this.checkIfComputerMove();
   }
 
+  clearArrows() {
+    this.api?.set({
+      drawable: {
+        autoShapes: [],
+      },
+    });
+  }
+
   drawArrows(moves: string[]) {
     let arrows: DrawShape[] = [];
     try {
@@ -103,7 +111,8 @@ export class Game {
           brush: "blue",
         });
       }
-    } catch {
+    } catch (e) {
+      console.error(e);
       arrows = [];
     }
     this.api?.set({
@@ -276,6 +285,7 @@ export class Game {
   }
 
   update_board() {
+    this.clearArrows();
     const color = this.state.turn() === "w" ? "white" : "black";
     this.api?.set({
       fen: this.state.fen(),

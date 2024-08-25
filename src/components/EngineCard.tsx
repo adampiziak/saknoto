@@ -14,9 +14,11 @@ const EngineCard: Component<{
     ...STARTING_EVAL,
   });
 
+  let arrows = new Set<string>();
   onMount(() => {
     context.engine.subscribe_main((newEval) => {
       setEvaluation(newEval);
+      arrows.clear();
     });
   });
 
@@ -25,8 +27,6 @@ const EngineCard: Component<{
       props.onSelect(dest);
     }
   };
-
-  let arrows = new Set<string>();
 
   const addArrow = (move: string) => {
     arrows.add(move);

@@ -73,6 +73,7 @@ const PlayPage: Component = () => {
         <OpeningCard
           pgn={history()}
           on_select={(move) => game.handle_move(move)}
+          game={game}
         />
       </div>
       <BoardView
