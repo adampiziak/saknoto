@@ -388,9 +388,9 @@ const OpeningCard: Component<{
     const ContinuationElement = (it: PositionTreeNode) => {
       let variation_name;
       if (it.name.slice(current_len).length == 0) {
-        variation_name = `${it.eco}: ${it.name.slice(current_len - 1).join(", ")}`;
+        variation_name = `${it.name.slice(current_len - 1).join(", ")}`;
       } else {
-        variation_name = `${it.eco}: ${it.name.slice(current_len).join(", ")}`;
+        variation_name = `${it.name.slice(current_len).join(", ")}`;
       }
       return (
         <div
@@ -405,13 +405,16 @@ const OpeningCard: Component<{
             playMove(it.moves.at(0));
           }}
         >
-          <div class="p-2 bg-lum-300 rounded-lg items-center text-lum-800 justify-center flex min-w-12">
+          <div class="p-2 bg-lum-300 rounded-lg items-center text-lum-700 justify-center flex min-w-12 font-semibold">
             {it.moves.at(0)}
           </div>
-          <div class="grow flex items-center text-lum-700 font-medium">
+          <div class="flex items-center justify-center w-6 text-lum-600 mx-1">
+            {it.eco}
+          </div>
+          <div class="grow flex items-center text-lum-700 font-semibold">
             {variation_name}
           </div>
-          <div class="  grow-0 min-w-12 flex justify-end items-center text-lum-600 pr-3">
+          <div class="  grow-0 min-w-12 flex justify-end items-center font-medium text-lum-600 pr-3">
             {Math.round((it.count / totalGames()) * 100)}%
           </div>
         </div>

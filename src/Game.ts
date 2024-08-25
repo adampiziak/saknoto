@@ -5,6 +5,7 @@ import { Chess } from "chess.js";
 import { LRUCache } from "./data/Cache";
 import { ChessColor } from "./lib/common";
 import { DrawShape } from "chessground/draw";
+import { SaknotoContextKind, useSaknotoContext } from "./Context";
 
 interface History {
   index: number;
@@ -32,6 +33,8 @@ export class Game {
   cache?: LRUCache<any>;
   listeners: any[] = [];
   once_listeners: any[] = [];
+  autoPlayRepertoire: boolean = false;
+  saknotoContext: SaknotoContextKind = null;
 
   set_opponent(val: boolean) {
     this.playOpponent = val;
@@ -40,6 +43,7 @@ export class Game {
 
   constructor() {
     this.state = new Chess();
+    this.saknotoContext = useSaknotoContext();
     this.starting_position = startingFen();
     this.orientation = ChessColor.White;
     this.side = {
@@ -53,12 +57,30 @@ export class Game {
     };
   }
 
+  setRepertoireAutoPlay(val: boolean) {
+    this.autoPlayRepertoire = val;
+    this.checkIfComputerMove();
+  }
+
   checkIfComputerMove() {
     setTimeout(() => {
       if (this.turncolor() !== this.orientation && this.playOpponent) {
         this.play_common_move();
+      } else if (
+        this.autoPlayRepertoire &&
+        this.turncolor() === this.orientation
+      ) {
+        console.log("play repoertoire!");
+        console.log(this.autoPlayRepertoire);
+        this.saknotoContext.repertoire.getLine(this.state.fen()).then((val) => {
+          if (val != null) {
+            this.play_move(val.response.at(0));
+          } else {
+            console.log("none!");
+          }
+        });
       }
-    }, 800);
+    }, 500);
   }
 
   attach(element: HTMLElement) {
@@ -278,6 +300,7 @@ export class Game {
     this.history.moves = this.state.history();
     this.history.index = this.history.moves.length;
     this.update_board();
+    this.checkIfComputerMove();
   }
 
   turncolor(): ChessColor {

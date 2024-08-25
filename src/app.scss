@@ -291,42 +291,10 @@ $mobile-width: 1200px;
   }
 }
 
-:is([saknoto_mode="light"]) {
-  .button {
-    background: var(--accent-200);
-    border: 1px solid var(--accent-300);
-    color: var(--accent-700);
-
-    &:hover {
-      background: var(--accent-300);
-
-      &:active {
-        background: var(--accent-400);
-      }
-    }
-  }
-}
-:is([saknoto_mode="dark"]) {
-  .button {
-    background: var(--accent-900);
-    border: 1px solid var(--accent-800);
-    color: var(--accent-300);
-
-    &:hover {
-      background: var(--accent-600);
-
-      &:active {
-        background: var(--accent-500);
-      }
-    }
-  }
-}
-
 .button {
   padding: 3px 7px;
-  color: var(--primary-fg);
   border-radius: 4px;
-  border: 1px solid var(--primary-border);
+  border-width: 1px;
   font-weight: 500;
 
   &:hover {
@@ -679,7 +647,8 @@ $position_duration: 0.15s;
 
 .sak__switch {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: start;
   gap: 4px;
   .switch__control {
     display: flex;

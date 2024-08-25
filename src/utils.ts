@@ -15,6 +15,17 @@ export const debounce = (callback: any, wait: any) => {
   };
 };
 
+export const validate_move = (fen: string, move: string) => {
+  try {
+    let game = new Chess();
+    game.load(fen);
+    game.move(move);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 export const debounce_async = (callback: any, wait: any) => {
   let timeoutId: number | null | undefined = null;
   return (...args: any) => {

@@ -87,7 +87,11 @@ const PlayPage: Component = () => {
           onSelect={(move: string) => game.play_move(move)}
           onHover={(moves) => game.drawArrows(moves)}
         />
-        <RepertoireCard fen={fen()} requestLine={() => setIsRepState(true)} />
+        <RepertoireCard
+          fen={fen()}
+          requestLine={() => setIsRepState(true)}
+          game={game}
+        />
         <ExplorerCard fen={fen()} playerColor="white" />
       </div>
     </div>

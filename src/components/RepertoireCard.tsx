@@ -1,22 +1,32 @@
 import { Button } from "@kobalte/core/button";
-import { Component, For, createEffect, createSignal } from "solid-js";
+import { Component, For, createEffect, createSignal, onMount } from "solid-js";
 import { useSaknotoContext } from "~/Context";
+import { Game } from "~/Game";
 
 const RepertoireCard: Component<{
   fen: string | undefined;
   requestLine?: () => any;
+  game?: Game;
 }> = (props) => {
   const context = useSaknotoContext();
   const [responses, setResponses] = createSignal([]);
+  const [evl, setEvl] = createSignal(null);
 
   createEffect(async () => {
     const fen = props.fen;
-    if (fen) {
-      const res = await context.repertoire.getLine(fen);
-      setResponses(res?.response ?? []);
-    }
+    await update(fen);
   });
 
+  const update = async (fen: string | undefined) => {
+    const res = await context.repertoire.getLine(fen);
+    setResponses(res?.response ?? []);
+  };
+
+  onMount(() => {
+    context.engine.subscribe_main((ev) => {
+      setEvl(ev?.lines.at(0)?.san.at(0) ?? null);
+    });
+  });
   const add_line = () => {
     console.log("line");
     if (props.requestLine) {
@@ -24,18 +34,70 @@ const RepertoireCard: Component<{
     }
   };
 
+  const add_engine_line = () => {
+    let rep: string | null = evl();
+    if (rep !== null && rep.length > 0 && props.fen != undefined) {
+      context.repertoire.addLine(props.fen, rep);
+      setTimeout(() => {
+        update(props.fen);
+      }, 500);
+    }
+  };
+
+  let arrows = new Set<string>();
+  const addArrow = (move: string) => {
+    arrows.add(move);
+    if (props.game) {
+      props.game.drawArrows([...arrows.values()]);
+    }
+  };
+  const removeArrow = (move: string) => {
+    arrows.delete(move);
+    if (props.game) {
+      props.game.drawArrows([...arrows.values()]);
+    }
+  };
+
   return (
-    <div class="bg-accent-100 rounded overflow-hidden dark:bg-accent-800 dark:border-accent-700 border text-accent-800 dark:text-accent-100">
-      <div class="bg-accent-200 py-1 px-2 dark:bg-accent-700 font-medium">
-        Repertoire
-      </div>
+    <div class="bg-lum-100 rounded min dark:border-accent-700 border text-accent-800 dark:text-accent-100">
+      <div class="bg-lum-200 py-1 px-2  font-medium">Repertoire</div>
       <div class="p-2">
-        <Button onClick={() => add_line()} class="button">
-          Add Line
-        </Button>
+        <div class="flex flex-col gap-2 items-start">
+          <Button
+            onClick={() => add_line()}
+            class="button bg-lum-200 border-lum-300"
+          >
+            + add response
+          </Button>
+          <Button
+            class="button bg-lum-200 border-lum-300"
+            onmouseenter={() => {
+              if (evl()) {
+                addArrow(evl());
+              }
+            }}
+            onmouseleave={() => {
+              if (evl()) {
+                removeArrow(evl());
+              }
+            }}
+            onClick={() => add_engine_line()}
+          >
+            + add top engine line {evl()}
+          </Button>
+        </div>
         <For each={responses()}>
           {(item, index) => (
-            <div class="font-semibold p-2 dark:bg-accent-700 bg-accent-200 my-2 rounded hoverable">
+            <div
+              class="font-semibold p-2 bg-lum-200 hover:bg-lum-300 hover:cursor-pointer my-2 rounded hoverable"
+              onmouseenter={() => {
+                addArrow(item);
+              }}
+              onmouseleave={() => {
+                removeArrow(item);
+              }}
+              onclick={() => props.game?.play_move(item)}
+            >
               {item}
             </div>
           )}
@@ -44,5 +106,4 @@ const RepertoireCard: Component<{
     </div>
   );
 };
-
 export default RepertoireCard;

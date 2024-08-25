@@ -6,6 +6,7 @@ import { Button } from "@kobalte/core/button";
 import Peer from "peerjs";
 import { v4 as uuidv4 } from "uuid";
 import { QRCodeSVG } from "solid-qr-code";
+import SaknotoSwitch from "./SaknotoSwitch";
 
 const GameInterfaceCard: Component<{
   game: Game;
@@ -14,10 +15,15 @@ const GameInterfaceCard: Component<{
   const [opponent, setOpponent] = createSignal<string>("none");
   const [myuuid, setMyUuid] = createSignal<string>("");
   const [peerstatus, setPeerStatus] = createSignal<string>("Waiting");
+  const [playuntilrep, setplayuntilrep] = createSignal<boolean>(false);
 
   const set_opponent = (val: string) => {
     setOpponent(val);
     props.game.set_opponent(val === "computer" ? true : false);
+  };
+
+  const setplayuntil = (val: boolean) => {
+    props.game.setRepertoireAutoPlay(val);
   };
 
   const set_color = (color: ChessColor) => {
@@ -43,15 +49,24 @@ const GameInterfaceCard: Component<{
           on_update={set_opponent}
         ></SelectDropdown>
         <div class="flex flex-col">
-          <Button class="button mt-2" onClick={() => props.game.restart()}>
+          <Button
+            class="button mt-2 bg-lum-200 border-lum-300 text-lum-600"
+            onClick={() => props.game.restart()}
+          >
             Restart
           </Button>
           <Button
-            class="button mt-2"
+            class="button mt-2 bg-lum-200 border-lum-300 text-lum-600"
             onClick={() => props.game.play_common_move()}
           >
             Play common move
           </Button>
+          <SaknotoSwitch
+            val={playuntilrep()}
+            onChange={(val) => setplayuntil(val)}
+          >
+            Autoplay repertoire
+          </SaknotoSwitch>
         </div>
       </div>
     </div>

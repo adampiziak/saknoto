@@ -62,7 +62,6 @@ export class Repertoire {
   }
 
   addLine(fen: string, response: string) {
-    console.log("adding response to LINE");
     if (this.db) {
       console.log(this.db);
       const transaction = this.db.transaction("position", "readwrite");
@@ -126,7 +125,7 @@ export class Repertoire {
       const req = objectStore.get(fen);
 
       req.onsuccess = (event) => {
-        const result = req.result ?? [];
+        const result = req.result ?? null;
         resolve(result);
       };
 
