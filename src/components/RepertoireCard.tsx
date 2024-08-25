@@ -40,6 +40,7 @@ const RepertoireCard: Component<{
       context.repertoire.addLine(props.fen, rep);
       setTimeout(() => {
         update(props.fen);
+        props.game?.checkIfComputerMove();
       }, 500);
     }
   };

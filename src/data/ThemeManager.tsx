@@ -70,7 +70,7 @@ export default class ThemeManager {
       if (saved_mode) {
         this.mode = saved_mode;
       } else {
-        this.set_mode("light");
+        this.set_mode("dark");
       }
     }
   }
