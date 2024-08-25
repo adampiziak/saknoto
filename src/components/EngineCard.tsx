@@ -6,6 +6,7 @@ import { DraggableIcon } from "~/icons";
 
 const EngineCard: Component<{
   onSelect?: (dest: string) => any;
+  onHover?: (moves: string[]) => any;
 }> = (props) => {
   const context = useSaknotoContext();
 
@@ -22,6 +23,23 @@ const EngineCard: Component<{
   const emitSelection = (dest: string) => {
     if (props.onSelect) {
       props.onSelect(dest);
+    }
+  };
+
+  let arrows = new Set<string>();
+
+  const addArrow = (move: string) => {
+    arrows.add(move);
+    emitHover([...arrows.values()]);
+  };
+  const removeArrow = (move: string) => {
+    arrows.delete(move);
+    emitHover([...arrows.values()]);
+  };
+
+  const emitHover = (moves: string[]) => {
+    if (props.onHover) {
+      props.onHover(moves);
     }
   };
 
@@ -45,8 +63,14 @@ const EngineCard: Component<{
     const score_string = `${sign}${Math.abs(score)}`;
     return (
       <div
-        class="hover:bg-accent-200 bg-accent-50 dark:bg-accent-900 [&:not(:last-child)]:border-b border-accent-300 dark:border-accent-800 py-2 px-2 flex gap-4"
+        class="hover:bg-lum-300 hover:cursor-pointer bg-lum-100 [&:not(:last-child)]:border-b border-lum-200 dark:border-lum-200 py-2 px-2 flex gap-4"
         onClick={() => emitSelection(line.san[0])}
+        onmouseenter={() => {
+          addArrow(line.lan[0]);
+        }}
+        onmouseleave={() => {
+          removeArrow(line.lan[0]);
+        }}
       >
         <div class="w-[32px] grow-0 shrink-0  font-semibold text-right">
           {score_string}
@@ -58,29 +82,20 @@ const EngineCard: Component<{
     );
   };
 
-  const EmptyLine = () => {
-    return (
-      <div class="lvl-1 hoverable sk-list-item  py-2 px-2 flex gap-4 items-center">
-        <div class="animate-pulse">loading</div>
-      </div>
-    );
-  };
-
   return (
-    <div class="border border-accent-200 dark:border-accent-700 bg-accent-100 dark:bg-accent-900 rounded">
-      <div class="card-header text-lum-900 bg-lum-200 flex justify-between dark:text-accent-50 items-center">
-        <DraggableIcon class="w-4 text-accent-600 mr-1" />
+    <div class="border border-accent-200 dark:border-accent-700 bg-lum-100 rounded overflow-hidden">
+      <div class="card-header text-lum-900 bg-lum-200 flex justify-between items-center">
         <div class="mr-2 ">Engine</div>
         <div class="font-normal ">{evaluation().mode}</div>
         <div class="text-xs uppercase ml-2 grow dark:text-accent-500 text-accent-700 text-right mr-2">
           {evaluation().cached ? "cached" : ""}
         </div>
-        <div class="dark:text-zinc-100 text-accent-700  text-right">
+        <div class="text-lum-800  text-right">
           <span class=""></span>
           <span class=""> {evaluation().depth}</span>
         </div>
       </div>
-      <div class="text-accent-700 bg-accent-100 dark:text-accent-300">
+      <div class="text-lum-700 bg-lum-100">
         <For each={evaluation().lines}>{(item, _) => Line(item)}</For>
       </div>
     </div>

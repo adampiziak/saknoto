@@ -601,6 +601,14 @@ header {
   flex-shrink: 1;
 }
 
+.current-opening-continuations {
+  display: grid;
+  align-items: center;
+  row-gap: 0.5rem;
+  column-gap: 1rem;
+  grid-template-columns: auto 2fr auto;
+}
+
 .sk-tree-line {
   height: 100%;
   width: 2px;
@@ -614,7 +622,17 @@ $position_duration: 0.15s;
   transition: margin $position_duration;
 }
 
+.variations-container {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows $position_duration ease-out;
+
+  &.active {
+    grid-template-rows: 1fr;
+  }
+}
 .sk-position-child {
+  overflow: hidden;
   transition:
     height $position_duration,
     padding $position_duration;

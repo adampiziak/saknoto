@@ -73,6 +73,17 @@ export class Repertoire {
     }
   }
 
+  removeLine(fen: string) {
+    console.log("adding response to LINE");
+    if (this.db) {
+      console.log(this.db);
+      const transaction = this.db.transaction("position", "readwrite");
+      const objectStore = transaction.objectStore("position");
+
+      objectStore.delete(fen);
+    }
+  }
+
   updateRep(rep: RepCard, card: Card) {
     if (this.db) {
       const transaction = this.db.transaction("position", "readwrite");

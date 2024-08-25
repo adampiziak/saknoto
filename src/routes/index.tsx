@@ -82,7 +82,10 @@ const PlayPage: Component = () => {
       />
       <div class="flex flex-col gap-4 w-[500px] h-[100%] min-h-0 shrink px-4 sn-info-card">
         <GameInterfaceCard game={game} />
-        <EngineCard />
+        <EngineCard
+          onSelect={(move: string) => game.play_move(move)}
+          onHover={(moves) => game.drawArrows(moves)}
+        />
         <RepertoireCard fen={fen()} requestLine={() => setIsRepState(true)} />
         <ExplorerCard fen={fen()} playerColor="white" />
       </div>

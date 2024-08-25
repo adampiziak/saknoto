@@ -3,12 +3,17 @@ import { Game } from "~/Game";
 import SelectDropdown from "./SelectDropdown";
 import { ChessColor } from "~/lib/common";
 import { Button } from "@kobalte/core/button";
+import Peer from "peerjs";
+import { v4 as uuidv4 } from "uuid";
+import { QRCodeSVG } from "solid-qr-code";
 
 const GameInterfaceCard: Component<{
   game: Game;
 }> = (props) => {
   const [playerColor, setPlayerColor] = createSignal(ChessColor.White);
   const [opponent, setOpponent] = createSignal<string>("none");
+  const [myuuid, setMyUuid] = createSignal<string>("");
+  const [peerstatus, setPeerStatus] = createSignal<string>("Waiting");
 
   const set_opponent = (val: string) => {
     setOpponent(val);
@@ -37,9 +42,17 @@ const GameInterfaceCard: Component<{
           value={opponent()}
           on_update={set_opponent}
         ></SelectDropdown>
-        <Button class="button mt-2" onClick={() => props.game.restart()}>
-          Restart
-        </Button>
+        <div class="flex flex-col">
+          <Button class="button mt-2" onClick={() => props.game.restart()}>
+            Restart
+          </Button>
+          <Button
+            class="button mt-2"
+            onClick={() => props.game.play_common_move()}
+          >
+            Play common move
+          </Button>
+        </div>
       </div>
     </div>
   );

@@ -1,9 +1,10 @@
-import { make_valid, startingFen, toDests } from "./utils";
+import { make_valid, san_to_lan, startingFen, toDests } from "./utils";
 import { Api } from "chessground/api";
 import { Chessground } from "chessground";
 import { Chess } from "chess.js";
 import { LRUCache } from "./data/Cache";
 import { ChessColor } from "./lib/common";
+import { DrawShape } from "chessground/draw";
 
 interface History {
   index: number;
@@ -89,6 +90,27 @@ export class Game {
       }
     });
     this.checkIfComputerMove();
+  }
+
+  drawArrows(moves: string[]) {
+    let arrows: DrawShape[] = [];
+    try {
+      for (const m of moves) {
+        const { orig, dest } = san_to_lan(this.state.fen(), m);
+        arrows.push({
+          orig,
+          dest,
+          brush: "blue",
+        });
+      }
+    } catch {
+      arrows = [];
+    }
+    this.api?.set({
+      drawable: {
+        autoShapes: arrows,
+      },
+    });
   }
 
   setStartingPosition(pgn: string) {
