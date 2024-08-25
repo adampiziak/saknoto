@@ -106,14 +106,6 @@ export default function Header() {
                     Table of played positions
                   </NavigationMenu.ItemDescription>
                 </NavigationMenu.Item>
-                <NavigationMenu.Item class="sn-nav-item" href="/tools/builder">
-                  <NavigationMenu.ItemLabel class="sn-nav-label">
-                    repertoire builder
-                  </NavigationMenu.ItemLabel>
-                  <NavigationMenu.ItemDescription class="sn-nav-desc">
-                    find positions to improve your openings
-                  </NavigationMenu.ItemDescription>
-                </NavigationMenu.Item>
               </NavigationMenu.Content>
             </NavigationMenu.Portal>
           </NavigationMenu.Menu>
