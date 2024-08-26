@@ -1,5 +1,6 @@
 import type StockfishWeb from "lila-stockfish-web";
-import Stockfish from "./sf161-70";
+// import Stockfish from "./sf161-70";
+import Stockfish from "./sf16-7";
 import {
   startingFen,
   parse_moves,
@@ -170,14 +171,12 @@ export class Engine {
           cached: true,
         });
       }
-      console.log("ENGINE TASK FINISHED");
       this.current_task = null;
       this.engine_ready = true;
       this.engine?.uci("isready");
       return;
     }
     if (message.includes("readyok")) {
-      console.log("ENGINE READY FOR ENXT TASK");
       await this.evaluate_next_task();
       return;
     }

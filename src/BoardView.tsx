@@ -26,7 +26,6 @@ export const BoardView: Component<{
     if (container != undefined) {
       const rootmin = Math.floor(container.offsetHeight / 8) * 8;
       setRootHeight(rootmin);
-      console.log(rootmin);
     }
   }, 100);
 
@@ -77,7 +76,6 @@ export const BoardView: Component<{
           newp.h != last_pos.h
         ) {
           last_pos = newp;
-          console.log("new");
           resize();
         }
         requestAnimationFrame(checkpos);

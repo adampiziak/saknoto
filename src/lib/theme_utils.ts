@@ -36,7 +36,6 @@ export function applyColorfulTheme(hue: number, mode: "light" | "dark") {
   let accents = [];
   let mains = [];
   let hexstrings = [];
-  console.log(hue);
 
   for (let i = 0; i < shades.length; i++) {
     let clr = `oklch(${lightness[i]}% ${chroma[i] / 2} ${hue})`;
@@ -58,7 +57,6 @@ export function applyColorfulTheme(hue: number, mode: "light" | "dark") {
   if (document?.body) {
     const el = document.body;
     for (let i = 0; i < shades.length; i++) {
-      console.log(accents[i]);
       el.style.setProperty(`--accent-serial-${shades[i]}`, accents[i]);
       el.style.setProperty(`--accent-${shades[i]}`, mains[i]);
       el.style.setProperty(`--hex-accent-${shades[i]}`, hexstrings[i]);
@@ -72,7 +70,6 @@ export function applyNeutralTheme(hue: number, mode: "light" | "dark") {
   let accents = [];
   let mains = [];
   let hexstrings = [];
-  console.log(hue);
 
   for (let i = 0; i < shades.length; i++) {
     let clr = `oklch(${lightness[i]}% ${chroma[i] * 0.2} ${hue})`;
@@ -94,7 +91,6 @@ export function applyNeutralTheme(hue: number, mode: "light" | "dark") {
   if (document?.body) {
     const el = document.body;
     for (let i = 0; i < shades.length; i++) {
-      console.log(accents[i]);
       el.style.setProperty(`--accent-serial-${shades[i]}`, accents[i]);
       el.style.setProperty(`--accent-${shades[i]}`, mains[i]);
       el.style.setProperty(`--hex-accent-${shades[i]}`, hexstrings[i]);

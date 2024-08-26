@@ -87,8 +87,6 @@ const OpeningCard: Component<{
   const arrows = new Set<string>();
   const update = async (history: string[]) => {
     arrows.clear();
-    console.log("new history");
-    console.log(props.pgn);
     const key = props.pgn.join("");
     const opng = names.get(key);
     let currPosition: CurrentPosition = {
@@ -344,9 +342,6 @@ const OpeningCard: Component<{
   };
 
   const [selected, setSelected] = createSignal<number | null>(null);
-  createEffect(() => {
-    console.log(selected());
-  });
 
   const addArrow = (move: string) => {
     arrows.add(move);

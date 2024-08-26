@@ -3,7 +3,7 @@ import { defineConfig } from "@solidjs/start/config";
 export default defineConfig({
   server: {
     static: true,
-    preset: "netlify-static",
+    preset: "cloudflare-pages-static",
     prerender: {
       crawlLinks: true,
     },

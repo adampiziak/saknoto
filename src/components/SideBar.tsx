@@ -35,7 +35,6 @@ const SideBar: Component<{}> = (_props) => {
 
   onMount(async () => {
     context.ui.sidebar.on((state) => {
-      console.log(state);
       setState(state);
     });
   });
