@@ -37,7 +37,7 @@ export default function Header() {
   });
 
   return (
-    <header class="relative z-40 py-4   border-accent-300 dark:border-zinc-700 flex flex-wrap items-center  justify-center dark:text-accent-100 text-accent-900 dark:bg-accent-950 bg-accent-50 w-full">
+    <header class="relative z-20 py-4   border-accent-300 dark:border-zinc-700 flex flex-wrap items-center  justify-center dark:text-accent-100 text-accent-900 dark:bg-accent-950 bg-accent-50 w-full">
       <div class="flex w-full justify-between items-center">
         <div class="basis-0 grow flex">
           <div class="text-2xl sn-logo   text-accent-700 ">

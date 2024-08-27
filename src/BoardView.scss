@@ -1,16 +1,16 @@
 .board-view {
-  container: board-container / size;
+  /* container: board-container / size; */
   color: var(accent-50);
 }
-.board-container {
-  height: round(down, 100cqw, 8px);
-  width: round(down, 100cqw, 8px);
-  /* height: 100cqw; */
-  /* width: 100cwq; */
-  overflow: hidden;
-}
+/* .board-container { */
+/* height: round(down, 100cqw, 8px); */
+/* width: round(down, 100cqw, 8px); */
+/* height: 100cqw; */
+/* width: 100cwq; */
+/* overflow: hidden; */
+/* } */
 
-.board {
-  height: round(down, 100cqw, 8px);
-  width: round(down, 100cqw, 8px);
-}
+/* .board { */
+/* height: round(down, 100cqw, 8px); */
+/* width: round(down, 100cqw, 8px); */
+/* } */

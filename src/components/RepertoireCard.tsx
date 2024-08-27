@@ -4,27 +4,30 @@ import { useSaknotoContext } from "~/Context";
 import { Game } from "~/Game";
 
 const RepertoireCard: Component<{
-  fen: string | undefined;
-  requestLine?: () => any;
-  game?: Game;
+  game: Game;
 }> = (props) => {
   const context = useSaknotoContext();
   const [responses, setResponses] = createSignal([]);
   const [evl, setEvl] = createSignal(null);
+  const [fen, setFen] = createSignal(null);
 
   createEffect(async () => {
-    const fen = props.fen;
-    await update(fen);
+    await update(fen());
   });
 
   const update = async (fen: string | undefined) => {
-    const res = await context.repertoire.getLine(fen);
-    setResponses(res?.response ?? []);
+    if (fen) {
+      const res = await context.repertoire.getLine(fen);
+      setResponses(res?.response ?? []);
+    }
   };
 
   onMount(() => {
     context.engine.subscribe_main((ev) => {
       setEvl(ev?.lines.at(0)?.san.at(0) ?? null);
+    });
+    props.game.subscribe(({ fen }) => {
+      setFen(fen);
     });
   });
   const add_line = () => {
@@ -36,10 +39,10 @@ const RepertoireCard: Component<{
 
   const add_engine_line = () => {
     let rep: string | null = evl();
-    if (rep !== null && rep.length > 0 && props.fen != undefined) {
-      context.repertoire.addLine(props.fen, rep);
+    if (rep !== null && rep.length > 0 && fen() != undefined) {
+      context.repertoire.addLine(fen(), rep);
       setTimeout(() => {
-        update(props.fen);
+        update(fen());
         props.game?.checkIfComputerMove();
       }, 500);
     }

@@ -15,6 +15,7 @@ export class StudySession {
 
   async refresh() {
     const now = new Date();
+    now.setHours(24, 0, 0, 0);
 
     const reps = await this.repertoire.getAll();
     for (const r of reps) {
@@ -102,6 +103,7 @@ export class StudySession {
 
     this.repertoire.updateRep(rep, updated_card);
     const now = new Date();
+    now.setHours(24, 0, 0, 0);
 
     // console.log(this.take(rep));
     this.take(rep);

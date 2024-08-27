@@ -1,14 +1,18 @@
-import { Component, For, createSignal, onMount } from "solid-js";
+import { Skeleton } from "@kobalte/core/skeleton";
+import { Component, For, Show, createSignal, onMount } from "solid-js";
 import { useSaknotoContext } from "~/Context";
 import { Evaluation, EvaluationLine } from "~/Engine";
-import { STARTING_EVAL } from "~/constants";
+import { Game } from "~/Game";
+import { STARTING_EVAL, STARTING_FEN } from "~/constants";
 import { DraggableIcon } from "~/icons";
 
 const EngineCard: Component<{
+  game: Game;
   onSelect?: (dest: string) => any;
   onHover?: (moves: string[]) => any;
 }> = (props) => {
   const context = useSaknotoContext();
+  const [boardFen, setBoardFen] = createSignal<string | null>(STARTING_FEN);
 
   const [evaluation, setEvaluation] = createSignal<Evaluation>({
     ...STARTING_EVAL,
@@ -19,6 +23,11 @@ const EngineCard: Component<{
     context.engine.subscribe_main((newEval) => {
       setEvaluation(newEval);
       arrows.clear();
+    });
+    props.game.subscribe(({ fen, _ }: any) => {
+      setTimeout(() => {
+        setBoardFen(fen);
+      }, 300);
     });
   });
 
@@ -63,7 +72,7 @@ const EngineCard: Component<{
     const score_string = `${sign}${Math.abs(score)}`;
     return (
       <div
-        class="hover:bg-lum-300 hover:cursor-pointer bg-lum-100 [&:not(:last-child)]:border-b border-lum-200 dark:border-lum-200 py-2 px-2 flex gap-4"
+        class={` hover:bg-lum-300 hover:cursor-pointer bg-lum-100 [&:not(:last-child)]:border-b border-lum-200 dark:border-lum-200 py-2 px-2 flex gap-4`}
         onClick={() => emitSelection(line.san[0])}
         onmouseenter={() => {
           addArrow(line.lan[0]);
@@ -83,7 +92,7 @@ const EngineCard: Component<{
   };
 
   return (
-    <div class="border border-accent-200 dark:border-accent-700 bg-lum-100 rounded overflow-hidden">
+    <div class="border border-lum-300 bg-lum-100 rounded overflow-hidden">
       <div class="card-header text-lum-900 bg-lum-200 flex justify-between items-center">
         <div class="mr-2 ">Engine</div>
         <div class="font-normal ">{evaluation().mode}</div>
@@ -95,7 +104,12 @@ const EngineCard: Component<{
           <span class=""> {evaluation().depth}</span>
         </div>
       </div>
-      <div class="text-lum-700 bg-lum-100">
+      <div
+        class={
+          "text-lum-700 bg-lum-100 " +
+          `sk-eval-line ${boardFen() !== evaluation().fen ? "inactive" : ""}`
+        }
+      >
         <For each={evaluation().lines}>{(item, _) => Line(item)}</For>
       </div>
     </div>

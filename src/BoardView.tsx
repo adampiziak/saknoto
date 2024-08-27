@@ -9,6 +9,11 @@ import "./BoardView.scss";
 import { debounce } from "./utils";
 import { Game } from "./Game";
 
+export enum BoardViewMode {
+  COLUMN,
+  ROW,
+}
+
 export const BoardView: Component<{
   setApi?: Setter<Api | null> | undefined;
   class?: undefined | string;
@@ -16,18 +21,48 @@ export const BoardView: Component<{
   onMove?: ((lan: string) => void) | undefined;
   onReady?: ((game: Game) => void) | undefined;
   game?: Game | undefined;
+  mode?: BoardViewMode;
+  onResize?: (rect: DOMRect) => void;
 }> = (props) => {
   let element: HTMLDivElement | undefined;
   let container: HTMLDivElement | undefined;
 
-  const [rootHeight, setRootHeight] = createSignal(0);
+  const [boardSize, setBoardSize] = createSignal(0);
 
-  const resize = debounce(() => {
+  // const resize = debounce(() => {
+  //   if (container != undefined) {
+  //     const rect = container.getBoundingClientRect();
+  //     const container_width = Math.floor(rect.width / 8) * 8;
+  //     const container_height = Math.floor(rect.height / 8) * 8;
+  //     const maxsize = Math.min(container_height, container_width);
+  //     console.log(`size ${container_width} x ${container_height}: ${maxsize}`);
+  //     setBoardSize(maxsize);
+  //   }
+  // }, 100);
+  const [conStyle, setConStyle] = createSignal({
+    "max-width": props.mode === BoardViewMode.COLUMN ? "100vw" : "100vh",
+    "max-height": props.mode === BoardViewMode.COLUMN ? "100vw" : "100vh",
+  });
+  const resize = () => {
+    console.log("resize");
     if (container != undefined) {
-      const rootmin = Math.floor(container.offsetHeight / 8) * 8;
-      setRootHeight(rootmin);
+      const rect = container.getBoundingClientRect();
+      if (props.onResize) {
+        props?.onResize(rect);
+      }
+      const container_width = Math.ceil(rect.width / 8) * 8;
+      const container_height = Math.ceil(rect.height / 8) * 8;
+      const minsize = Math.min(container_height, container_width);
+      const maxsize = Math.max(container_height, container_width);
+      // console.log(`size ${container_width} x ${container_height}: ${minsize}`);
+      setBoardSize(minsize);
+      if (props.mode === BoardViewMode.COLUMN) {
+        setConStyle({ "max-height": `${(minsize + maxsize) / 2}px` });
+      } else {
+        setConStyle({ "max-width": `${(maxsize + minsize * 2) / 3}px` });
+      }
     }
-  }, 100);
+  };
 
   onMount(() => {
     if (element) {
@@ -89,15 +124,16 @@ export const BoardView: Component<{
   return (
     <div
       ref={container}
+      style={conStyle()}
       class={
         props.class +
-        " board-view shrink basis-[100%] items-start justify-center flex"
+        " flex board-view  justify-center items-center min-h-0 min-w-0 max-w-full max-h-full grow shrink"
       }
-      style={{ "max-width": `${rootHeight()}px` }}
     >
       <div class="board-container overflow-hidden">
         <div
           ref={element}
+          style={{ height: `${boardSize()}px`, width: `${boardSize()}px` }}
           class={`board ${props.rounded ? "rounded overflow-hidden" : ""}`}
         ></div>
       </div>

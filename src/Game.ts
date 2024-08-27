@@ -17,6 +17,11 @@ enum PlayerKind {
   Human,
 }
 
+interface GameEvent {
+  fen: string;
+  history: string[];
+}
+
 interface Side {
   white: PlayerKind;
   black: PlayerKind;
@@ -35,6 +40,7 @@ export class Game {
   once_listeners: any[] = [];
   autoPlayRepertoire: boolean = false;
   saknotoContext: SaknotoContextKind = null;
+  useNextAsRep: boolean = false;
 
   set_opponent(val: boolean) {
     this.playOpponent = val;
@@ -179,6 +185,7 @@ export class Game {
   }
 
   restart() {
+    console.log("RESTART");
     this.state.reset();
     this.state.load(this.starting_position);
     this.history.index = 0;
@@ -190,7 +197,7 @@ export class Game {
     this.checkIfComputerMove();
   }
 
-  subscribe(callback: any) {
+  subscribe(callback: (event: GameEvent) => void) {
     this.listeners.push(callback);
   }
 

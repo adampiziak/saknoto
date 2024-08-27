@@ -20,6 +20,9 @@ import OpeningCard from "~/components/OpeningCard";
 import { useKeyDownEvent } from "@solid-primitives/keyboard";
 import { Chess } from "chess.js";
 import GameInterfaceCard from "~/components/GameInterfaceCard";
+import PositionContext from "~/components/PositionContext";
+import HomeDesktop from "~/components/HomeDesktop";
+import HomeMobile from "~/components/HomeMobile";
 // import { Game } from "~/Game";
 
 const PlayPage: Component = () => {
@@ -68,33 +71,10 @@ const PlayPage: Component = () => {
   );
 
   return (
-    <div class="flex min-h-0 shrink pb-4 px-4 dark:bg-accent-950 bg-accent-50 sn-main ">
-      <div class="flex sk-fit shrink overflow-visible sn-opening-card">
-        <OpeningCard
-          pgn={history()}
-          on_select={(move) => game.handle_move(move)}
-          game={game}
-        />
-      </div>
-      <BoardView
-        class={`sn-board-view ${isRepState() ? "border-4 border-red-500 -ml-2 -mt-0.5" : ""}`}
-        game={game}
-        rounded={true}
-      />
-      <div class="flex flex-col gap-4 w-[500px] h-[100%] min-h-0 shrink px-4 sn-info-card">
-        <GameInterfaceCard game={game} />
-        <EngineCard
-          onSelect={(move: string) => game.play_move(move)}
-          onHover={(moves) => game.drawArrows(moves)}
-        />
-        <RepertoireCard
-          fen={fen()}
-          requestLine={() => setIsRepState(true)}
-          game={game}
-        />
-        <ExplorerCard fen={fen()} playerColor="white" />
-      </div>
-    </div>
+    <>
+      <HomeDesktop game={game} />
+      <HomeMobile game={game} />
+    </>
   );
 };
 

@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-$mobile-width: 1200px;
+$mobile-width: 1000px;
 
 @font-face {
   font-family: "Lexend";
@@ -31,6 +31,11 @@ $mobile-width: 1200px;
 
 * {
   font-family: "Inter Tight";
+}
+
+body {
+  height: 100vh;
+  overflow: hidden;
 }
 
 :root {
@@ -621,10 +626,24 @@ $position_duration: 0.15s;
   flex-direction: row;
 }
 
+.home-mobile {
+  display: none;
+}
+.home-desktop {
+  display: flex;
+}
+
 @media (width <= $mobile-width) {
   .sn-main {
     flex-direction: column;
     justify-content: center;
+  }
+  .home-mobile {
+    display: flex;
+  }
+
+  .home-desktop {
+    display: none;
   }
 
   .sn-board-view {
@@ -678,5 +697,23 @@ $position_duration: 0.15s;
   }
   .switch__thumb[data-checked] {
     transform: translateX(calc(100% - 1px));
+  }
+}
+
+@keyframes skeleton-fade {
+  0%,
+  100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 0.1;
+  }
+}
+.sk-eval-line {
+  opacity: 1;
+
+  &.inactive {
+    animation: skeleton-fade 2s linear infinite;
+    animation-delay: 1s;
   }
 }

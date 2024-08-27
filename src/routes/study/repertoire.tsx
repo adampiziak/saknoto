@@ -17,7 +17,7 @@ const RepertoirePage: Component = () => {
   });
 
   return (
-    <div class="flex">
+    <div class="flex bg-lum-50 text-lum-900">
       <div class="overflow-auto grow">
         <For each={reps()}>
           {(it, ix) => (
