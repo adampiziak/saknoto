@@ -103,16 +103,14 @@ const BottomSheet: ParentComponent<{ initialY: number }> = (props) => {
       <div
         onMouseMove={fromMouseMove}
         onTouchMove={fromTouchMove}
+        onTouchStart={fromTouchStart}
+        onTouchEnd={fromTouchEnd}
         onmouseout={() => (touchoffset = null)}
         ref={sheet_element}
         class="text-lum-800 absolute shadow-lg mobile-view z-30  overflow-hidden bottom-0 left-0 w-screen h-screen bg-lum-100"
         style={{ top: `${positionY()}px` }}
       >
-        <div
-          class="sheet-handle h-8 active:bg-lum-200 w-full flex items-center justify-center"
-          onTouchStart={fromTouchStart}
-          onTouchEnd={fromTouchEnd}
-        >
+        <div class="sheet-handle h-8 active:bg-lum-200 w-full flex items-center justify-center">
           <div class="handle-marker w-36 h-1 bg-lum-300 rounded-full"></div>
         </div>
         <div>{props.children}</div>

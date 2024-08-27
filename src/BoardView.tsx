@@ -48,6 +48,7 @@ export const BoardView: Component<{
     if (container != undefined) {
       const rect = container.getBoundingClientRect();
       if (props.onResize) {
+        console.log("resize parent");
         props?.onResize(rect);
       }
       const container_width = Math.ceil(rect.width / 8) * 8;

@@ -12,7 +12,7 @@ const HomeMobile: Component<{ game: Game }> = (props) => {
       <BoardView
         game={props.game}
         mode={BoardViewMode.COLUMN}
-        onResize={(rect) => setBoardRect(rect.bottom)}
+        onResize={(rect) => setTimeout(() => setBoardRect(rect.bottom), 1000)}
       />
       <BottomSheet initialY={boardRect()}>
         <PositionContextualCard game={props.game} />
