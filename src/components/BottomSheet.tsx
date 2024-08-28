@@ -7,11 +7,19 @@ const BottomSheet: ParentComponent<{ initialY: number }> = (props) => {
   let sheet_element: HTMLDivElement | undefined;
   let [offsetY, setOffsetY] = createSignal(0);
   let [positionY, setPositionY] = createSignal(10000);
+  let [boardBottom, setBoardBottom] = createSignal(500);
 
   onMount(() => {
     if (sheet_element) {
       console.log(sheet_element.getBoundingClientRect());
     }
+    setTimeout(() => {
+      setBoardBottom((prev) => prev + 0.1);
+    }, 50);
+  });
+
+  createEffect(() => {
+    setBoardBottom(props.initialY);
   });
 
   let touchoffset = null;
@@ -29,17 +37,17 @@ const BottomSheet: ParentComponent<{ initialY: number }> = (props) => {
     if (touchoffset == null) {
       return;
     }
-    const markers = [0, props.initialY];
+    const markers = [0, boardBottom()];
     const position = Math.min(
       Math.max(-5, e.touches.item(0)?.clientY - touchoffset),
-      props.initialY + 95,
+      boardBottom() + 95,
     );
     setPositionY(position);
   };
 
   const fromTouchEnd = (e: TouchEvent) => {
     const position = positionY();
-    const markers = [0, props.initialY];
+    const markers = [0, boardBottom()];
     let snap = null;
     for (const m of markers) {
       if (Math.abs(position - m) < 100) {
@@ -81,10 +89,10 @@ const BottomSheet: ParentComponent<{ initialY: number }> = (props) => {
     const sheetHeight = sheet_element?.getBoundingClientRect().height;
 
     const minY = documentHeight - sheetHeight!;
-    const markers = [0, props.initialY];
+    const markers = [0, boardBottom()];
     let newPosition = Math.min(
-      props.initialY,
-      Math.max(props.initialY + offsetY(), minY),
+      boardBottom(),
+      Math.max(boardBottom() + offsetY(), minY),
     );
     let snap = null;
     for (const m of markers) {
