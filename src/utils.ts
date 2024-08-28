@@ -168,3 +168,7 @@ export function make_valid(move: string) {
       return move;
   }
 }
+
+export const getEnumKeys = (target: any): string[] => {
+  return Object.values(target).filter((v) => isNaN(Number(v)));
+};

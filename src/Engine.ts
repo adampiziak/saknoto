@@ -270,7 +270,6 @@ export class Engine {
     if (fen === STARTING_FEN) {
       this.emit_mainline(STARTING_EVAL);
     } else {
-      console.log("preparing");
       this.prepare_task({ mode: "main", fen, eval_type: "any" });
     }
   }, 1000);
@@ -298,7 +297,6 @@ export class Engine {
   }
 
   async evaluate(task: Task) {
-    console.log(`FEN: ${task.fen}`);
     const cached_eval = await this.cache?.get(task.fen);
     if (cached_eval) {
       if (task.mode === "main") {

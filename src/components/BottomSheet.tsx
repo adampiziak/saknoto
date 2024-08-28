@@ -42,7 +42,7 @@ const BottomSheet: ParentComponent<{ initialY: number }> = (props) => {
     const markers = [0, props.initialY];
     let snap = null;
     for (const m of markers) {
-      if (Math.abs(position - m) < 200) {
+      if (Math.abs(position - m) < 100) {
         snap = m;
         break;
       }
@@ -88,7 +88,7 @@ const BottomSheet: ParentComponent<{ initialY: number }> = (props) => {
     );
     let snap = null;
     for (const m of markers) {
-      if (Math.abs(newPosition - m) < 200) {
+      if (Math.abs(newPosition - m) < 100) {
         snap = m;
         break;
       }

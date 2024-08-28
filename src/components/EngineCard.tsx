@@ -3,14 +3,15 @@ import { Component, For, Show, createSignal, onMount } from "solid-js";
 import { useSaknotoContext } from "~/Context";
 import { Evaluation, EvaluationLine } from "~/Engine";
 import { Game } from "~/Game";
+import { useGame } from "~/GameProvider";
 import { STARTING_EVAL, STARTING_FEN } from "~/constants";
 import { DraggableIcon } from "~/icons";
 
 const EngineCard: Component<{
-  game: Game;
   onSelect?: (dest: string) => any;
   onHover?: (moves: string[]) => any;
 }> = (props) => {
+  const game = useGame();
   const context = useSaknotoContext();
   const [boardFen, setBoardFen] = createSignal<string | null>(STARTING_FEN);
 
@@ -24,10 +25,8 @@ const EngineCard: Component<{
       setEvaluation(newEval);
       arrows.clear();
     });
-    props.game.subscribe(({ fen, _ }: any) => {
-      setTimeout(() => {
-        setBoardFen(fen);
-      }, 300);
+    game.subscribe(({ fen, _ }: any) => {
+      setBoardFen(fen);
     });
   });
 

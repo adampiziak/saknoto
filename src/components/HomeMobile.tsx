@@ -4,21 +4,23 @@ import { Game } from "~/Game";
 import PositionContextualCard from "./PositionContextComponent";
 import BottomSheet from "./BottomSheet";
 import BottomActions from "./BottomActions";
+import { GameProvider } from "~/GameProvider";
 
 const HomeMobile: Component<{ game: Game }> = (props) => {
   const [boardRect, setBoardRect] = createSignal(0);
   return (
-    <div class="home-mobile flex-col max-w-screen w-full relative">
-      <BoardView
-        game={props.game}
-        mode={BoardViewMode.COLUMN}
-        onResize={(rect) => setTimeout(() => setBoardRect(rect.bottom), 1000)}
-      />
-      <BottomSheet initialY={boardRect()}>
-        <PositionContextualCard game={props.game} />
-      </BottomSheet>
-      <BottomActions game={props.game} />
-    </div>
+    <GameProvider>
+      <div class="home-mobile flex-col max-w-screen w-full relative">
+        <BoardView
+          mode={BoardViewMode.COLUMN}
+          onResize={(rect) => setBoardRect(rect)}
+        />
+        <BottomSheet initialY={boardRect()}>
+          <PositionContextualCard game={props.game} />
+        </BottomSheet>
+        <BottomActions game={props.game} />
+      </div>
+    </GameProvider>
   );
 };
 

@@ -1,5 +1,11 @@
 import { Component, createSignal } from "solid-js";
-import { Game } from "~/Game";
+import {
+  defaultGameState,
+  Game,
+  GameState,
+  PlayerKind,
+  PlayerKindKey,
+} from "~/Game";
 import SelectDropdown from "./SelectDropdown";
 import { ChessColor } from "~/lib/common";
 import { Button } from "@kobalte/core/button";
@@ -7,28 +13,31 @@ import Peer from "peerjs";
 import { v4 as uuidv4 } from "uuid";
 import { QRCodeSVG } from "solid-qr-code";
 import SaknotoSwitch from "./SaknotoSwitch";
+import { useGame } from "~/GameProvider";
+import { getEnumKeys } from "~/utils";
 
-const GameInterfaceCard: Component<{
-  game: Game;
-}> = (props) => {
+const GameInterfaceCard: Component = (props) => {
+  const game = useGame()!;
+  const [state, setState] = createSignal<GameState>(defaultGameState());
   const [playerColor, setPlayerColor] = createSignal(ChessColor.White);
   const [opponent, setOpponent] = createSignal<string>("none");
   const [myuuid, setMyUuid] = createSignal<string>("");
   const [peerstatus, setPeerStatus] = createSignal<string>("Waiting");
   const [playuntilrep, setplayuntilrep] = createSignal<boolean>(false);
 
-  const set_opponent = (val: string) => {
-    setOpponent(val);
-    props.game.set_opponent(val === "computer" ? true : false);
-  };
+  game.subscribeState((s) => {
+    setState(s);
+  });
 
-  const setplayuntil = (val: boolean) => {
-    props.game.setRepertoireAutoPlay(val);
+  const setOpponentKind = (key: string) => {
+    const opt: PlayerKind = PlayerKind[key as PlayerKindKey];
+    game.setOpponentType(opt);
   };
 
   const set_color = (color: ChessColor) => {
     setPlayerColor(color);
-    props.game.set_orientation(color);
+    game.setPlayerColor(color);
+    game.setOrientation(color);
   };
 
   return (
@@ -39,31 +48,31 @@ const GameInterfaceCard: Component<{
         <SelectDropdown
           label="Color"
           options={[ChessColor.White, ChessColor.Black]}
-          value={playerColor()}
+          value={state().player.color}
           on_update={(c) => set_color(c as ChessColor)}
         ></SelectDropdown>
         <SelectDropdown
           label="Opponent"
-          options={["computer", "none"]}
-          value={opponent()}
-          on_update={set_opponent}
+          options={getEnumKeys(PlayerKind)}
+          value={PlayerKind[state().opponent.kind]}
+          on_update={setOpponentKind}
         ></SelectDropdown>
         <div class="flex flex-col">
           <Button
             class="button mt-2 bg-lum-200 border-lum-300 text-lum-600"
-            onClick={() => props.game.restart()}
+            onClick={() => game.restart()}
           >
             Restart
           </Button>
           <Button
             class="button mt-2 bg-lum-200 border-lum-300 text-lum-600"
-            onClick={() => props.game.play_common_move()}
+            onClick={() => game.playWeightedRandomMove()}
           >
             Play common move
           </Button>
           <SaknotoSwitch
-            val={playuntilrep()}
-            onChange={(val) => setplayuntil(val)}
+            checked={state().autoplayRepertoire}
+            onChange={(val) => game.setRepertoireAutoPlay(val)}
           >
             Autoplay repertoire
           </SaknotoSwitch>

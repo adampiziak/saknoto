@@ -358,7 +358,7 @@ const OpeningCard: Component<{
 
   const playMove = (move: string) => {
     if (props.game) {
-      props.game.play_move(move);
+      props.game.playMove(move);
     }
   };
   const CurrentOpeningCard = (op: CurrentPosition) => {

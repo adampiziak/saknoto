@@ -1,4 +1,10 @@
-import { make_valid, san_to_lan, startingFen, toDests } from "./utils";
+import {
+  make_valid,
+  parse_move,
+  san_to_lan,
+  startingFen,
+  toDests,
+} from "./utils";
 import { Api } from "chessground/api";
 import { Chessground } from "chessground";
 import { Chess } from "chess.js";
@@ -12,50 +18,77 @@ interface History {
   moves: string[];
 }
 
-enum PlayerKind {
-  Computer,
-  Human,
-}
-
 interface GameEvent {
   fen: string;
   history: string[];
 }
 
-interface Side {
-  white: PlayerKind;
-  black: PlayerKind;
+interface Turn {
+  color: ChessColor;
+  side: Side;
 }
 
-export class Game {
-  state: Chess;
-  api: Api | null = null;
-  starting_position;
-  history: History;
+enum Side {
+  Player,
+  Opponent,
+}
+
+export interface GameState {
+  player: Player;
+  opponent: Player;
   orientation: ChessColor;
-  playOpponent: boolean = false;
-  side: Side;
+  autoplayRepertoire: boolean;
+  startingFen: string;
+  useNextMoveAsRep: boolean;
+}
+
+export interface Player {
+  color: ChessColor;
+  kind: PlayerKind;
+}
+
+export enum PlayerKind {
+  None,
+  Human,
+  Lichess,
+  Computer,
+}
+
+export type PlayerKindKey = keyof typeof PlayerKind;
+
+export const defaultGameState = () => {
+  return {
+    player: {
+      color: ChessColor.White,
+      kind: PlayerKind.Human,
+    },
+    opponent: {
+      color: ChessColor.Black,
+      kind: PlayerKind.Lichess,
+    },
+    orientation: ChessColor.White,
+    autoplayRepertoire: false,
+    startingFen: startingFen(),
+    useNextMoveAsRep: false,
+  };
+};
+
+export class Game {
+  chess: Chess;
+  api: Api | null = null;
+  appContext: SaknotoContextKind;
+  history: History;
+  state: GameState;
   cache?: LRUCache<any>;
   listeners: any[] = [];
   once_listeners: any[] = [];
-  autoPlayRepertoire: boolean = false;
-  saknotoContext: SaknotoContextKind = null;
-  useNextAsRep: boolean = false;
+  state_listener: any[] = [];
+  boardRef: HTMLElement | undefined;
 
-  set_opponent(val: boolean) {
-    this.playOpponent = val;
-    this.checkIfComputerMove();
-  }
-
-  constructor() {
-    this.state = new Chess();
-    this.saknotoContext = useSaknotoContext();
-    this.starting_position = startingFen();
-    this.orientation = ChessColor.White;
-    this.side = {
-      white: PlayerKind.Human,
-      black: PlayerKind.Human,
-    };
+  constructor(context: SaknotoContextKind) {
+    this.chess = new Chess();
+    this.state = defaultGameState();
+    this.appContext = context;
 
     this.history = {
       index: 0,
@@ -64,25 +97,49 @@ export class Game {
   }
 
   setRepertoireAutoPlay(val: boolean) {
-    this.autoPlayRepertoire = val;
-    this.checkIfComputerMove();
+    this.updateState((state) => {
+      state.autoplayRepertoire = val;
+    });
+  }
+
+  saveState() {
+    if (window) {
+      window.localStorage.setItem("game-state", JSON.stringify(this.state));
+    }
+  }
+
+  loadState() {
+    if (window) {
+      const saved = window.localStorage.getItem("game-state");
+      if (saved) {
+        this.state = JSON.parse(saved);
+        this.updateBoard();
+        this.checkIfComputerMove();
+        this.updateState(() => {});
+      }
+    }
   }
 
   checkIfComputerMove() {
+    const fen = this.chess.fen();
     setTimeout(() => {
-      if (this.turncolor() !== this.orientation && this.playOpponent) {
-        this.play_common_move();
-      } else if (
-        this.autoPlayRepertoire &&
-        this.turncolor() === this.orientation
+      const turn = this.getTurn();
+
+      if (
+        turn.side === Side.Opponent &&
+        this.state.opponent.kind === PlayerKind.Lichess
       ) {
-        console.log("play repoertoire!");
-        console.log(this.autoPlayRepertoire);
-        this.saknotoContext.repertoire.getLine(this.state.fen()).then((val) => {
-          if (val != null) {
-            this.play_move(val.response.at(0));
-          } else {
-            console.log("none!");
+        this.playWeightedRandomMove();
+        return;
+      }
+
+      if (turn.side === Side.Player && this.state.autoplayRepertoire) {
+        this.appContext.repertoire.getLine(fen).then((result) => {
+          if (result) {
+            const move = result.response.at(0);
+            if (move) {
+              this.playMove(move);
+            }
           }
         });
       }
@@ -90,6 +147,7 @@ export class Game {
   }
 
   attach(element: HTMLElement) {
+    this.boardRef = element;
     this.api = Chessground(element, {});
     this.cache = new LRUCache("computer-move");
     this.cache.load();
@@ -104,7 +162,7 @@ export class Game {
       },
     });
 
-    this.update_board();
+    this.updateBoard();
 
     // listen for key events
     addEventListener("keydown", (ev: KeyboardEvent) => {
@@ -113,11 +171,12 @@ export class Game {
       }
 
       if (ev.key === "ArrowRight") {
-        console.log("REDO");
         this.redoMove();
       }
     });
+    this.loadState();
     this.checkIfComputerMove();
+    this.emitState();
   }
 
   clearArrows() {
@@ -132,7 +191,7 @@ export class Game {
     let arrows: DrawShape[] = [];
     try {
       for (const m of moves) {
-        const { orig, dest } = san_to_lan(this.state.fen(), m);
+        const { orig, dest } = san_to_lan(this.chess.fen(), m);
         arrows.push({
           orig,
           dest,
@@ -151,9 +210,9 @@ export class Game {
   }
 
   setStartingPosition(pgn: string) {
-    this.state.loadPgn(pgn);
-    this.starting_position = this.state.fen();
-    this.update_board();
+    this.chess.loadPgn(pgn);
+    this.state.startingFen = this.chess.fen();
+    this.updateBoard();
   }
 
   undoMove() {
@@ -161,36 +220,36 @@ export class Game {
       0,
       Math.max(this.history.index - 1, 0),
     );
-    this.state.reset();
+    this.chess.reset();
     for (const m of moves) {
-      this.state.move(m);
+      this.chess.move(m);
     }
     this.history.index = Math.max(0, this.history.index - 1);
-    this.update_board();
+    this.updateBoard();
     this.emit();
   }
 
   redoMove() {
     const moves = this.history.moves.slice(0, this.history.index + 1);
-    this.state.reset();
+    this.chess.reset();
     for (const m of moves) {
-      this.state.move(m);
+      this.chess.move(m);
     }
     this.history.index = Math.min(
       this.history.moves.length,
       this.history.index + 1,
     );
-    this.update_board();
+    this.updateBoard();
     this.emit();
   }
 
   restart() {
     console.log("RESTART");
-    this.state.reset();
-    this.state.load(this.starting_position);
+    this.chess.reset();
+    this.chess.load(this.state.startingFen);
     this.history.index = 0;
     this.history.moves = [];
-    this.update_board();
+    this.updateBoard();
     this.api?.set({
       lastMove: undefined,
     });
@@ -201,12 +260,23 @@ export class Game {
     this.listeners.push(callback);
   }
 
+  useMoveAsRepLine() {
+    this.state.useNextMoveAsRep = !this.state.useNextMoveAsRep;
+    if (this.boardRef) {
+      if (this.state.useNextMoveAsRep) {
+        this.boardRef.classList.add("repertoire-board-mode");
+      } else {
+        this.boardRef.classList.remove("repertoire-board-mode");
+      }
+    }
+  }
+
   get_next(callback: any) {
     this.once_listeners.push(callback);
   }
 
   emit() {
-    const fen = this.state.fen();
+    const fen = this.chess.fen();
     const history = this.history.moves.slice(0, this.history.index);
     for (const callback of this.listeners) {
       callback({ fen, history });
@@ -217,39 +287,72 @@ export class Game {
     this.once_listeners = [];
   }
 
-  set_player_type(color: ChessColor, player_type: PlayerKind) {
-    this.side[color] = player_type;
+  subscribeState(callback: any) {
+    this.state_listener.push(callback);
+    this.emitState();
   }
 
-  set_orientation(color: ChessColor) {
-    this.orientation = color;
-    this.update_board();
+  updateState(modifier: (state: GameState) => void) {
+    modifier(this.state);
+    console.log("updated state");
+    this.saveState();
+    this.updateBoard();
     this.checkIfComputerMove();
+    this.emitState();
   }
 
-  toggle_orientation() {
-    this.orientation =
-      this.orientation === ChessColor.White
+  emitState() {
+    for (const callback of this.state_listener) {
+      callback({ ...this.state });
+    }
+  }
+
+  setPlayerColor(color: ChessColor) {
+    const opponentColor =
+      color === ChessColor.White ? ChessColor.Black : ChessColor.White;
+    console.log("updated color");
+    this.updateState((state) => {
+      state.player.color = color;
+      state.opponent.color = opponentColor;
+    });
+  }
+
+  setOpponentType(kind: PlayerKind) {
+    this.updateState((state) => {
+      state.opponent.kind = kind;
+    });
+  }
+
+  setOrientation(color: ChessColor) {
+    this.updateState((state) => {
+      state.orientation = color;
+    });
+  }
+
+  toggleOrientation() {
+    this.state.orientation =
+      this.state.orientation === ChessColor.White
         ? ChessColor.Black
         : ChessColor.White;
-    this.update_board();
+    this.updateBoard();
   }
 
   handle_move(move: string) {
-    this.state.move(move);
-    this.history.moves = this.state.history();
-    this.history.index = this.history.moves.length;
-    this.update_board();
+    this.playMove(move);
+    // this.chess.move(move);
+    // this.history.moves = this.chess.history();
+    // this.history.index = this.history.moves.length;
+    // this.updateBoard();
 
-    this.checkIfComputerMove();
+    // this.checkIfComputerMove();
   }
 
-  async play_common_move() {
+  async playWeightedRandomMove() {
     const url =
       "https://explorer.lichess.ovh/lichess?variant=standard&speeds=blitz&ratings=2000,2400&fen=" +
-      encodeURIComponent(this.state.fen());
+      encodeURIComponent(this.chess.fen());
 
-    const key = this.state.fen();
+    const key = this.chess.fen();
 
     let cached = undefined;
     try {
@@ -273,7 +376,7 @@ export class Game {
 
         let validMove = make_valid(nextMove.uci);
 
-        this.play_move(validMove);
+        this.playMove(validMove);
       }
     };
 
@@ -282,19 +385,14 @@ export class Game {
         const c = this.cache;
         console.log("FETCHING...");
         res.json().then(async (body) => {
-          const count = await c?.count();
           if (!body.moves) {
             return;
           }
-          await c?.add(this.state.fen(), body);
-          console.log(count);
-          console.log(body);
+          await c?.add(this.chess.fen(), body);
           play_move(body);
         });
       });
     } else {
-      console.log("CACHED------------");
-      console.log(cached);
       if (!cached.moves) {
         this.cache?.remove(key);
       }
@@ -302,31 +400,67 @@ export class Game {
     }
   }
 
-  play_move(move: string) {
-    this.state.move(move);
-    this.history.moves = this.state.history();
+  playMove(move: string) {
+    // validate move
+    const fen = this.chess.fen();
+    let san;
+    try {
+      san = parse_move(fen, move);
+      if (!san) {
+        return;
+      }
+    } catch (_) {
+      return;
+    }
+
+    // check if move is for rep
+    const turn = this.getTurn();
+    if (turn.side === Side.Player && this.state.useNextMoveAsRep) {
+      this.appContext.repertoire.addLine(this.chess.fen(), san);
+    }
+
+    // make move
+    this.chess.move(move);
+    this.appContext.engine.enqueue_main(this.chess.fen());
+    this.history.moves = this.chess.history();
     this.history.index = this.history.moves.length;
-    this.update_board();
+    this.updateBoard();
     this.checkIfComputerMove();
   }
 
-  turncolor(): ChessColor {
-    return this.state.turn() === "w" ? ChessColor.White : ChessColor.Black;
+  getTurnColor(): ChessColor {
+    return this.chess.turn() === "w" ? ChessColor.White : ChessColor.Black;
   }
 
-  update_board() {
+  getTurn(): Turn {
+    const color = this.getTurnColor();
+    if (this.state.player.color === color) {
+      return {
+        color,
+        side: Side.Player,
+      };
+    } else {
+      return {
+        color,
+        side: Side.Opponent,
+      };
+    }
+  }
+
+  updateBoard() {
     this.clearArrows();
-    const color = this.state.turn() === "w" ? "white" : "black";
+    const color = this.chess.turn() === "w" ? "white" : "black";
     this.api?.set({
-      fen: this.state.fen(),
+      fen: this.chess.fen(),
       turnColor: color,
-      orientation: this.orientation,
+      orientation: this.state.orientation,
       movable: {
         color,
         free: false,
-        dests: toDests(this.state),
+        dests: toDests(this.chess),
       },
     });
+    this.state.useNextMoveAsRep = false;
     this.emit();
   }
 }

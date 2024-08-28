@@ -36,11 +36,6 @@ export default class ThemeManager {
     this.color = theme;
     this.listeners = [];
     this.systemTheme = "light";
-
-    onMount(() => {
-      this.loadSaved();
-      this.emit();
-    });
   }
 
   emit() {
@@ -72,6 +67,7 @@ export default class ThemeManager {
       } else {
         this.set_mode("dark");
       }
+      this.emit();
     }
   }
 

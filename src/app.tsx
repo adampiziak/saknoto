@@ -18,6 +18,7 @@ const RootLayout = (props: any) => {
 
   onMount(() => {
     ctx.openingGraph.load_wait();
+    ctx.themeManager.loadSaved();
     if (rootContainer) {
       // let hue = Math.floor(Math.random() * 360);
       // applyTheme(rootContainer, hue, false);

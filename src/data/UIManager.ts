@@ -11,7 +11,6 @@ export class ComponentManager<Type> {
   set(updatedData: Partial<Type>) {
     this.data = { ...this.data, ...updatedData };
 
-    console.log("n listeners: " + this.listeners.length);
     for (const callback of this.listeners) {
       callback(this.data);
     }

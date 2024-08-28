@@ -24,20 +24,24 @@ export default function Header() {
 
   // <span class="dark:font-bold font-medium dark:opacity-100 ">ŝak</span>
   onMount(async () => {
-    await context.openingGraph.load_wait();
-    await refresh();
-    context.userManager.load();
-    let u = context.userManager.get();
+    try {
+      await context.openingGraph.load_wait();
+      await refresh();
+      context.userManager.load();
+      let u = context.userManager.get();
 
-    if (u) {
-      setUser(u);
-    } else {
-      setUser("user");
+      if (u) {
+        setUser(u);
+      } else {
+        setUser("user");
+      }
+    } catch (e) {
+      console.log(`error: ${e}`);
     }
   });
 
   return (
-    <header class="relative z-20 py-4   border-accent-300 dark:border-zinc-700 flex flex-wrap items-center  justify-center dark:text-accent-100 text-accent-900 dark:bg-accent-950 bg-accent-50 w-full">
+    <header class="relative z-20 py-3   border-accent-300 dark:border-zinc-700 flex flex-wrap items-center  justify-center dark:text-accent-100 text-accent-900  bg-lum-50 w-full">
       <div class="flex w-full justify-between items-center">
         <div class="basis-0 grow flex">
           <div class="text-2xl sn-logo   text-accent-700 ">

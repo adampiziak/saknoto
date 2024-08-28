@@ -61,7 +61,7 @@ class OpeningGraph {
       if (name) {
         this.username = name;
       } else {
-        reject();
+        resolve();
         return;
       }
 

@@ -14,8 +14,10 @@ import { Game } from "~/Game";
 import { startingFen } from "~/utils";
 import EngineCard from "./EngineCard";
 import GameInterfaceCard from "./GameInterfaceCard";
+import { useGame } from "~/GameProvider";
 
-const PositionContext: Component<{ game: Game }> = (props) => {
+const PositionContext: Component = (props) => {
+  const game = useGame()!;
   const [fen, setFen] = createSignal(startingFen());
   const [rep, setRep] = createSignal<any>(null);
   const context = useSaknotoContext();
@@ -23,7 +25,7 @@ const PositionContext: Component<{ game: Game }> = (props) => {
     "position" | "engine" | "settings"
   >("position");
 
-  props.game.subscribe(({ fen }) => {
+  game.subscribe(({ fen }) => {
     setFen(fen);
   });
 
@@ -64,7 +66,7 @@ const PositionContext: Component<{ game: Game }> = (props) => {
     return (
       <div
         class="p-2 bg-lum-200 rounded-lg font-bold text-lum-700"
-        onclick={() => props.game.play_move(move)}
+        onclick={() => game.playMove(move)}
       >
         <div>{move}</div>
       </div>
@@ -91,10 +93,10 @@ const PositionContext: Component<{ game: Game }> = (props) => {
         </div>
       </Show>
       <Show when={currentView() === "engine"}>
-        <EngineCard game={props.game} />
+        <EngineCard />
       </Show>
       <Show when={currentView() === "settings"}>
-        <GameInterfaceCard game={props.game} />
+        <GameInterfaceCard />
       </Show>
     </div>
   );

@@ -1,7 +1,10 @@
 import {
+  FaSolidArrowRotateLeft,
   FaSolidChevronLeft,
   FaSolidChevronRight,
+  FaSolidHandPointUp,
   FaSolidPlus,
+  FaSolidRobot,
 } from "solid-icons/fa";
 import { VsDebugRestart } from "solid-icons/vs";
 import {
@@ -14,24 +17,31 @@ import {
 import { Portal } from "solid-js/web";
 import { useSaknotoContext } from "~/Context";
 import { Game } from "~/Game";
+import { useGame } from "~/GameProvider";
 
-const BottomActions: Component<{ game: Game }> = (props) => {
+const BottomActions: Component = () => {
+  const game = useGame();
   const context = useSaknotoContext();
   const [evl, setEvl] = createSignal(null);
 
   const add_engine_line = () => {
     let rep: string | null = evl();
-    let f = props.game.state.fen();
+    let f = game.chess.fen();
     if (rep !== null && rep.length > 0 && f != undefined) {
       context.repertoire.addLine(f, rep);
       setTimeout(() => {
-        props.game?.checkIfComputerMove();
+        game?.checkIfComputerMove();
       }, 500);
     }
   };
 
+  const add_user_line = () => {
+    game?.useMoveAsRepLine();
+  };
+
   onMount(() => {
     context.engine.subscribe_main((ev) => {
+      console.log(ev);
       setEvl(ev?.lines.at(0)?.san.at(0) ?? null);
     });
   });
@@ -50,19 +60,22 @@ const BottomActions: Component<{ game: Game }> = (props) => {
   };
   return (
     <Portal>
-      <div class="mobile-view w-screen m-auto z-40 absolute bottom-2 flex items-center justify-center overflow-hidden rounded-xl">
-        <div class="bg-lum-200 p-2 flex gap-2 rounded-xl">
-          <ActionButton onClick={() => props.game.restart()}>
-            <VsDebugRestart size={24} />
+      <div class="mobile-view w-screen m-auto z-40 absolute bottom-2 flex items-center justify-center overflow-hidden rounded-xl pointer-events-none">
+        <div class="bg-lum-100 p-2 flex gap-2 rounded-xl pointer-events-auto shadow-xl ">
+          <ActionButton onClick={() => game.restart()}>
+            <FaSolidArrowRotateLeft size={24} />
           </ActionButton>
-          <ActionButton onclick={() => props.game.undoMove()}>
+          <ActionButton onclick={() => game.undoMove()}>
             <FaSolidChevronLeft size={24} />
           </ActionButton>
-          <ActionButton onclick={() => props.game.redoMove()}>
+          <ActionButton onclick={() => game.redoMove()}>
             <FaSolidChevronRight size={24} />
           </ActionButton>
-          <ActionButton onclick={add_engine_line}>
+          <ActionButton onclick={add_user_line}>
             <FaSolidPlus size={24} />
+          </ActionButton>
+          <ActionButton onclick={add_engine_line}>
+            <FaSolidRobot size={24} />
           </ActionButton>
         </div>
       </div>

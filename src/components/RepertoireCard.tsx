@@ -100,7 +100,7 @@ const RepertoireCard: Component<{
               onmouseleave={() => {
                 removeArrow(item);
               }}
-              onclick={() => props.game?.play_move(item)}
+              onclick={() => props.game?.playMove(item)}
             >
               {item}
             </div>

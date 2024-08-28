@@ -1,8 +1,19 @@
 .board-view {
   /* container: board-container / size; */
   color: var(accent-50);
+  position: relative;
 }
-/* .board-container { */
+.board-view-board {
+  &.repertoire-board-mode:before {
+    content: "";
+    z-index: 30;
+    height: var(---cg-height);
+    width: var(---cg-width);
+    position: absolute;
+    box-shadow: inset 0 0 2rem lightgreen;
+    pointer-events: none;
+  }
+}
 /* height: round(down, 100cqw, 8px); */
 /* width: round(down, 100cqw, 8px); */
 /* height: 100cqw; */

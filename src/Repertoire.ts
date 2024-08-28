@@ -114,17 +114,18 @@ export class Repertoire {
     }
   }
 
-  getLine(fen: string) {
+  getLine(fen: string): Promise<RepCard | null> {
     return new Promise(async (resolve, reject) => {
       if (!this.db) {
+        console.log("loading");
         await this.load();
       }
 
-      const transaction = this.db.transaction("position", "readonly");
+      const transaction = this.db!.transaction("position", "readonly");
       const objectStore = transaction.objectStore("position");
       const req = objectStore.get(fen);
 
-      req.onsuccess = (event) => {
+      req.onsuccess = () => {
         const result = req.result ?? null;
         resolve(result);
       };

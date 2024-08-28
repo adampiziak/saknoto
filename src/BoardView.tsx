@@ -8,6 +8,7 @@ import "~/styles/staunty.css";
 import "./BoardView.scss";
 import { debounce } from "./utils";
 import { Game } from "./Game";
+import { useGame } from "./GameProvider";
 
 export enum BoardViewMode {
   COLUMN,
@@ -20,12 +21,12 @@ export const BoardView: Component<{
   rounded?: boolean | undefined;
   onMove?: ((lan: string) => void) | undefined;
   onReady?: ((game: Game) => void) | undefined;
-  game?: Game | undefined;
   mode?: BoardViewMode;
-  onResize?: (rect: DOMRect) => void;
+  onResize?: (rect: number) => void;
 }> = (props) => {
   let element: HTMLDivElement | undefined;
   let container: HTMLDivElement | undefined;
+  const game = useGame();
 
   const [boardSize, setBoardSize] = createSignal(0);
 
@@ -44,12 +45,10 @@ export const BoardView: Component<{
     "max-height": props.mode === BoardViewMode.COLUMN ? "100vw" : "100vh",
   });
   const resize = () => {
-    console.log("resize");
     if (container != undefined) {
       const rect = container.getBoundingClientRect();
       if (props.onResize) {
-        console.log("resize parent");
-        props?.onResize(rect);
+        props.onResize(rect.bottom);
       }
       const container_width = Math.ceil(rect.width / 8) * 8;
       const container_height = Math.ceil(rect.height / 8) * 8;
@@ -57,10 +56,17 @@ export const BoardView: Component<{
       const maxsize = Math.max(container_height, container_width);
       // console.log(`size ${container_width} x ${container_height}: ${minsize}`);
       setBoardSize(minsize);
+
       if (props.mode === BoardViewMode.COLUMN) {
-        setConStyle({ "max-height": `${(minsize + maxsize) / 2}px` });
+        setConStyle({
+          "max-height": `${(minsize + maxsize) / 2}px`,
+          "--bsize": `${minsize}px`,
+        });
       } else {
-        setConStyle({ "max-width": `${(maxsize + minsize * 2) / 3}px` });
+        setConStyle({
+          "max-width": `${(maxsize + minsize * 2) / 3}px`,
+          "--bsize": `${minsize}px`,
+        });
       }
     }
   };
@@ -69,8 +75,9 @@ export const BoardView: Component<{
     if (element) {
       const api = Chessground(element, {});
 
-      if (props.game) {
-        props.game.attach(element);
+      if (game) {
+        game.attach(element);
+        api.set({ addDimensionsCssVarsTo: container });
       }
 
       const moveCallback = props.onMove;
@@ -126,18 +133,13 @@ export const BoardView: Component<{
     <div
       ref={container}
       style={conStyle()}
-      class={
-        props.class +
-        " flex board-view  justify-center items-center min-h-0 min-w-0 max-w-full max-h-full grow shrink"
-      }
+      class={"board-view   min-h-0 min-w-0 max-w-full max-h-full grow shrink"}
     >
-      <div class="board-container overflow-hidden">
-        <div
-          ref={element}
-          style={{ height: `${boardSize()}px`, width: `${boardSize()}px` }}
-          class={`board ${props.rounded ? "rounded overflow-hidden" : ""}`}
-        ></div>
-      </div>
+      <div
+        ref={element}
+        style={{ height: `${boardSize()}px`, width: `${boardSize()}px` }}
+        class={`board-view-board ${props.rounded ? "rounded overflow-hidden" : ""}`}
+      ></div>
     </div>
   );
 };
