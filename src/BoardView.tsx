@@ -6,7 +6,6 @@ import "~/styles/chessground.base.css";
 import "~/styles/chessground.brown.css";
 import "~/styles/staunty.css";
 import "./BoardView.scss";
-import { debounce } from "./utils";
 import { Game } from "./Game";
 import { useGame } from "./GameProvider";
 
@@ -143,7 +142,3 @@ export const BoardView: Component<{
     </div>
   );
 };
-
-const myalert = debounce(() => {
-  alert("hola");
-}, 1000);
