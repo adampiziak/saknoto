@@ -316,7 +316,7 @@ export class Game {
       this.state.orientation = this.getTurn().color;
       this.updateBoard();
     } catch {
-      alert("error");
+      this.restart();
     }
   }
 
