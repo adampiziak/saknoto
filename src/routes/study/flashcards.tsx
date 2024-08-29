@@ -51,17 +51,6 @@ const Study: Component = () => {
       game?.loadPosition(flashcard()?.fen);
     }),
   );
-  createEffect(
-    on(attempts, () => {
-      setTimeout(() => {
-        if (attempts() > 0) {
-          game?.drawArrows(flashcard()?.response);
-        } else {
-          game?.clearArrows();
-        }
-      }, 1000);
-    }),
-  );
 
   const handle_move = (san: string) => {
     const c = flashcard();
@@ -85,8 +74,10 @@ const Study: Component = () => {
       setAttempts((prev) => prev + 1);
       session?.practiceCard(c, Rating.Again);
       setProgress(session?.getProgress());
+      game?.drawArrowsFen(flashcard()?.fen, flashcard()?.response);
       setTimeout(() => {
-        getNextCard();
+        game?.loadPosition(flashcard()?.fen);
+        game?.drawArrowsFen(flashcard()?.fen, flashcard()?.response);
       }, 1000);
     }
   };
@@ -136,21 +127,18 @@ const Study: Component = () => {
               </div>
             </Show>
             <div
-              class="font-medium"
-              classList={{
-                "p-2": status().length > 0,
-              }}
+              class="font-medium p-2"
               style={{
                 color: status() === "incorrect" ? "salmon" : "mediumseagreen",
               }}
             >
-              {status()}
+              {status().length > 0 ? status() : "---"}
             </div>
-            <Show when={attempts() > 1}>
-              <div class="p-2 font-medium">
-                hint: {flashcard()?.response.toString()}
-              </div>
-            </Show>
+            <div class="p-2 font-medium">
+              {attempts() > 1
+                ? "hint: " + flashcard()?.response.toString()
+                : "---"}
+            </div>
           </div>
         </Show>
         <Show when={!flashcard()}>

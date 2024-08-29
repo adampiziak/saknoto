@@ -195,6 +195,28 @@ export class Game {
     });
   }
 
+  drawArrowsFen(fen: string, moves: string[]) {
+    let arrows: DrawShape[] = [];
+    try {
+      for (const m of moves) {
+        const { orig, dest } = san_to_lan(fen, m);
+        arrows.push({
+          orig,
+          dest,
+          brush: "blue",
+        });
+      }
+    } catch (e) {
+      console.log(e);
+      arrows = [];
+    }
+    this.api?.set({
+      drawable: {
+        autoShapes: arrows,
+      },
+    });
+  }
+
   drawArrows(moves: string[]) {
     console.log(moves);
     let arrows: DrawShape[] = [];
