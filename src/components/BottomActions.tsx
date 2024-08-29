@@ -36,12 +36,11 @@ const BottomActions: Component = () => {
   };
 
   const add_user_line = () => {
-    game?.useMoveAsRepLine();
+    game?.setRepertoireMode();
   };
 
   onMount(() => {
     context.engine.subscribe_main((ev) => {
-      console.log(ev);
       setEvl(ev?.lines.at(0)?.san.at(0) ?? null);
     });
   });

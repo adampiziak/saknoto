@@ -2,11 +2,11 @@ import { Button } from "@kobalte/core/button";
 import { Component, For, createEffect, createSignal, onMount } from "solid-js";
 import { useSaknotoContext } from "~/Context";
 import { Game } from "~/Game";
+import { useGame } from "~/GameProvider";
 
-const RepertoireCard: Component<{
-  game: Game;
-}> = (props) => {
+const RepertoireCard: Component = (props) => {
   const context = useSaknotoContext();
+  const game = useGame();
   const [responses, setResponses] = createSignal([]);
   const [evl, setEvl] = createSignal(null);
   const [fen, setFen] = createSignal(null);
@@ -26,15 +26,12 @@ const RepertoireCard: Component<{
     context.engine.subscribe_main((ev) => {
       setEvl(ev?.lines.at(0)?.san.at(0) ?? null);
     });
-    props.game.subscribe(({ fen }) => {
+    game.subscribe(({ fen }) => {
       setFen(fen);
     });
   });
   const add_line = () => {
-    console.log("line");
-    if (props.requestLine) {
-      props.requestLine();
-    }
+    game.setRepertoireMode();
   };
 
   const add_engine_line = () => {
@@ -43,7 +40,7 @@ const RepertoireCard: Component<{
       context.repertoire.addLine(fen(), rep);
       setTimeout(() => {
         update(fen());
-        props.game?.checkIfComputerMove();
+        game?.checkIfComputerMove();
       }, 500);
     }
   };
@@ -51,14 +48,14 @@ const RepertoireCard: Component<{
   let arrows = new Set<string>();
   const addArrow = (move: string) => {
     arrows.add(move);
-    if (props.game) {
-      props.game.drawArrows([...arrows.values()]);
+    if (game) {
+      game.drawArrows([...arrows.values()]);
     }
   };
   const removeArrow = (move: string) => {
     arrows.delete(move);
-    if (props.game) {
-      props.game.drawArrows([...arrows.values()]);
+    if (game) {
+      game.drawArrows([...arrows.values()]);
     }
   };
 
@@ -100,7 +97,7 @@ const RepertoireCard: Component<{
               onmouseleave={() => {
                 removeArrow(item);
               }}
-              onclick={() => props.game?.playMove(item)}
+              onclick={() => game?.playMove(item)}
             >
               {item}
             </div>

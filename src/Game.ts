@@ -40,6 +40,7 @@ export interface GameState {
   autoplayRepertoire: boolean;
   startingFen: string;
   useNextMoveAsRep: boolean;
+  notifyEngine: boolean;
 }
 
 export interface Player {
@@ -49,14 +50,12 @@ export interface Player {
 
 export enum PlayerKind {
   None,
-  Human,
   Lichess,
-  Computer,
 }
 
 export type PlayerKindKey = keyof typeof PlayerKind;
 
-export const defaultGameState = () => {
+export const defaultGameState = (): GameState => {
   return {
     player: {
       color: ChessColor.White,
@@ -64,12 +63,13 @@ export const defaultGameState = () => {
     },
     opponent: {
       color: ChessColor.Black,
-      kind: PlayerKind.Lichess,
+      kind: PlayerKind.None,
     },
     orientation: ChessColor.White,
     autoplayRepertoire: false,
     startingFen: startingFen(),
     useNextMoveAsRep: false,
+    notifyEngine: false,
   };
 };
 
@@ -84,11 +84,13 @@ export class Game {
   once_listeners: any[] = [];
   state_listener: any[] = [];
   boardRef: HTMLElement | undefined;
+  key: string | null = null;
 
-  constructor(context: SaknotoContextKind) {
+  constructor(context: SaknotoContextKind, key: string | null = null) {
     this.chess = new Chess();
     this.state = defaultGameState();
     this.appContext = context;
+    this.key = key;
 
     this.history = {
       index: 0,
@@ -103,14 +105,16 @@ export class Game {
   }
 
   saveState() {
-    if (window) {
-      window.localStorage.setItem("game-state", JSON.stringify(this.state));
+    if (window && this.key !== null) {
+      const key = `game-state-${this.key}`;
+      window.localStorage.setItem(key, JSON.stringify(this.state));
     }
   }
 
   loadState() {
-    if (window) {
-      const saved = window.localStorage.getItem("game-state");
+    if (window && this.key !== null) {
+      const key = `game-state-${this.key}`;
+      const saved = window.localStorage.getItem(key);
       if (saved) {
         this.state = JSON.parse(saved);
         this.updateBoard();
@@ -144,6 +148,10 @@ export class Game {
         });
       }
     }, 500);
+  }
+
+  useEngine(val: boolean) {
+    this.state.notifyEngine = val;
   }
 
   attach(element: HTMLElement) {
@@ -188,6 +196,7 @@ export class Game {
   }
 
   drawArrows(moves: string[]) {
+    console.log(moves);
     let arrows: DrawShape[] = [];
     try {
       for (const m of moves) {
@@ -199,7 +208,7 @@ export class Game {
         });
       }
     } catch (e) {
-      console.error(e);
+      console.log(e);
       arrows = [];
     }
     this.api?.set({
@@ -225,6 +234,7 @@ export class Game {
       this.chess.move(m);
     }
     this.history.index = Math.max(0, this.history.index - 1);
+    this.notifyEngine();
     this.updateBoard();
     this.emit();
   }
@@ -239,6 +249,7 @@ export class Game {
       this.history.moves.length,
       this.history.index + 1,
     );
+    this.notifyEngine();
     this.updateBoard();
     this.emit();
   }
@@ -260,19 +271,31 @@ export class Game {
     this.listeners.push(callback);
   }
 
-  useMoveAsRepLine() {
-    this.state.useNextMoveAsRep = !this.state.useNextMoveAsRep;
+  setRepertoireMode() {
+    this.state.useNextMoveAsRep = true;
     if (this.boardRef) {
-      if (this.state.useNextMoveAsRep) {
-        this.boardRef.classList.add("repertoire-board-mode");
-      } else {
-        this.boardRef.classList.remove("repertoire-board-mode");
-      }
+      this.boardRef.classList.add("repertoire-board-mode");
+    }
+  }
+  unsetRepertoireMode() {
+    this.state.useNextMoveAsRep = false;
+    if (this.boardRef) {
+      this.boardRef.classList.remove("repertoire-board-mode");
     }
   }
 
   get_next(callback: any) {
     this.once_listeners.push(callback);
+  }
+
+  loadPosition(fen: string) {
+    try {
+      this.chess.load(fen);
+      this.state.orientation = this.getTurn().color;
+      this.updateBoard();
+    } catch {
+      alert("error");
+    }
   }
 
   emit() {
@@ -418,14 +441,21 @@ export class Game {
     if (turn.side === Side.Player && this.state.useNextMoveAsRep) {
       this.appContext.repertoire.addLine(this.chess.fen(), san);
     }
+    this.unsetRepertoireMode();
 
     // make move
     this.chess.move(move);
-    this.appContext.engine.enqueue_main(this.chess.fen());
+    this.notifyEngine();
     this.history.moves = this.chess.history();
     this.history.index = this.history.moves.length;
     this.updateBoard();
     this.checkIfComputerMove();
+  }
+
+  notifyEngine() {
+    if (this.state.notifyEngine) {
+      this.appContext.engine.enqueue_main(this.chess.fen());
+    }
   }
 
   getTurnColor(): ChessColor {
@@ -462,6 +492,10 @@ export class Game {
     });
     this.state.useNextMoveAsRep = false;
     this.emit();
+    setTimeout(() => {
+      document.body.dispatchEvent(new Event("chessground.resize"));
+      window.dispatchEvent(new Event("resize"));
+    }, 200);
   }
 }
 

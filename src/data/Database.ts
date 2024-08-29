@@ -60,6 +60,9 @@ export class Database<T> {
   async remove(key: string) {
     return await this.request<undefined>((store) => store.delete(key));
   }
+  async removeAll() {
+    return await this.request<undefined>((store) => store.clear());
+  }
 
   request<R>(callback: (store: IDBObjectStore) => IDBRequest<R>): Promise<R> {
     return new Promise((resolve, reject) => {

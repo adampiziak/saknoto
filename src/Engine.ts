@@ -43,6 +43,8 @@ export function createEmptyEvaluation(): Evaluation {
   };
 }
 
+const EVAL_DEPTH = 24;
+
 export class Engine {
   subscribers = new Map<string, any[]>();
   engine: StockfishWeb | undefined;
@@ -75,6 +77,7 @@ export class Engine {
     }
   };
   async start() {
+    console.log("LOADING ENGINE");
     const sf = await Stockfish({
       wasmMemmory: this.sharedWasmMemory(4096!),
       locateFile: (name: string) => `/${name}`,
@@ -100,12 +103,6 @@ export class Engine {
       }
     }
 
-    // const nnue_path = sf.getRecommendedNnue();
-    // const response = await fetch(`/${nnue_path}`);
-    // const buffer = await response.arrayBuffer();
-    // const uint8Array = new Uint8Array(buffer);
-    // sf.setNnueBuffer(uint8Array);
-
     this.engine = sf;
 
     try {
@@ -126,6 +123,7 @@ export class Engine {
     }
 
     // Cache
+    console.log("ENGINE READY");
     this.cache = new LRUCache<Evaluation>("engine-cache");
     await this.cache.load();
   }
@@ -159,6 +157,10 @@ export class Engine {
     }
   }
 
+  async clear_cache() {
+    this.cache?.clear();
+  }
+
   async handle_message(message: string) {
     // console.log(message);
     if (message.includes("ponder") || message.includes("bestmove")) {
@@ -166,7 +168,7 @@ export class Engine {
         this.emit({ ...this.current_evaluation });
       }
       if (this.current_task) {
-        this.cache?.add(this.current_task.fen, {
+        this.cache?.add(this.current_evaluation.fen, {
           ...this.current_evaluation,
           cached: true,
         });
@@ -190,7 +192,9 @@ export class Engine {
       for (const resolver of this.initialize_wait_queue) {
         resolver();
       }
+      console.log("ASDDDDDDDDDDDDDDDDD");
       this.uci_ready = true;
+      console.log(this.uci_ready);
       this.engine?.uci("isready");
       // console.error("READY");
       return;
@@ -202,6 +206,7 @@ export class Engine {
         this.current_evaluation.depth,
         info.depth,
       );
+      this.current_evaluation.mode = "local";
       console.log(this.current_evaluation.depth);
       const line = parse_moves(this.current_evaluation.fen, info.line);
       this.current_evaluation.lines[info.multipv - 1] = {
@@ -243,6 +248,7 @@ export class Engine {
   }, 50);
 
   prepare_task(task: Task) {
+    console.log(task);
     if (task.mode === "main") {
       this.board_queue.push(task);
     } else {
@@ -250,7 +256,6 @@ export class Engine {
     }
 
     if (!this.uci_ready) {
-      console.log(this.uci_ready);
       console.log("NOT READY");
       return;
     }
@@ -298,7 +303,8 @@ export class Engine {
 
   async evaluate(task: Task) {
     const cached_eval = await this.cache?.get(task.fen);
-    if (cached_eval) {
+    if (cached_eval && cached_eval.depth >= EVAL_DEPTH) {
+      console.log(cached_eval);
       if (task.mode === "main") {
         this.emit_mainline(cached_eval);
       } else {
@@ -314,9 +320,12 @@ export class Engine {
       if (cloud_eval) {
         this.cache?.add(cloud_eval.fen, { ...cloud_eval, cached: true });
         if (task.mode === "main") {
-          return this.emit_mainline(cloud_eval);
+          this.emit_mainline(cloud_eval);
         } else {
-          return this.emit(cloud_eval);
+          this.emit(cloud_eval);
+        }
+        if (cloud_eval.depth >= EVAL_DEPTH) {
+          return;
         }
       }
     }
@@ -325,8 +334,9 @@ export class Engine {
   }
 
   start_local_evaluation(task: Task) {
+    console.log("LOCAL EVAL" + task.fen);
     this.engine?.uci(`position fen ${task.fen}`);
-    this.engine?.uci(`go depth 24`);
+    this.engine?.uci(`go depth ${EVAL_DEPTH}`);
   }
 
   async cloud_evaluation(task: Task) {

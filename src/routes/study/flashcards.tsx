@@ -13,27 +13,30 @@ import {
 import { Rating } from "ts-fsrs";
 import { BoardView } from "~/BoardView";
 import { useSaknotoContext } from "~/Context";
+import { Game } from "~/Game";
+import { GameProvider, useGame } from "~/GameProvider";
 import { RepCard } from "~/Repertoire";
 import { StudySession } from "~/StudySession";
 import { STARTING_FEN } from "~/constants";
 import { getTurn, parse_move, san_to_lan, toDests } from "~/utils";
 
-const Study: Component = (_props: any) => {
+const Study: Component = () => {
+  let game: Game | undefined;
+
   const context = useSaknotoContext();
-  let session: StudySession | null = null;
-  const game = new Chess();
+  let session: StudySession = new StudySession();
+  const chess = new Chess();
   const [flashcard, setFlashcard] = createSignal<RepCard | null>(null);
-  const [api, initializeApi] = createSignal<Api | null>(null);
 
   const [status, setStatus] = createSignal("");
   const [attempts, setAttempts] = createSignal(0);
-  const [progress, setProgress] = createSignal(null);
+  const [progress, setProgress] = createSignal<any>(null);
 
   const getNextCard = () => {
     if (session) {
       const c = session.getCard();
       if (c) {
-        game.load(c?.fen);
+        chess.load(c?.fen);
         setFlashcard({ ...c });
       } else {
         setFlashcard(null);
@@ -45,59 +48,20 @@ const Study: Component = (_props: any) => {
 
   createEffect(
     on(flashcard, () => {
-      setPosition();
+      game?.loadPosition(flashcard()?.fen);
     }),
   );
   createEffect(
     on(attempts, () => {
-      if (attempts() > 0) {
-        api()?.set({
-          drawable: {
-            autoShapes: getArrows(),
-          },
-        });
-      }
+      setTimeout(() => {
+        if (attempts() > 0) {
+          game?.drawArrows(flashcard()?.response);
+        } else {
+          game?.clearArrows();
+        }
+      }, 1000);
     }),
   );
-
-  const getArrows = () => {
-    const c = flashcard();
-    if (attempts() > 0 && c) {
-      const arrows: DrawShape[] = [];
-      for (const r of c.response) {
-        const { orig, dest } = san_to_lan(c.fen, r);
-
-        arrows.push({
-          orig,
-          dest,
-          brush: "green",
-        });
-      }
-
-      return arrows;
-    }
-
-    return [];
-  };
-
-  const setPosition = () => {
-    const fen = flashcard()?.fen ?? STARTING_FEN;
-    game.load(fen);
-    const turn = game.turn() === "w" ? "white" : "black";
-    api()?.set({
-      fen,
-      orientation: turn,
-      turnColor: turn,
-      movable: {
-        color: turn,
-        free: false,
-        dests: toDests(game),
-      },
-      drawable: {
-        autoShapes: attempts() > 0 ? getArrows() : [],
-      },
-    });
-  };
 
   const handle_move = (san: string) => {
     const c = flashcard();
@@ -127,78 +91,75 @@ const Study: Component = (_props: any) => {
     }
   };
 
-  createEffect(
-    on(api, () => {
-      api()?.set({
-        movable: {
-          events: {
-            after: (orig: Key, dest: Key) => {
-              const move = parse_move(game.fen(), `${orig}${dest}`);
-              handle_move(move);
-            },
-          },
-        },
-      });
-      setPosition();
-    }),
-  );
   onMount(async () => {
     if (!context.repertoire.ready()) {
       await context.repertoire.load();
     }
-    session = new StudySession(context.repertoire);
+    session.load(context.repertoire);
     await session.refresh();
     getNextCard();
     setProgress(session.getProgress());
     context.ui.sidebar.set({ active: false });
   });
 
+  const setupGame = (g: Game) => {
+    game = g;
+    game.subscribe(({ fen, history }) => {
+      const move = history.at(-1);
+      if (move && fen !== flashcard()?.fen) {
+        handle_move(move);
+      }
+    });
+  };
+
   return (
-    <div class="flex-grow flex px-24 gap-4 py-8 items-start justify-center relative dark:bg-accent-950 bg-accent-50">
-      <Show when={flashcard()}>
-        <BoardView setApi={initializeApi} class="h-full z-20 relative" />
-        <div class="bg-lum-200 border  border-lum-300 h-auto w-[400px]  text-lum-800 rounded overflow-hidden p-3">
-          <Show when={progress()}>
-            <div class="flex gap-4 font-bold">
-              <div class="text-red-400">{progress().todo}</div>
-              <div class="text-yellow-500">{progress().doing}</div>
-              <div class="text-blue-400">{progress().done}</div>
+    <GameProvider game_id="flashcards" onGame={setupGame}>
+      <div class="flex flex-col md:flex-row grow gap-4 py-8 md:justify-center relative bg-lum-50 w-full">
+        <Show when={flashcard()}>
+          <BoardView responsive={true} />
+          <div class="bg-lum-300 border  border-lum-300 h-auto   text-lum-800 rounded overflow-hidden p-3 w-full md:w-auto md:self-start order-first md:order-2">
+            <Show when={progress()}>
+              <div class="flex gap-4 font-bold">
+                <div class="text-red-400">{progress().todo}</div>
+                <div class="text-yellow-500">{progress().doing}</div>
+                <div class="text-blue-400">{progress().done}</div>
+              </div>
+            </Show>
+            <Show
+              when={flashcard()}
+              fallback={
+                <div class="p-2 text-lum-800 bg-lum-500">done for today!</div>
+              }
+            >
+              <div class="mt-1 text-accent-800 dark:text-accent-100">
+                {flashcard()?.card?.due.toLocaleString()}
+              </div>
+            </Show>
+            <div
+              class="font-medium"
+              classList={{
+                "p-2": status().length > 0,
+              }}
+              style={{
+                color: status() === "incorrect" ? "salmon" : "mediumseagreen",
+              }}
+            >
+              {status()}
             </div>
-          </Show>
-          <Show
-            when={flashcard()}
-            fallback={
-              <div class="p-2 text-lum-800 bg-lum-500">done for today!</div>
-            }
-          >
-            <div class="mt-1 text-accent-800 dark:text-accent-100">
-              {flashcard()?.card?.due.toLocaleString()}
-            </div>
-          </Show>
-          <div
-            class="font-medium"
-            classList={{
-              "p-2": status().length > 0,
-            }}
-            style={{
-              color: status() === "incorrect" ? "salmon" : "mediumseagreen",
-            }}
-          >
-            {status()}
+            <Show when={attempts() > 1}>
+              <div class="p-2 font-medium">
+                hint: {flashcard()?.response.toString()}
+              </div>
+            </Show>
           </div>
-          <Show when={attempts() > 1}>
-            <div class="p-2 font-medium">
-              hint: {flashcard()?.response.toString()}
-            </div>
-          </Show>
-        </div>
-      </Show>
-      <Show when={!flashcard()}>
-        <div class="font-medium text-lum-700 p-4 rounded border border-lum-400 bg-lum-200 mt-8">
-          All done for today!
-        </div>
-      </Show>
-    </div>
+        </Show>
+        <Show when={!flashcard()}>
+          <div class="font-medium text-lum-700 p-4 rounded border border-lum-400 bg-lum-200 mt-8">
+            All done for today!
+          </div>
+        </Show>
+      </div>
+    </GameProvider>
   );
 };
 

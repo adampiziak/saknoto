@@ -5,11 +5,11 @@ export class StudySession {
   done: RepCard[] = [];
   doing: RepCard[] = [];
   todo: RepCard[] = [];
-  repertoire: Repertoire;
+  repertoire: Repertoire | undefined;
 
   f: FSRS = fsrs(generatorParameters({ enable_fuzz: true }));
 
-  constructor(rep: Repertoire) {
+  load(rep: Repertoire) {
     this.repertoire = rep;
   }
 
@@ -51,42 +51,7 @@ export class StudySession {
     }
 
     return null;
-
-    // const get_index = (arr, fen) => {
-    //   return arr.map((c) => c.fen).indexOf(fen);
-    // };
-
-    // const remove_card = (arr, index) => {
-    //   if (index === -1) {
-    //     return null;
-    //   }
-
-    //   const card = arr[index];
-    //   arr.splice(index, 1);
-    //   return card;
-    // };
-
-    // const todo_index = get_index(this.todo, card.fen);
-    // const doing_index = get_index(this.doing, card.fen);
-    // const done_index = get_index(this.done, card.fen);
-
-    // console.log(card.fen);
-    // console.log(this.todo.find((c) => c.fen === card.fen));
-    // console.log(this.doing.find((c) => c.fen === card.fen));
-
-    // console.log(todo_index);
-    // console.log(doing_index);
-    // console.log(done_index);
-
-    // const searches = [
-    //   remove_card(this.todo, todo_index),
-    //   remove_card(this.doing, doing_index),
-    //   remove_card(this.done, done_index),
-    // ];
-
-    // return searches.find((v) => v !== null);
   }
-
   getProgress(): object {
     return {
       todo: this.todo.length,

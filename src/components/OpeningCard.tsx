@@ -11,6 +11,7 @@ import {
 } from "solid-js";
 import { useSaknotoContext } from "~/Context";
 import { Game } from "~/Game";
+import { useGame } from "~/GameProvider";
 
 interface NextMove {
   move: string;
@@ -51,10 +52,11 @@ interface CurrentPosition {
 const OpeningCard: Component<{
   pgn: string[];
   on_select?: (move: string) => void;
-  game: Game;
 }> = (props) => {
+  const game = useGame();
   const context = useSaknotoContext();
   const [opening, setOpening] = createSignal<CurrentPosition | null>(null);
+  const [pgn, setPgn] = createSignal([]);
 
   const names: Map<string, any> = new Map();
   const [omap, setOMap] = createSignal<Map<string, PositionTreeRoot>>(
@@ -63,9 +65,12 @@ const OpeningCard: Component<{
   const [positionTree, setPositionTree] = createSignal<PositionTreeNode[]>([]);
   const [totalGames, setTotalGames] = createSignal(1);
   const [winrate, setWinrate] = createSignal(50);
+  game.subscribe(({ history }) => {
+    setPgn(history);
+  });
 
   createEffect(async () => {
-    await update(props.pgn);
+    await update(pgn());
   });
 
   const flatten_openings = (nodes: PositionTreeNode[], level: number) => {
@@ -87,7 +92,7 @@ const OpeningCard: Component<{
   const arrows = new Set<string>();
   const update = async (history: string[]) => {
     arrows.clear();
-    const key = props.pgn.join("");
+    const key = pgn().join("");
     const opng = names.get(key);
     let currPosition: CurrentPosition = {
       basename: "",
@@ -112,7 +117,7 @@ const OpeningCard: Component<{
 
     const game = new Chess();
 
-    for (const m of props.pgn) {
+    for (const m of pgn()) {
       game.move(m);
     }
     const f = game.fen();
@@ -175,7 +180,7 @@ const OpeningCard: Component<{
     }
 
     setOMap(new Map(Object.entries(json)));
-    await update(props.pgn);
+    await update(pgn());
   });
 
   const svgCircle = () => {
@@ -345,20 +350,20 @@ const OpeningCard: Component<{
 
   const addArrow = (move: string) => {
     arrows.add(move);
-    if (props.game) {
-      props.game.drawArrows([...arrows.values()]);
+    if (game) {
+      game.drawArrows([...arrows.values()]);
     }
   };
   const removeArrow = (move: string) => {
     arrows.delete(move);
-    if (props.game) {
-      props.game.drawArrows([...arrows.values()]);
+    if (game) {
+      game.drawArrows([...arrows.values()]);
     }
   };
 
   const playMove = (move: string) => {
-    if (props.game) {
-      props.game.playMove(move);
+    if (game) {
+      game.playMove(move);
     }
   };
   const CurrentOpeningCard = (op: CurrentPosition) => {

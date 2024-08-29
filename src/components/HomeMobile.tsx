@@ -9,10 +9,11 @@ import { GameProvider } from "~/GameProvider";
 const HomeMobile: Component<{ game: Game }> = (props) => {
   const [boardRect, setBoardRect] = createSignal(0);
   return (
-    <GameProvider>
+    <GameProvider game_id="home">
       <div class="home-mobile flex-col max-w-screen w-full relative">
         <BoardView
           mode={BoardViewMode.COLUMN}
+          useEngine={true}
           onResize={(rect) => setBoardRect(rect)}
         />
         <BottomSheet initialY={boardRect()}>

@@ -16,7 +16,7 @@ const RootLayout = (props: any) => {
   let rootContainer: HTMLDivElement | undefined;
   const [skv, setskn] = createSignal("");
 
-  onMount(() => {
+  onMount(async () => {
     ctx.openingGraph.load_wait();
     ctx.themeManager.loadSaved();
     if (rootContainer) {
@@ -40,9 +40,7 @@ const RootLayout = (props: any) => {
         applyNeutralTheme(number, mode);
       }
     });
-    setTimeout(() => {
-      ctx.engine.start();
-    }, 1000);
+    await ctx.engine.start();
   });
 
   return (

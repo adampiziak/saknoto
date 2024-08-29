@@ -27,6 +27,10 @@ export class LRUCache<T> {
     return result?.value;
   }
 
+  async clear() {
+    await this.db?.removeAll();
+  }
+
   async count() {
     if (!this.size) {
       this.size = await this.db.size();

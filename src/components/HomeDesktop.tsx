@@ -9,8 +9,8 @@ import { GameProvider } from "~/GameProvider";
 
 const HomeDesktop: Component<{ game: Game }> = (props) => {
   return (
-    <GameProvider>
-      <div class="home-desktop flex min-h-0 shrink pb-4 px-4 bg-lum-50 sn-main relative">
+    <GameProvider game_id="home">
+      <div class="home-desktop flex min-h-0 shrink w-screen pb-4 px-4 bg-lum-50 sn-main relative">
         <div class="home-left-column flex sk-fit shrink overflow-visible sn-opening-card">
           <OpeningCard
             pgn={[]}
@@ -18,7 +18,7 @@ const HomeDesktop: Component<{ game: Game }> = (props) => {
             game={props.game}
           />
         </div>
-        <BoardView class="grow shrink" rounded={true} />
+        <BoardView class="grow shrink" rounded={true} useEngine={true} />
         <div class="flex flex-col gap-4 w-[500px] h-[100%] min-h-0 shrink px-4 sn-info-card">
           <GameInterfaceCard />
           <RepertoireCard game={props.game} />

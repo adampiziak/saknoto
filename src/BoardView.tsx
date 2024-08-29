@@ -22,6 +22,8 @@ export const BoardView: Component<{
   onReady?: ((game: Game) => void) | undefined;
   mode?: BoardViewMode;
   onResize?: (rect: number) => void;
+  responsive?: boolean;
+  useEngine?: boolean;
 }> = (props) => {
   let element: HTMLDivElement | undefined;
   let container: HTMLDivElement | undefined;
@@ -29,17 +31,7 @@ export const BoardView: Component<{
 
   const [boardSize, setBoardSize] = createSignal(0);
 
-  // const resize = debounce(() => {
-  //   if (container != undefined) {
-  //     const rect = container.getBoundingClientRect();
-  //     const container_width = Math.floor(rect.width / 8) * 8;
-  //     const container_height = Math.floor(rect.height / 8) * 8;
-  //     const maxsize = Math.min(container_height, container_width);
-  //     console.log(`size ${container_width} x ${container_height}: ${maxsize}`);
-  //     setBoardSize(maxsize);
-  //   }
-  // }, 100);
-  const [conStyle, setConStyle] = createSignal({
+  const [containerStyle, setContainerStyle] = createSignal({
     "max-width": props.mode === BoardViewMode.COLUMN ? "100vw" : "100vh",
     "max-height": props.mode === BoardViewMode.COLUMN ? "100vw" : "100vh",
   });
@@ -49,22 +41,36 @@ export const BoardView: Component<{
       if (props.onResize) {
         props.onResize(rect.bottom);
       }
-      const container_width = Math.ceil(rect.width / 8) * 8;
-      const container_height = Math.ceil(rect.height / 8) * 8;
+
+      const roundTo = 1;
+
+      const container_width = Math.floor(rect.width / roundTo) * roundTo;
+      const container_height = Math.floor(rect.height / roundTo) * roundTo;
       const minsize = Math.min(container_height, container_width);
       const maxsize = Math.max(container_height, container_width);
       // console.log(`size ${container_width} x ${container_height}: ${minsize}`);
       setBoardSize(minsize);
 
-      if (props.mode === BoardViewMode.COLUMN) {
-        setConStyle({
-          "max-height": `${(minsize + maxsize) / 2}px`,
-          "--bsize": `${minsize}px`,
+      const containerSize = `${Math.max((minsize + maxsize) / 2, 100)}px`;
+      let mode = props.mode;
+      if (props.responsive) {
+        let screenWidth = document.body.offsetWidth;
+        if (screenWidth < 1000) {
+          mode = BoardViewMode.COLUMN;
+        } else {
+          mode = BoardViewMode.ROW;
+        }
+      }
+
+      if (mode === BoardViewMode.COLUMN) {
+        setContainerStyle({
+          "max-height": containerSize,
+          // "max-width": containerSize2,
         });
       } else {
-        setConStyle({
-          "max-width": `${(maxsize + minsize * 2) / 3}px`,
-          "--bsize": `${minsize}px`,
+        setContainerStyle({
+          // "max-height": containerSize2,
+          "max-width": containerSize,
         });
       }
     }
@@ -76,6 +82,9 @@ export const BoardView: Component<{
 
       if (game) {
         game.attach(element);
+        if (props.useEngine) {
+          game.useEngine(props.useEngine);
+        }
         api.set({ addDimensionsCssVarsTo: container });
       }
 
@@ -131,8 +140,8 @@ export const BoardView: Component<{
   return (
     <div
       ref={container}
-      style={conStyle()}
-      class={"board-view   min-h-0 min-w-0 max-w-full max-h-full grow shrink"}
+      style={containerStyle()}
+      class={`board-view min-h-0 min-w-0 max-w-full self-stretch max-h-full grow shrink flex`}
     >
       <div
         ref={element}
