@@ -7,7 +7,7 @@ import EngineCard from "./EngineCard";
 import RepertoireCard from "./RepertoireCard";
 import { GameProvider } from "~/GameProvider";
 
-const HomeDesktop: Component<{ game: Game }> = (props) => {
+const HomeDesktop: Component = (props) => {
   return (
     <GameProvider game_id="home">
       <div class="home-desktop flex min-h-0 shrink w-screen pb-4 px-4 bg-lum-50 sn-main relative">
@@ -15,16 +15,15 @@ const HomeDesktop: Component<{ game: Game }> = (props) => {
           <OpeningCard
             pgn={[]}
             on_select={(move) => props.game.handle_move(move)}
-            game={props.game}
           />
         </div>
         <BoardView class="grow shrink" rounded={true} useEngine={true} />
         <div class="flex flex-col gap-4 w-[500px] h-[100%] min-h-0 shrink px-4 sn-info-card">
           <GameInterfaceCard />
-          <RepertoireCard game={props.game} />
+          <RepertoireCard />
           <EngineCard
-            onSelect={(move: string) => props.game.playMove(move)}
-            onHover={(moves) => props.game.drawArrows(moves)}
+          // onSelect={(move: string) => props.game.playMove(move)}
+          // onHover={(moves) => props.game.drawArrows(moves)}
           />
         </div>
       </div>

@@ -23,7 +23,7 @@ const RepertoireCard: Component = (props) => {
   };
 
   onMount(() => {
-    context.engine.subscribe_main((ev) => {
+    context.engine.onBoardEvaluation((ev) => {
       setEvl(ev?.lines.at(0)?.san.at(0) ?? null);
     });
     game.subscribe(({ fen }) => {

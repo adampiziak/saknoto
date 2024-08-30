@@ -1,4 +1,6 @@
 import {
+  debounce_async,
+  debounce_instant_async,
   make_valid,
   parse_move,
   san_to_lan,
@@ -73,6 +75,8 @@ export const defaultGameState = (): GameState => {
   };
 };
 
+let gameinstances = 0;
+
 export class Game {
   chess: Chess;
   api: Api | null = null;
@@ -85,12 +89,16 @@ export class Game {
   state_listener: any[] = [];
   boardRef: HTMLElement | undefined;
   key: string | null = null;
+  gid: number;
+  lastApiRequest = new Date(0);
 
   constructor(context: SaknotoContextKind, key: string | null = null) {
     this.chess = new Chess();
     this.state = defaultGameState();
     this.appContext = context;
     this.key = key;
+    this.gid = gameinstances;
+    gameinstances += 1;
 
     this.history = {
       index: 0,
@@ -133,7 +141,7 @@ export class Game {
         turn.side === Side.Opponent &&
         this.state.opponent.kind === PlayerKind.Lichess
       ) {
-        this.playWeightedRandomMove();
+        this.playCommonMove();
         return;
       }
 
@@ -175,10 +183,12 @@ export class Game {
     // listen for key events
     addEventListener("keydown", (ev: KeyboardEvent) => {
       if (ev.key === "ArrowLeft") {
+        console.log("DOWN");
         this.undoMove();
       }
 
       if (ev.key === "ArrowRight") {
+        console.log("UP");
         this.redoMove();
       }
     });
@@ -218,7 +228,6 @@ export class Game {
   }
 
   drawArrows(moves: string[]) {
-    console.log(moves);
     let arrows: DrawShape[] = [];
     try {
       for (const m of moves) {
@@ -230,7 +239,6 @@ export class Game {
         });
       }
     } catch (e) {
-      console.log(e);
       arrows = [];
     }
     this.api?.set({
@@ -392,7 +400,8 @@ export class Game {
     // this.checkIfComputerMove();
   }
 
-  async playWeightedRandomMove() {
+  playCommonMove = debounce_instant_async(async () => {
+    console.log("play common move");
     const url =
       "https://explorer.lichess.ovh/lichess?variant=standard&speeds=blitz&ratings=2000,2400&fen=" +
       encodeURIComponent(this.chess.fen());
@@ -443,7 +452,7 @@ export class Game {
       }
       play_move(cached);
     }
-  }
+  }, 2000);
 
   playMove(move: string) {
     // validate move
@@ -475,8 +484,9 @@ export class Game {
   }
 
   notifyEngine() {
+    console.log("notify" + this.chess.fen());
     if (this.state.notifyEngine) {
-      this.appContext.engine.enqueue_main(this.chess.fen());
+      this.appContext.engine.setBoardPosition(this.chess.fen());
     }
   }
 

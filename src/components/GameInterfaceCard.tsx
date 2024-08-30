@@ -66,7 +66,7 @@ const GameInterfaceCard: Component = (props) => {
           </Button>
           <Button
             class="button mt-2 bg-lum-200 border-lum-300 text-lum-600"
-            onClick={() => game.playWeightedRandomMove()}
+            onClick={() => game.playCommonMove()}
           >
             Play common move
           </Button>

@@ -11,12 +11,11 @@ import {
 import { parse_info } from "./uci";
 import { STARTING_EVAL, STARTING_FEN } from "./constants";
 import { LRUCache } from "./data/Cache";
-import { DEV } from "solid-js";
 
 export interface Evaluation {
   fen: string;
   depth: number;
-  mode: "cloud" | "local";
+  mode: EvaluationType;
   cached: boolean;
   lines: EvaluationLine[];
 }
@@ -28,37 +27,70 @@ export interface EvaluationLine {
 }
 
 interface Task {
-  mode: "main" | "other";
   fen: string;
-  eval_type: "any" | "local";
+  origin: TaskOrigin;
+  config: TaskConfig;
 }
 
-export function createEmptyEvaluation(): Evaluation {
+interface TaskConfig {
+  useCache: boolean;
+  useCloud: boolean;
+}
+
+export function createEmptyEvaluation(fen: string | null = null): Evaluation {
   return {
-    fen: startingFen(),
+    fen: fen ?? startingFen(),
     depth: 0,
-    mode: "local",
+    mode: EvaluationType.LOCAL,
     cached: false,
     lines: [],
   };
 }
 
-const EVAL_DEPTH = 24;
+const EVAL_DEPTH = 28;
 
+export enum EvaluationType {
+  LOCAL = "local",
+  CLOUD = "cloud",
+}
+
+export enum TaskOrigin {
+  BOARD,
+  SECONDARY,
+}
+
+export enum EngineMode {
+  STARTUP,
+  READY,
+  WORKING,
+  STOPPING,
+}
+
+const devmode = true;
 export class Engine {
   subscribers = new Map<string, any[]>();
   engine: StockfishWeb | undefined;
   last_cloud_request = new Date(0);
   uci_ready = false;
 
+  mode: EngineMode = EngineMode.STARTUP;
   engine_ready = true;
-  current_task: Task | null = null;
-  current_evaluation: Evaluation = createEmptyEvaluation();
-  other_queue: Task[] = [];
-  board_queue: Task[] = [];
   initialize_wait_queue: any[] = [];
   cache?: LRUCache<Evaluation>;
   current_position = startingFen();
+
+  // Position that engine is currently working on.
+  currentTask: Task | null = null;
+
+  // Queue for evaluation requests from board and other.
+  boardQueue: Task[] = [];
+  secondaryQueue: Task[] = [];
+
+  // Evaluation for main board position.
+  boardEvaluation: Evaluation = createEmptyEvaluation();
+
+  // Current evaluation from any secondary requests.
+  secondaryEvaluation = createEmptyEvaluation();
 
   private sharedWasmMemory = (lo: number, hi = 32767): WebAssembly.Memory => {
     let shrink = 4; // 32767 -> 24576 -> 16384 -> 12288 -> 8192 -> 6144 -> etc
@@ -77,13 +109,13 @@ export class Engine {
     }
   };
   async start() {
-    console.log("LOADING ENGINE");
+    this.debugMessage("LOADING ENGINE");
     const sf = await Stockfish({
       wasmMemmory: this.sharedWasmMemory(4096!),
       locateFile: (name: string) => `/${name}`,
     });
 
-    const nnue_paths = new Set([]);
+    const nnue_paths: Set<string> = new Set([]);
     for (let i = 0; i < 20; i++) {
       const nnue_path = sf.getRecommendedNnue(i);
 
@@ -108,7 +140,7 @@ export class Engine {
     try {
       if (this.engine) {
         this.engine.listen = (event: any) => {
-          this.handle_message(event);
+          this.handleMessage(event);
         };
 
         this.engine.onError = (e: any) => {
@@ -123,7 +155,7 @@ export class Engine {
     }
 
     // Cache
-    console.log("ENGINE READY");
+    this.debugMessage("ENGINE READY");
     this.cache = new LRUCache<Evaluation>("engine-cache");
     await this.cache.load();
   }
@@ -138,22 +170,29 @@ export class Engine {
     });
   }
 
-  async evaluate_next_task() {
-    // console.error("STARTING NEXT TASK");
-    this.current_evaluation = createEmptyEvaluation();
-    let task = this.board_queue.pop();
-    this.board_queue = [];
-
-    if (!task) {
-      task = this.other_queue.pop();
+  async evaluateNextTask() {
+    // Get lastest board position update.
+    let task = null;
+    while (this.boardQueue.length > 0) {
+      task = this.boardQueue.pop();
     }
-    this.current_task = task ?? null;
 
-    if (task) {
-      this.current_task = task;
-      this.engine_ready = false;
-      this.current_evaluation.fen = this.current_task.fen;
-      this.evaluate(task);
+    // If no board update, try secondary queue.
+    if (!task) {
+      task = this.secondaryQueue.pop();
+    }
+
+    this.currentTask = task ?? null;
+
+    if (this.currentTask) {
+      this.mode = EngineMode.WORKING;
+      const evaluation = createEmptyEvaluation(this.currentTask.fen);
+      if (this.currentTask.origin === TaskOrigin.BOARD) {
+        this.boardEvaluation = evaluation;
+      } else {
+        this.secondaryEvaluation = evaluation;
+      }
+      this.evaluateTask(this.currentTask);
     }
   }
 
@@ -161,68 +200,124 @@ export class Engine {
     this.cache?.clear();
   }
 
-  async handle_message(message: string) {
-    // console.log(message);
-    if (message.includes("ponder") || message.includes("bestmove")) {
-      if (this.current_task?.mode === "other") {
-        this.emit({ ...this.current_evaluation });
-      }
-      if (this.current_task) {
-        this.cache?.add(this.current_evaluation.fen, {
-          ...this.current_evaluation,
-          cached: true,
-        });
-      }
-      this.current_task = null;
-      this.engine_ready = true;
+  sendIsReady() {
+    setTimeout(() => {
       this.engine?.uci("isready");
-      return;
+    }, 100);
+  }
+
+  debugMessage(msg: string) {
+    if (devmode) {
+      console.log(msg);
     }
-    if (message.includes("readyok")) {
-      await this.evaluate_next_task();
-      return;
-    }
+  }
+
+  async handleMessage(message: string) {
+    // Engine has loaded successfully.
     if (message.includes("uciok")) {
       this.engine?.uci("setoption name Threads value 16");
       this.engine?.uci("setoption name Hash value 1536");
       this.engine?.uci("setoption name MultiPV value 3");
-
       this.engine?.uci("ucinewgame");
 
       for (const resolver of this.initialize_wait_queue) {
         resolver();
       }
-      console.log("ASDDDDDDDDDDDDDDDDD");
-      this.uci_ready = true;
-      console.log(this.uci_ready);
-      this.engine?.uci("isready");
-      // console.error("READY");
+
+      this.mode = EngineMode.READY;
+      this.sendIsReady();
+      this.debugMessage("engine loaded.");
       return;
     }
 
-    const info = parse_info(message);
-    if (info) {
-      this.current_evaluation.depth = Math.max(
-        this.current_evaluation.depth,
-        info.depth,
-      );
-      this.current_evaluation.mode = "local";
-      console.log(this.current_evaluation.depth);
-      const line = parse_moves(this.current_evaluation.fen, info.line);
-      this.current_evaluation.lines[info.multipv - 1] = {
-        score: Math.round(info.cp / 10) / 10,
-        san: line,
-        lan: info.line,
-      };
+    // Don't do anything until engine has loaded.
+    if (this.mode === EngineMode.STARTUP) {
+      this.debugMessage("waiting until ready.");
+      return;
+    }
 
-      if (this.current_task?.mode === "main") {
-        this.emit_mainline({ ...this.current_evaluation });
+    // Engine has finished searching after `stop` command.
+    if (
+      this.mode === EngineMode.STOPPING &&
+      (message.includes("ponder") || message.includes("bestmove"))
+    ) {
+      this.debugMessage("stopped successfully.");
+      this.currentTask = null;
+      this.mode = EngineMode.READY;
+      setTimeout(() => {
+        this.sendIsReady();
+      }, 500);
+      return;
+    }
+
+    // Engine is ready, check for evaluation requests.
+    if (message.includes("readyok")) {
+      this.debugMessage("engine ready for next task");
+      this.mode = EngineMode.READY;
+      return await this.evaluateNextTask();
+    }
+
+    // Engine has finished searching.
+    if (message.includes("ponder") || message.includes("bestmove")) {
+      this.debugMessage("engine done with task.");
+      if (this.currentTask?.origin === TaskOrigin.SECONDARY) {
+        this.emitSecondaryEvaluation({ ...this.secondaryEvaluation });
+        this.cache?.add(this.secondaryEvaluation.fen, {
+          ...this.secondaryEvaluation,
+          cached: true,
+        });
+      } else {
+        this.emitBoardEvaluation({ ...this.boardEvaluation });
+        this.cache?.add(this.boardEvaluation.fen, {
+          ...this.boardEvaluation,
+          cached: true,
+        });
+      }
+      this.currentTask = null;
+      this.engine_ready = true;
+      this.sendIsReady();
+      return;
+    }
+
+    if (this.mode === EngineMode.WORKING) {
+      // Parse info
+      try {
+        const info = parse_info(message);
+        if (info) {
+          if (this.currentTask?.origin === TaskOrigin.BOARD) {
+            this.boardEvaluation.depth = Math.max(
+              this.boardEvaluation.depth,
+              info.depth,
+            );
+            const line = parse_moves(this.boardEvaluation.fen, info.line);
+            this.boardEvaluation.lines[info.multipv - 1] = {
+              score: Math.round(info.cp / 10) / 10,
+              san: line,
+              lan: info.line,
+            };
+            this.emitBoardEvaluation({ ...this.boardEvaluation });
+          } else {
+            this.secondaryEvaluation.depth = Math.max(
+              this.secondaryEvaluation.depth,
+              info.depth,
+            );
+            const line = parse_moves(this.secondaryEvaluation.fen, info.line);
+            this.secondaryEvaluation.lines[info.multipv - 1] = {
+              score: Math.round(info.cp / 10) / 10,
+              san: line,
+              lan: info.line,
+            };
+            this.emitBoardEvaluation({ ...this.secondaryEvaluation });
+          }
+        }
+      } catch (_) {
+        return;
       }
     }
   }
 
-  emit_mainline = throttle((evaluation: Evaluation) => {
-    const listeners = this.subscribers.get("main");
+  emitBoardEvaluation = throttle((evaluation: Evaluation) => {
+    const listeners = this.subscribers.get("board");
     if (!listeners) {
       return;
     }
@@ -231,7 +326,7 @@ export class Engine {
     }
   }, 300);
 
-  emit(evaluation: Evaluation) {
+  emitSecondaryEvaluation(evaluation: Evaluation) {
     const listeners = this.subscribers.get(evaluation.fen);
 
     if (!listeners) {
@@ -244,56 +339,78 @@ export class Engine {
   }
 
   enqueue_other = debounce((fen: string) => {
-    this.prepare_task({ mode: "other", fen, eval_type: "any" });
+    this.prepareTask({
+      origin: TaskOrigin.SECONDARY,
+      fen,
+      config: { useCache: true, useCloud: true },
+    });
   }, 50);
 
-  prepare_task(task: Task) {
-    console.log(task);
-    if (task.mode === "main") {
-      this.board_queue.push(task);
+  // Enqueue task and notify engine.
+  prepareTask(task: Task) {
+    // Put task in queue.
+    if (task.origin === TaskOrigin.BOARD) {
+      this.boardQueue.push(task);
     } else {
-      this.other_queue.push(task);
+      this.secondaryQueue.push(task);
     }
 
-    if (!this.uci_ready) {
-      console.log("NOT READY");
+    // Allow engine to load.
+    if (this.mode === EngineMode.STARTUP) {
       return;
     }
 
-    if (this.engine_ready) {
-      this.engine?.uci("isready");
-      return;
-    }
-
-    if (this.current_task?.mode === "main") {
+    // Board has new position. Stop evaluation of old position.
+    if (
+      this.currentTask?.origin === TaskOrigin.BOARD &&
+      this.mode === EngineMode.WORKING
+    ) {
+      this.debugMessage("stopping engine");
       this.engine?.uci("stop");
-      console.log("STOPPING");
+      this.mode = EngineMode.STOPPING;
+      return;
+    }
+
+    // If engine is idle, send `isready` which will trigger eval of next task.
+    if (this.mode === EngineMode.READY) {
+      this.sendIsReady();
     }
   }
 
-  enqueue_main = debounce_instant((fen: string) => {
+  setBoardPosition = debounce_instant((fen: string) => {
+    this.debugMessage("BOARD IS: " + fen);
     if (fen === STARTING_FEN) {
-      this.emit_mainline(STARTING_EVAL);
-    } else {
-      this.prepare_task({ mode: "main", fen, eval_type: "any" });
+      this.emitBoardEvaluation(STARTING_EVAL);
+      return;
     }
+
+    this.prepareTask({
+      fen,
+      origin: TaskOrigin.BOARD,
+      config: {
+        useCache: true,
+        useCloud: true,
+      },
+    });
   }, 1000);
 
-  subscribe_main(callback: (arg0: Evaluation) => void) {
-    const existing = this.subscribers.get("main") ?? [];
+  // subscribe to board evaluation updates.
+  onBoardEvaluation(callback: (arg0: Evaluation) => void) {
+    const existing = this.subscribers.get("board") ?? [];
     existing.push(callback);
-    this.subscribers.set("main", existing);
+    this.subscribers.set("board", existing);
   }
 
-  subscribe_position(fen: string, callback: (arg0: Evaluation) => void) {
+  // subscribe to exact position updates.
+  onPositionEvaluation(fen: string, callback: (arg0: Evaluation) => void) {
     const existing = this.subscribers.get(fen) ?? [];
     existing.push(callback);
     this.subscribers.set(fen, existing);
   }
 
   wait_for(fen: string): Promise<Evaluation> {
-    return new Promise((resolve, reject) => {
-      this.subscribe_position(fen, (evaluation: Evaluation) => {
+    return new Promise((resolve, _) => {
+      this.onPositionEvaluation(fen, (evaluation: Evaluation) => {
         resolve(evaluation);
       });
 
@@ -301,40 +418,59 @@ export class Engine {
     });
   }
 
-  async evaluate(task: Task) {
-    const cached_eval = await this.cache?.get(task.fen);
-    if (cached_eval && cached_eval.depth >= EVAL_DEPTH) {
-      console.log(cached_eval);
-      if (task.mode === "main") {
-        this.emit_mainline(cached_eval);
-      } else {
-        this.emit(cached_eval);
-      }
-      this.current_task = null;
-      this.engine_ready = true;
-      return;
-    }
+  // Evaluate position. Invoked when engine dequeues task after `isready` message.
+  async evaluateTask(task: Task) {
+    console.log("evaluating...: " + task.fen);
 
-    if (task.eval_type === "any") {
+    // Try cache
+    if (task.config.useCache) {
+      const saved = await this.cache?.get(task.fen);
+      if (saved) {
+        console.log(saved);
+        if (task.origin === TaskOrigin.BOARD) {
+          this.emitBoardEvaluation(saved);
+        } else {
+          this.emitSecondaryEvaluation(saved);
+        }
+        this.currentTask = null;
+        this.engine_ready = true;
+        this.debugMessage("done (cached).");
+        this.sendIsReady();
+        return;
+      }
+    }
+    // Try Lichess cloud
+    if (task.config.useCloud) {
+      // call lichess api
       const cloud_eval = await this.cloud_evaluation(task);
+
+      // if found emit
       if (cloud_eval) {
         this.cache?.add(cloud_eval.fen, { ...cloud_eval, cached: true });
-        if (task.mode === "main") {
-          this.emit_mainline(cloud_eval);
+        if (task.origin === TaskOrigin.BOARD) {
+          this.emitBoardEvaluation(cloud_eval);
         } else {
-          this.emit(cloud_eval);
+          this.emitSecondaryEvaluation(cloud_eval);
         }
+
+        // if depth is below target, do local eval as well.
         if (cloud_eval.depth >= EVAL_DEPTH) {
+          this.currentTask = null;
+          this.engine_ready = true;
+          this.debugMessage("done (cloud).");
+          this.sendIsReady();
           return;
         }
+        console.log("CLOUD DEPTH TOO LOW");
       }
     }
 
-    this.start_local_evaluation(task);
+    // local
+    this.startLocalEvaluation(task);
   }
 
-  start_local_evaluation(task: Task) {
-    console.log("LOCAL EVAL" + task.fen);
+  startLocalEvaluation(task: Task) {
+    this.debugMessage("starting local eval: " + task.fen);
     this.engine?.uci(`position fen ${task.fen}`);
     this.engine?.uci(`go depth ${EVAL_DEPTH}`);
   }
@@ -368,9 +504,6 @@ export class Engine {
         san: parse_moves(evaluation.fen, moves),
       });
     }
-
-    this.current_task = null;
-    this.engine_ready = true;
 
     return evaluation;
   }

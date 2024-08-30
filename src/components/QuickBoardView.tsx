@@ -36,7 +36,7 @@ export default function QuickBoard() {
 
   onMount(async () => {
     await context.engine.wait();
-    context.engine.subscribe_main((evl) => {
+    context.engine.onBoardEvaluation((evl) => {
       setEngineMoves(
         evl.lines.map((l) => ({
           orig: l.lan.at(0)?.slice(0, 2),
@@ -124,7 +124,7 @@ export default function QuickBoard() {
     const fen = game.fen();
     console.log(fen);
     console.log("requesting");
-    context.engine.enqueue_main(fen);
+    context.engine.setBoardPosition(fen);
     setBoardFen(fen);
     const color = game.turn() === "w" ? "white" : "black";
     api()?.set({

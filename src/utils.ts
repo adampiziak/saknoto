@@ -102,6 +102,24 @@ export const debounce_instant = (callback: any, delay: any) => {
     }
   };
 };
+export const debounce_instant_async = (callback: any, delay: any) => {
+  let timeoutId: any = null;
+  let lastInvocation = new Date(0);
+
+  return async (...args: any) => {
+    const duration = new Date() - lastInvocation;
+    lastInvocation = new Date();
+
+    if (duration > delay) {
+      await callback(...args);
+    } else {
+      window.clearInterval(timeoutId);
+      timeoutId = window.setTimeout(async () => {
+        await callback(...args);
+      }, delay);
+    }
+  };
+};
 
 export function toDests(chess) {
   const dests = new Map();

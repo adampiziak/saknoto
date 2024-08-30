@@ -22,7 +22,7 @@ const EngineCard: Component<{
 
   let arrows = new Set<string>();
   onMount(() => {
-    context.engine.subscribe_main((newEval) => {
+    context.engine.onBoardEvaluation((newEval) => {
       setEvaluation(newEval);
       arrows.clear();
     });
@@ -92,7 +92,7 @@ const EngineCard: Component<{
   };
 
   return (
-    <div class="border border-lum-300 bg-lum-100 rounded overflow-hidden">
+    <div class="border border-lum-300 bg-lum-100 rounded overflow-hidden text-lum-800">
       <div class="card-header text-lum-900 bg-lum-200 flex justify-between items-center">
         <div class="mr-2 ">Engine</div>
         <div class="font-normal ">{evaluation().mode}</div>
@@ -115,5 +115,7 @@ const EngineCard: Component<{
     </div>
   );
 };
+// <div>B: {boardFen()}</div>
+// <div>E: {evaluation().fen}</div>
 
 export default EngineCard;

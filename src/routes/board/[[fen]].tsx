@@ -87,7 +87,7 @@ export default function Board() {
   const updateBoardState = () => {
     const fen = game.fen();
     console.log(fen);
-    context.engine.enqueue_main(fen);
+    context.engine.setBoardPosition(fen);
     setBoardFen(fen);
     const color = game.turn() === "w" ? "white" : "black";
     api()?.set({

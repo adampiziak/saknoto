@@ -1,12 +1,11 @@
 import { Component, createSignal } from "solid-js";
 import { BoardView, BoardViewMode } from "~/BoardView";
-import { Game } from "~/Game";
 import PositionContextualCard from "./PositionContextComponent";
 import BottomSheet from "./BottomSheet";
 import BottomActions from "./BottomActions";
 import { GameProvider } from "~/GameProvider";
 
-const HomeMobile: Component<{ game: Game }> = (props) => {
+const HomeMobile: Component = (props) => {
   const [boardRect, setBoardRect] = createSignal(0);
   return (
     <GameProvider game_id="home">
