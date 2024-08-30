@@ -76,7 +76,7 @@ const Study: Component = () => {
       setProgress(session?.getProgress());
       game?.drawArrowsFen(flashcard()?.fen, flashcard()?.response);
       setTimeout(() => {
-        game?.loadPosition(flashcard()?.fen);
+        getNextCard();
         game?.drawArrowsFen(flashcard()?.fen, flashcard()?.response);
       }, 1000);
     }
