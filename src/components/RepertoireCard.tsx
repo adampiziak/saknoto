@@ -68,7 +68,7 @@ const RepertoireCard: Component = (props) => {
       setTimeout(() => {
         update(fen());
         game?.checkIfComputerMove();
-      }, 500);
+      }, 200);
     }
   };
 

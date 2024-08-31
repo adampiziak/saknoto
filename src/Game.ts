@@ -125,16 +125,18 @@ export class Game {
 
   loadState() {
     if (window && this.key !== null) {
-      setTimeout(() => {
-        const key = `game-state-${this.key}`;
-        const saved = window.localStorage.getItem(key);
-        if (saved) {
-          this.state = JSON.parse(saved);
-          this.updateBoard();
-          this.checkIfComputerMove();
+      const key = `game-state-${this.key}`;
+      const saved = window.localStorage.getItem(key);
+      if (saved) {
+        this.state = JSON.parse(saved);
+        this.api.set({
+          orientation: this.state.orientation,
+        });
+        setTimeout(() => {
           this.updateState(() => {});
-        }
-      }, 500);
+        }, 500);
+        // this.restartSlow();
+      }
     }
   }
 
@@ -289,7 +291,9 @@ export class Game {
   restartSlow() {
     this.chess.reset();
     this.chess.load(this.state.startingFen);
-    this.loadPosition(this.state.startingFen);
+    this.api?.set({
+      fen: this.state.startingFen,
+    });
     this.notifyEngine();
     setTimeout(() => {
       this.restart();
@@ -368,9 +372,11 @@ export class Game {
     modifier(this.state);
     console.log("updated state");
     this.saveState();
-    this.updateBoard();
-    this.checkIfComputerMove();
     this.emitState();
+    setTimeout(() => {
+      this.updateBoard();
+      this.checkIfComputerMove();
+    }, 500);
   }
 
   emitState() {
