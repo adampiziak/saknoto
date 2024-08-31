@@ -3,6 +3,10 @@ import { useSaknotoContext } from "./Context";
 import { CgClose } from "solid-icons/cg";
 import { Link } from "@kobalte/core/link";
 import { BsX } from "solid-icons/bs";
+import { useGame } from "./GameProvider";
+import { Button } from "@kobalte/core/button";
+import { RiDesignContrastDrop2Fill } from "solid-icons/ri";
+import { LRUCache } from "./data/Cache";
 
 const MobileNav: Component = () => {
   const context = useSaknotoContext();
@@ -18,10 +22,16 @@ const MobileNav: Component = () => {
     context.ui.mobilenav.set({ active: false });
   };
 
+  const clearCache = () => {
+    const cache = new LRUCache("computer-move");
+    cache.clear();
+    context.engine.clear_cache();
+  };
+
   return (
     <div
       class={
-        "sn-mobile-nav bg-lum-50 text-lum-800 absolute h-screen w-screen left-0 top-0 " +
+        "sn-mobile-nav bg-lum-50 text-lum-800 flex flex-col absolute h-screen w-screen left-0 top-0 " +
         `${active() ? "z-50" : "-z-10"}`
       }
     >
@@ -54,6 +64,12 @@ const MobileNav: Component = () => {
           Explore
         </Link>
       </nav>
+      <Button
+        class="button border-lum-300 text-lum-700 bg-lum-100 mt-10"
+        onclick={clearCache}
+      >
+        Clear cache
+      </Button>
     </div>
   );
 };

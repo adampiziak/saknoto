@@ -61,7 +61,7 @@ const BottomActions: Component = () => {
     <Portal>
       <div class="mobile-view w-screen m-auto z-40 absolute bottom-2 flex items-center justify-center overflow-hidden rounded-xl pointer-events-none">
         <div class="bg-lum-100 p-2 flex gap-2 rounded-xl pointer-events-auto shadow-xl ">
-          <ActionButton onClick={() => game.restart()}>
+          <ActionButton onClick={() => game.restartSlow()}>
             <FaSolidArrowRotateLeft size={24} />
           </ActionButton>
           <ActionButton onclick={() => game.undoMove()}>
