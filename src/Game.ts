@@ -318,6 +318,9 @@ export class Game {
 
   subscribe(callback: (event: GameEvent) => void) {
     this.listeners.push(callback);
+    setTimeout(() => {
+      this.emit();
+    }, 100);
   }
 
   onMove(callback: (san: string) => any) {
