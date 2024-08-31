@@ -118,10 +118,12 @@ const RepertoireCard: Component = (props) => {
             <div
               class="font-semibold p-2 bg-lum-200 hover:bg-lum-300 hover:cursor-pointer my-2 rounded hoverable"
               onmouseenter={() => {
-                addArrow(item);
+                setTimeout(() => {
+                  addArrow(item);
+                }, 100);
               }}
               onmouseleave={() => {
-                removeArrow(item);
+                game.clearArrows();
               }}
               onclick={() => game?.playMove(item)}
             >

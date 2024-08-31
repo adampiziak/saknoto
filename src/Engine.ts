@@ -267,7 +267,7 @@ export class Engine {
           cached: true,
         });
       } else {
-        this.emitBoardEvaluation({ ...this.boardEvaluation });
+        this.emitBoardEvaluation();
         this.cache?.add(this.boardEvaluation.fen, {
           ...this.boardEvaluation,
           cached: true,
@@ -295,7 +295,7 @@ export class Engine {
               san: line,
               lan: info.line,
             };
-            this.emitBoardEvaluation({ ...this.boardEvaluation });
+            this.emitBoardEvaluation();
           } else {
             this.secondaryEvaluation.depth = Math.max(
               this.secondaryEvaluation.depth,
@@ -307,7 +307,7 @@ export class Engine {
               san: line,
               lan: info.line,
             };
-            this.emitBoardEvaluation({ ...this.secondaryEvaluation });
+            this.emitSecondaryEvaluation({ ...this.secondaryEvaluation });
           }
         }
       } catch (_) {
@@ -316,7 +316,8 @@ export class Engine {
     }
   }
 
-  emitBoardEvaluation = throttle((evaluation: Evaluation) => {
+  emitBoardEvaluation = throttle(() => {
+    const evaluation = this.boardEvaluation;
     const listeners = this.subscribers.get("board");
     if (!listeners) {
       return;
@@ -380,7 +381,8 @@ export class Engine {
   setBoardPosition = debounce_instant((fen: string) => {
     this.debugMessage("BOARD IS: " + fen);
     if (fen === STARTING_FEN) {
-      this.emitBoardEvaluation(STARTING_EVAL);
+      this.boardEvaluation = STARTING_EVAL;
+      this.emitBoardEvaluation();
       return;
     }
 
@@ -399,6 +401,9 @@ export class Engine {
     const existing = this.subscribers.get("board") ?? [];
     existing.push(callback);
     this.subscribers.set("board", existing);
+    setTimeout(() => {
+      this.emitBoardEvaluation();
+    });
   }
 
   // subscribe to exact position updates.
@@ -427,7 +432,8 @@ export class Engine {
       const saved = await this.cache?.get(task.fen);
       if (saved) {
         if (task.origin === TaskOrigin.BOARD) {
-          this.emitBoardEvaluation(saved);
+          this.boardEvaluation = saved;
+          this.emitBoardEvaluation();
         } else {
           this.emitSecondaryEvaluation(saved);
         }
@@ -447,7 +453,8 @@ export class Engine {
       if (cloud_eval) {
         this.cache?.add(cloud_eval.fen, { ...cloud_eval, cached: true });
         if (task.origin === TaskOrigin.BOARD) {
-          this.emitBoardEvaluation(cloud_eval);
+          this.boardEvaluation = cloud_eval;
+          this.emitBoardEvaluation();
         } else {
           this.emitSecondaryEvaluation(cloud_eval);
         }
