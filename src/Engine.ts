@@ -158,6 +158,7 @@ export class Engine {
     this.debugMessage("ENGINE READY");
     this.cache = new LRUCache<Evaluation>("engine-cache");
     await this.cache.load();
+    this.setBoardPosition(startingFen());
   }
 
   wait() {
@@ -213,9 +214,10 @@ export class Engine {
   }
 
   async handleMessage(message: string) {
+    console.log(EngineMode[this.mode]);
     // Engine has loaded successfully.
     if (message.includes("uciok")) {
-      this.engine?.uci("setoption name Threads value 16");
+      this.engine?.uci("setoption name Threads value 2");
       this.engine?.uci("setoption name Hash value 1536");
       this.engine?.uci("setoption name MultiPV value 3");
       this.engine?.uci("ucinewgame");
@@ -285,6 +287,7 @@ export class Engine {
         const info = parse_info(message);
         if (info) {
           if (this.currentTask?.origin === TaskOrigin.BOARD) {
+            this.boardEvaluation.mode = EvaluationType.LOCAL;
             this.boardEvaluation.depth = Math.max(
               this.boardEvaluation.depth,
               info.depth,
@@ -317,11 +320,12 @@ export class Engine {
   }
 
   emitBoardEvaluation = throttle(() => {
-    const evaluation = this.boardEvaluation;
+    const evaluation = { ...this.boardEvaluation };
     const listeners = this.subscribers.get("board");
     if (!listeners) {
       return;
     }
+
     for (const callback of listeners) {
       callback(evaluation);
     }
@@ -476,6 +480,7 @@ export class Engine {
   }
 
   startLocalEvaluation(task: Task) {
+    this.boardEvaluation.depth = 1;
     this.debugMessage("starting local eval: " + task.fen);
     this.engine?.uci(`position fen ${task.fen}`);
     this.engine?.uci(`go depth ${EVAL_DEPTH}`);
