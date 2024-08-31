@@ -66,7 +66,7 @@ export enum EngineMode {
   STOPPING,
 }
 
-const devmode = true;
+const devmode = false;
 export class Engine {
   subscribers = new Map<string, any[]>();
   engine: StockfishWeb | undefined;
@@ -426,7 +426,6 @@ export class Engine {
     if (task.config.useCache) {
       const saved = await this.cache?.get(task.fen);
       if (saved) {
-        console.log(saved);
         if (task.origin === TaskOrigin.BOARD) {
           this.emitBoardEvaluation(saved);
         } else {

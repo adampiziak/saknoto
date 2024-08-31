@@ -1,19 +1,48 @@
 import { FSRS, Rating, fsrs, generatorParameters } from "ts-fsrs";
 import { RepCard, Repertoire } from "./Repertoire";
 
+export interface StudyCard {
+  rep: RepCard;
+  attempts: number;
+}
+
+enum StudyStage {
+  TODO = "todo",
+  DOING = "doing",
+  DONE = "done",
+}
+
+type Stage = {
+  [key in StudyStage]: RepCard[];
+};
+
 export class StudySession {
-  done: RepCard[] = [];
-  doing: RepCard[] = [];
-  todo: RepCard[] = [];
+  stage: Stage = {
+    todo: [],
+    doing: [],
+    done: [],
+  };
+  current: RepCard | undefined;
   repertoire: Repertoire | undefined;
+  currentType: StudyStage | undefined = StudyStage.TODO;
 
   f: FSRS = fsrs(generatorParameters({ enable_fuzz: true }));
+  midnight: Date;
+
+  constructor() {
+    this.midnight = new Date();
+    this.midnight.setHours(24, 0, 0, 0);
+  }
 
   load(rep: Repertoire) {
     this.repertoire = rep;
   }
 
   async refresh() {
+    if (!this.repertoire) {
+      return;
+    }
+
     const now = new Date();
     now.setHours(24, 0, 0, 0);
 
@@ -21,22 +50,23 @@ export class StudySession {
     for (const r of reps) {
       const rep_due = new Date(r.card.due);
       if (rep_due < now) {
-        this.todo.push(r);
+        this.stage.todo.push(r);
       }
     }
   }
 
-  setScheduled(cards: RepCard[]) {
-    this.todo = cards;
-  }
-
-  getCard(): RepCard | null {
-    const next_todo = this.todo.pop();
-    if (next_todo) {
-      this.doing.push(next_todo);
+  getCard(): RepCard | undefined {
+    const todo = this.stage.todo.pop();
+    if (todo) {
+      this.stage.doing.push(todo);
+      this.currentType = StudyStage.TODO;
+    } else {
+      this.currentType = StudyStage.DOING;
     }
 
-    return this.doing.at(0) ?? null;
+    this.current = this.stage.doing.pop();
+
+    return this.current;
   }
 
   take(card: RepCard) {
@@ -54,32 +84,41 @@ export class StudySession {
   }
   getProgress(): object {
     return {
-      todo: this.todo.length,
-      doing: this.doing.length,
-      done: this.done.length,
+      todo:
+        this.stage.todo.length + (this.currentType === StudyStage.TODO ? 1 : 0),
+      doing:
+        this.stage.doing.length +
+        (this.currentType === StudyStage.DOING ? 1 : 0),
+      done: this.stage.done.length,
     };
   }
 
-  practiceCard(rep: RepCard, rating: Rating.Again | Rating.Good) {
-    const scheduling = this.f.repeat(rep.card, rep.card.due);
-
-    const updated_card = scheduling[rating].card;
-    rep.card = updated_card;
-
-    this.repertoire.updateRep(rep, updated_card);
-    const now = new Date();
-    now.setHours(24, 0, 0, 0);
-
-    // console.log(this.take(rep));
-    this.take(rep);
-    if (updated_card.due > now) {
-      this.done.push(rep);
-    } else {
-      if (rating === Rating.Again) {
-        this.doing.unshift(rep);
-      } else {
-        this.doing.push(rep);
-      }
+  practice(rating: Rating.Again | Rating.Good): RepCard | undefined {
+    if (!this.repertoire || !this.current) {
+      return;
     }
+
+    const scheduling = this.f.repeat(this.current.card, this.current.card.due);
+    this.current.card = scheduling[rating].card;
+
+    this.repertoire.updateRep(this.current, this.current.card);
+
+    // if incorrect do again
+    if (rating == Rating.Again) {
+      this.currentType = StudyStage.DOING;
+      return this.current;
+    }
+
+    // If DONE
+    if (this.current.card.due > this.midnight) {
+      this.stage.done.push(this.current);
+    }
+
+    // Otherwise put back in DOING pile
+    else {
+      this.stage.doing.unshift(this.current);
+    }
+    this.current = undefined;
+    this.currentType = undefined;
   }
 }

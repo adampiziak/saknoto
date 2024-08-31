@@ -1,10 +1,12 @@
 import {
-  debounce_async,
-  debounce_instant_async,
+  debounce,
+  debounce_instant,
   make_valid,
   parse_move,
   san_to_lan,
   startingFen,
+  throttle,
+  chessMoveThrottle,
   toDests,
 } from "./utils";
 import { Api } from "chessground/api";
@@ -13,7 +15,7 @@ import { Chess } from "chess.js";
 import { LRUCache } from "./data/Cache";
 import { ChessColor } from "./lib/common";
 import { DrawShape } from "chessground/draw";
-import { SaknotoContextKind, useSaknotoContext } from "./Context";
+import { SaknotoContextKind } from "./Context";
 
 interface History {
   index: number;
@@ -91,6 +93,8 @@ export class Game {
   key: string | null = null;
   gid: number;
   lastApiRequest = new Date(0);
+  requestInProgress = false;
+  moveListeners: any[] = [];
 
   constructor(context: SaknotoContextKind, key: string | null = null) {
     this.chess = new Chess();
@@ -121,42 +125,42 @@ export class Game {
 
   loadState() {
     if (window && this.key !== null) {
-      const key = `game-state-${this.key}`;
-      const saved = window.localStorage.getItem(key);
-      if (saved) {
-        this.state = JSON.parse(saved);
-        this.updateBoard();
-        this.checkIfComputerMove();
-        this.updateState(() => {});
-      }
+      setTimeout(() => {
+        const key = `game-state-${this.key}`;
+        const saved = window.localStorage.getItem(key);
+        if (saved) {
+          this.state = JSON.parse(saved);
+          this.updateBoard();
+          this.checkIfComputerMove();
+          this.updateState(() => {});
+        }
+      }, 500);
     }
   }
 
-  checkIfComputerMove() {
+  checkIfComputerMove = chessMoveThrottle(() => {
     const fen = this.chess.fen();
-    setTimeout(() => {
-      const turn = this.getTurn();
+    const turn = this.getTurn();
 
-      if (
-        turn.side === Side.Opponent &&
-        this.state.opponent.kind === PlayerKind.Lichess
-      ) {
-        this.playCommonMove();
-        return;
-      }
+    if (
+      turn.side === Side.Opponent &&
+      this.state.opponent.kind === PlayerKind.Lichess
+    ) {
+      this.playCommonMove();
+      return;
+    }
 
-      if (turn.side === Side.Player && this.state.autoplayRepertoire) {
-        this.appContext.repertoire.getLine(fen).then((result) => {
-          if (result) {
-            const move = result.response.at(0);
-            if (move) {
-              this.playMove(move);
-            }
+    if (turn.side === Side.Player && this.state.autoplayRepertoire) {
+      this.appContext.repertoire.getLine(fen).then((result) => {
+        if (result) {
+          const move = result.response.at(0);
+          if (move) {
+            this.playMove(move);
           }
-        });
-      }
-    }, 500);
-  }
+        }
+      });
+    }
+  }, 400);
 
   useEngine(val: boolean) {
     this.state.notifyEngine = val;
@@ -172,7 +176,7 @@ export class Game {
       movable: {
         events: {
           after(orig, dest) {
-            self.handle_move(`${orig}${dest}`);
+            self.handleMove(`${orig}${dest}`);
           },
         },
       },
@@ -183,17 +187,15 @@ export class Game {
     // listen for key events
     addEventListener("keydown", (ev: KeyboardEvent) => {
       if (ev.key === "ArrowLeft") {
-        console.log("DOWN");
         this.undoMove();
       }
 
       if (ev.key === "ArrowRight") {
-        console.log("UP");
         this.redoMove();
       }
     });
     this.loadState();
-    this.checkIfComputerMove();
+    // this.checkIfComputerMove();
     this.emitState();
   }
 
@@ -284,6 +286,16 @@ export class Game {
     this.emit();
   }
 
+  restartSlow() {
+    this.chess.reset();
+    this.chess.load(this.state.startingFen);
+    this.loadPosition(this.state.startingFen);
+    this.notifyEngine();
+    setTimeout(() => {
+      this.restart();
+    }, 600);
+  }
+
   restart() {
     console.log("RESTART");
     this.chess.reset();
@@ -294,11 +306,18 @@ export class Game {
     this.api?.set({
       lastMove: undefined,
     });
-    this.checkIfComputerMove();
+    this.notifyEngine();
+    setTimeout(() => {
+      this.checkIfComputerMove();
+    }, 200);
   }
 
   subscribe(callback: (event: GameEvent) => void) {
     this.listeners.push(callback);
+  }
+
+  onMove(callback: (san: string) => any) {
+    this.moveListeners.push(callback);
   }
 
   setRepertoireMode() {
@@ -390,18 +409,31 @@ export class Game {
     this.updateBoard();
   }
 
-  handle_move(move: string) {
-    this.playMove(move);
-    // this.chess.move(move);
-    // this.history.moves = this.chess.history();
-    // this.history.index = this.history.moves.length;
-    // this.updateBoard();
+  handleMove(move: string) {
+    const fen = this.chess.fen();
+    let san;
+    try {
+      san = parse_move(fen, move);
+      if (!san) {
+        return;
+      }
+    } catch (_) {
+      return;
+    }
 
-    // this.checkIfComputerMove();
+    this.playMove(move);
   }
 
-  playCommonMove = debounce_instant_async(async () => {
-    console.log("play common move");
+  emitMove(san: string) {
+    for (const listener of this.moveListeners) {
+      listener(san);
+    }
+  }
+
+  playCommonMove = async () => {
+    if (this.requestInProgress) {
+      return;
+    }
     const url =
       "https://explorer.lichess.ovh/lichess?variant=standard&speeds=blitz&ratings=2000,2400&fen=" +
       encodeURIComponent(this.chess.fen());
@@ -435,9 +467,22 @@ export class Game {
     };
 
     if (cached === undefined) {
+      const now = Date.now();
+      const diff = now - this.lastApiRequest;
+      const remain = 2000 - diff;
+      if (remain > 0) {
+        this.requestInProgress = true;
+        return setTimeout(
+          () => {
+            this.requestInProgress = false;
+            this.playCommonMove();
+          },
+          Math.max(500, remain + 10),
+        );
+      }
+
       fetch(url).then((res) => {
         const c = this.cache;
-        console.log("FETCHING...");
         res.json().then(async (body) => {
           if (!body.moves) {
             return;
@@ -446,13 +491,14 @@ export class Game {
           play_move(body);
         });
       });
+      this.lastApiRequest = now;
     } else {
       if (!cached.moves) {
         this.cache?.remove(key);
       }
       play_move(cached);
     }
-  }, 2000);
+  };
 
   playMove(move: string) {
     // validate move
@@ -481,10 +527,11 @@ export class Game {
     this.history.index = this.history.moves.length;
     this.updateBoard();
     this.checkIfComputerMove();
+    this.emitMove(san);
   }
 
   notifyEngine() {
-    console.log("notify" + this.chess.fen());
+    // console.log("notify" + this.chess.fen());
     if (this.state.notifyEngine) {
       this.appContext.engine.setBoardPosition(this.chess.fen());
     }

@@ -8,10 +8,7 @@ import { useGame } from "~/GameProvider";
 import { STARTING_EVAL, STARTING_FEN } from "~/constants";
 import { DraggableIcon } from "~/icons";
 
-const EngineCard: Component<{
-  onSelect?: (dest: string) => any;
-  onHover?: (moves: string[]) => any;
-}> = (props) => {
+const EngineCard: Component = (props) => {
   const game = useGame();
   const context = useSaknotoContext();
   const [boardFen, setBoardFen] = createSignal<string | null>(STARTING_FEN);
@@ -32,9 +29,7 @@ const EngineCard: Component<{
   });
 
   const emitSelection = (dest: string) => {
-    if (props.onSelect) {
-      props.onSelect(dest);
-    }
+    game.playMove(dest);
   };
 
   const addArrow = (move: string) => {
@@ -47,9 +42,7 @@ const EngineCard: Component<{
   };
 
   const emitHover = (moves: string[]) => {
-    if (props.onHover) {
-      props.onHover(moves);
-    }
+    game.drawArrowsFen(evaluation().fen, moves);
   };
 
   const Line = (line: EvaluationLine) => {

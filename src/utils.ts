@@ -70,6 +70,31 @@ export const throttle = (callback, delay) => {
   };
 };
 
+// Run instantly if not run for a while
+// Run at least every interval
+// Always run the last invocation
+export const chessMoveThrottle = (callback: any, delay: number) => {
+  let lastCompletion = new Date(0);
+
+  return (...args: any) => {
+    const time_since_completion =
+      new Date().getTime() - lastCompletion.getTime();
+    const remaining = delay - time_since_completion + 50;
+
+    if (remaining < 0) {
+      callback(...args);
+      lastCompletion = new Date();
+    } else {
+      setTimeout(() => {
+        if (new Date().getTime() - lastCompletion.getTime() > delay) {
+          callback(...args);
+          lastCompletion = new Date();
+        }
+      }, delay);
+    }
+  };
+};
+
 export const getTurn = (fen: string) => {
   const game = new Chess();
   game.load(fen);
@@ -189,4 +214,13 @@ export function make_valid(move: string) {
 
 export const getEnumKeys = (target: any): string[] => {
   return Object.values(target).filter((v) => isNaN(Number(v)));
+};
+
+export const getLichessMoves = async (fen: string) => {
+  const url =
+    "https://explorer.lichess.ovh/lichess?variant=standard&speeds=blitz&ratings=2000,2400&fen=" +
+    encodeURIComponent(fen);
+  const res = await fetch(url);
+  const json = await res.json();
+  return json;
 };

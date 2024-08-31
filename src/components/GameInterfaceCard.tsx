@@ -14,7 +14,7 @@ import { v4 as uuidv4 } from "uuid";
 import { QRCodeSVG } from "solid-qr-code";
 import SaknotoSwitch from "./SaknotoSwitch";
 import { useGame } from "~/GameProvider";
-import { getEnumKeys } from "~/utils";
+import { getEnumKeys, chessMoveThrottle } from "~/utils";
 
 const GameInterfaceCard: Component = (props) => {
   const game = useGame()!;
@@ -40,6 +40,14 @@ const GameInterfaceCard: Component = (props) => {
     game.setOrientation(color);
   };
 
+  let t = new Date();
+  const test = chessMoveThrottle(() => {
+    const n = new Date();
+    console.log(n.getTime() - t.getTime());
+    t = n;
+    console.log("hey!");
+  }, 500);
+
   return (
     <div class="card bg-lum-100 border-lum-200 text-lum-900">
       <div class="card-header bg-lum-200">Game</div>
@@ -60,7 +68,7 @@ const GameInterfaceCard: Component = (props) => {
         <div class="flex flex-col">
           <Button
             class="button mt-2 bg-lum-200 border-lum-300 text-lum-600"
-            onClick={() => game.restart()}
+            onClick={() => game.restartSlow()}
           >
             Restart
           </Button>

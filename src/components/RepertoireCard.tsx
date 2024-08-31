@@ -1,6 +1,14 @@
 import { Button } from "@kobalte/core/button";
-import { Component, For, createEffect, createSignal, onMount } from "solid-js";
+import {
+  Component,
+  For,
+  Show,
+  createEffect,
+  createSignal,
+  onMount,
+} from "solid-js";
 import { useSaknotoContext } from "~/Context";
+import { Evaluation } from "~/Engine";
 import { Game } from "~/Game";
 import { useGame } from "~/GameProvider";
 
@@ -8,11 +16,29 @@ const RepertoireCard: Component = (props) => {
   const context = useSaknotoContext();
   const game = useGame();
   const [responses, setResponses] = createSignal([]);
-  const [evl, setEvl] = createSignal(null);
+  const [evaluation, setEvaluation] = createSignal<Evaluation | null>(null);
   const [fen, setFen] = createSignal(null);
+  const [bestMove, setBestMove] = createSignal<string | null>(undefined);
 
   createEffect(async () => {
     await update(fen());
+  });
+
+  createEffect(() => {
+    const f = fen();
+    const e = evaluation();
+    if (!e || !f) {
+      setBestMove(undefined);
+      return;
+    }
+
+    if (e.fen !== f) {
+      setBestMove(undefined);
+      return;
+    }
+
+    const move = e.lines.at(0)?.san.at(0);
+    setBestMove(move);
   });
 
   const update = async (fen: string | undefined) => {
@@ -24,7 +50,7 @@ const RepertoireCard: Component = (props) => {
 
   onMount(() => {
     context.engine.onBoardEvaluation((ev) => {
-      setEvl(ev?.lines.at(0)?.san.at(0) ?? null);
+      setEvaluation(ev);
     });
     game.subscribe(({ fen }) => {
       setFen(fen);
@@ -35,9 +61,10 @@ const RepertoireCard: Component = (props) => {
   };
 
   const add_engine_line = () => {
-    let rep: string | null = evl();
-    if (rep !== null && rep.length > 0 && fen() != undefined) {
-      context.repertoire.addLine(fen(), rep);
+    const move = bestMove();
+    const f = fen();
+    if (f && move) {
+      context.repertoire.addLine(f, move);
       setTimeout(() => {
         update(fen());
         game?.checkIfComputerMove();
@@ -45,17 +72,12 @@ const RepertoireCard: Component = (props) => {
     }
   };
 
-  let arrows = new Set<string>();
-  const addArrow = (move: string) => {
-    arrows.add(move);
-    if (game) {
-      game.drawArrows([...arrows.values()]);
+  const addArrow = (move: string | undefined) => {
+    if (!move) {
+      return;
     }
-  };
-  const removeArrow = (move: string) => {
-    arrows.delete(move);
-    if (game) {
-      game.drawArrows([...arrows.values()]);
+    if (game && bestMove()) {
+      game.drawArrowsFen(fen(), [move]);
     }
   };
 
@@ -71,20 +93,24 @@ const RepertoireCard: Component = (props) => {
             + add response
           </Button>
           <Button
-            class="button bg-lum-200 border-lum-300"
+            class="button bg-lum-200 border-lum-300 flex items-center gap-2"
             onmouseenter={() => {
-              if (evl()) {
-                addArrow(evl());
-              }
+              addArrow(bestMove());
             }}
             onmouseleave={() => {
-              if (evl()) {
-                removeArrow(evl());
-              }
+              game.clearArrows();
             }}
             onClick={() => add_engine_line()}
           >
-            + add top engine line {evl()}
+            <div>+ add top engine line </div>
+            <Show
+              when={bestMove() !== undefined}
+              fallback={() => (
+                <div class="animate-pulse test-lum-500">- - -</div>
+              )}
+            >
+              {bestMove()}
+            </Show>
           </Button>
         </div>
         <For each={responses()}>

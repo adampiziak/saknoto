@@ -1,85 +1,71 @@
-import { Chess } from "chess.js";
-import { Api } from "chessground/api";
-import { DrawShape } from "chessground/draw";
-import { Key } from "chessground/types";
-import {
-  Component,
-  Show,
-  createEffect,
-  createSignal,
-  on,
-  onMount,
-} from "solid-js";
+import { Component, Show, createSignal, onMount } from "solid-js";
 import { Rating } from "ts-fsrs";
 import { BoardView } from "~/BoardView";
 import { useSaknotoContext } from "~/Context";
 import { Game } from "~/Game";
-import { GameProvider, useGame } from "~/GameProvider";
+import { GameProvider } from "~/GameProvider";
 import { RepCard } from "~/Repertoire";
 import { StudySession } from "~/StudySession";
-import { STARTING_FEN } from "~/constants";
-import { getTurn, parse_move, san_to_lan, toDests } from "~/utils";
 
 const Study: Component = () => {
   let game: Game | undefined;
 
   const context = useSaknotoContext();
   let session: StudySession = new StudySession();
-  const chess = new Chess();
-  const [flashcard, setFlashcard] = createSignal<RepCard | null>(null);
+  const [flashcard, setFlashcard] = createSignal<RepCard | undefined>(
+    undefined,
+  );
 
   const [status, setStatus] = createSignal("");
   const [attempts, setAttempts] = createSignal(0);
   const [progress, setProgress] = createSignal<any>(null);
 
-  const getNextCard = () => {
-    if (session) {
-      const c = session.getCard();
-      if (c) {
-        chess.load(c?.fen);
-        setFlashcard({ ...c });
-      } else {
-        setFlashcard(null);
-      }
-    } else {
-      console.log("NULL");
+  const setPosition = () => {
+    const fen = flashcard()?.fen;
+    if (fen) {
+      game?.loadPosition(fen);
     }
   };
 
-  createEffect(
-    on(flashcard, () => {
-      game?.loadPosition(flashcard()?.fen);
-    }),
-  );
+  const revealMove = () => {
+    const fen = flashcard()?.fen;
+    const response = flashcard()?.response;
 
-  const handle_move = (san: string) => {
-    const c = flashcard();
-    if (!c) {
+    if (fen && response) {
+      game?.drawArrowsFen(fen, response);
+    }
+  };
+
+  const checkMove = (san: string) => {
+    const card = flashcard();
+    if (!card) {
       return;
     }
 
-    if (c.response.includes(san)) {
-      console.log("correct");
+    if (card.response.includes(san)) {
       setStatus("correct!");
-      session?.practiceCard(c, Rating.Good);
-      setProgress(session?.getProgress());
+      session.practice(Rating.Good);
       setTimeout(() => {
-        setStatus("");
-        setAttempts(0);
         getNextCard();
       }, 1000);
     } else {
-      console.log("incorrect");
       setStatus("incorrect");
+      const updatedCard = session.practice(Rating.Again);
+      setFlashcard(updatedCard);
       setAttempts((prev) => prev + 1);
-      session?.practiceCard(c, Rating.Again);
-      setProgress(session?.getProgress());
-      game?.drawArrowsFen(flashcard()?.fen, flashcard()?.response);
+      revealMove();
       setTimeout(() => {
-        getNextCard();
-        game?.drawArrowsFen(flashcard()?.fen, flashcard()?.response);
+        setPosition();
+        revealMove();
       }, 1000);
     }
+  };
+
+  const getNextCard = () => {
+    setFlashcard(session.getCard());
+    setPosition();
+    setProgress(session.getProgress());
+    setAttempts(0);
   };
 
   onMount(async () => {
@@ -95,17 +81,14 @@ const Study: Component = () => {
 
   const setupGame = (g: Game) => {
     game = g;
-    game.subscribe(({ fen, history }) => {
-      const move = history.at(-1);
-      if (move && fen !== flashcard()?.fen) {
-        handle_move(move);
-      }
+    game.onMove((san) => {
+      checkMove(san);
     });
   };
 
   return (
     <GameProvider game_id="flashcards" onGame={setupGame}>
-      <div class="flex flex-col md:flex-row grow gap-4 py-8 md:justify-center relative bg-lum-50 w-full">
+      <div class="flex flex-col md:flex-row grow gap-4 py-8 md:justify-center md:items-start relative bg-lum-50 w-full">
         <Show when={flashcard()}>
           <BoardView responsive={true} />
           <div class="bg-lum-300 border  border-lum-300 h-auto   text-lum-800 rounded overflow-hidden p-3 w-full md:w-auto md:self-start order-first md:order-2">
@@ -135,7 +118,7 @@ const Study: Component = () => {
               {status().length > 0 ? status() : "---"}
             </div>
             <div class="p-2 font-medium">
-              {attempts() > 1
+              {attempts() > 0
                 ? "hint: " + flashcard()?.response.toString()
                 : "---"}
             </div>
