@@ -2,12 +2,16 @@ import "./app.scss";
 import { Router } from "@solidjs/router";
 
 import { FileRoutes } from "@solidjs/start/router";
-import { Suspense, createSignal, onMount } from "solid-js";
+import { Show, Suspense, createSignal, onMount } from "solid-js";
 import Header from "~/components/Header";
 import { SaknotoProvider, useSaknotoContext } from "./Context";
 import SideBar from "./components/SideBar";
 import { applyColorfulTheme, applyNeutralTheme } from "./lib/theme_utils";
 import MobileNav from "./MobileNav";
+import { useDeviceWidth, useMobile, useResponsive } from "./lib/hooks";
+import BottomBar from "./components/BottomBar";
+import MobileLayout from "./MobileLayout";
+import DesktopLayout from "./DesktopLayout";
 
 const RootLayout = (props: any) => {
   const ctx = useSaknotoContext();
@@ -16,6 +20,7 @@ const RootLayout = (props: any) => {
   let rootContainer: HTMLDivElement | undefined;
   const [skv, setskn] = createSignal("");
 
+  const mobile = useMobile();
   onMount(async () => {
     ctx.openingGraph.load_wait();
     ctx.themeManager.loadSaved();
@@ -50,14 +55,20 @@ const RootLayout = (props: any) => {
         ref={rootContainer}
         saknoto_color={saknotoColor()}
         saknoto_mode={saknotoMode()}
-        class="flex flex-col h-screen relative overflow-hidden"
+        class="h-screen w-screen relative overflow-hidden"
       >
-        <Header />
-        <div class="flex grow shrink min-h-0 [&>*]:grow [&>*]:shrink">
-          <Suspense>{props.children}</Suspense>
-        </div>
-        <SideBar />
-        <MobileNav />
+        <Show
+          when={mobile()}
+          fallback={
+            <DesktopLayout>
+              <Suspense>{props.children}</Suspense>
+            </DesktopLayout>
+          }
+        >
+          <MobileLayout>
+            <Suspense>{props.children}</Suspense>
+          </MobileLayout>
+        </Show>
       </div>
     </SaknotoProvider>
   );

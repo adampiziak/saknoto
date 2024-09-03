@@ -36,7 +36,7 @@ const BottomActions: Component = () => {
   };
 
   const add_user_line = () => {
-    game?.setRepertoireMode();
+    game?.toggleRepertoireMode();
   };
 
   onMount(() => {

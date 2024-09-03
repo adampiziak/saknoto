@@ -41,7 +41,7 @@ const SideBar: Component<{}> = (_props) => {
 
   return (
     <div
-      class={`h-screen z-50 min-w-24 w-fit absolute bg-accent-50 dark:bg-accent-900 dark:text-accent-100 text-accent-800 shadow  sidebar ${state().active ? "active" : ""}`}
+      class={`h-screen  z-50 min-w-24 w-fit absolute bg-accent-50 dark:bg-accent-900 dark:text-accent-100 text-accent-800 shadow  sidebar ${state().active ? "active" : ""}`}
     >
       <Switch>
         <Match when={state().view === "user"}>

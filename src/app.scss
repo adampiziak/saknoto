@@ -34,6 +34,7 @@ $mobile-width: 1000px;
 }
 
 body {
+  position: relative;
   height: 100vh;
   overflow: hidden;
 }
@@ -715,5 +716,31 @@ $position_duration: 0.15s;
   &.inactive {
     animation: skeleton-fade 2s linear infinite;
     animation-delay: 1s;
+  }
+}
+
+.bottom-actions {
+  transition: 0.3s;
+  opacity: 1;
+
+  &.nav-mode {
+    display: none;
+  }
+}
+
+.mobile-container {
+  transition: transform 0.2s ease-in-out;
+  &.nav {
+    transform: translateX(-100vw);
+  }
+}
+
+.bar2 {
+  width: 1.1rem;
+  .bar {
+    background: currentColor;
+    height: 3px;
+    margin: 0.1rem 0;
+    border-radius: 10px;
   }
 }

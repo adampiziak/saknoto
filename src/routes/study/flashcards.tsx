@@ -4,6 +4,7 @@ import { BoardView } from "~/BoardView";
 import { useSaknotoContext } from "~/Context";
 import { Game } from "~/Game";
 import { GameProvider } from "~/GameProvider";
+import { useMobile } from "~/lib/hooks";
 import { RepCard } from "~/Repertoire";
 import { StudySession } from "~/StudySession";
 
@@ -86,12 +87,14 @@ const Study: Component = () => {
     });
   };
 
+  const mobile = useMobile();
+
   return (
     <GameProvider game_id="flashcards" onGame={setupGame}>
       <div class="flex flex-col md:flex-row grow gap-4 py-8 md:justify-center md:items-start relative bg-lum-50 w-full">
         <Show when={flashcard()}>
           <BoardView responsive={true} />
-          <div class="bg-lum-300 border  border-lum-300 h-auto   text-lum-800 rounded overflow-hidden p-3 w-full md:w-auto md:self-start order-first md:order-2">
+          <div class="bg-lum-100 border  border-lum-200 h-auto   text-lum-800 rounded overflow-hidden p-3 w-full md:w-auto md:self-start order-first md:order-2">
             <Show when={progress()}>
               <div class="flex gap-4 font-bold">
                 <div class="text-red-400">{progress().todo}</div>

@@ -37,6 +37,10 @@ export const useSaknotoContext = (): SaknotoContextKind => {
   return useContext(SaknotoContext);
 };
 
+export const useUserInterface = (): UIManager => {
+  return useContext(SaknotoContext).ui;
+};
+
 export const SaknotoProvider: Component<ParentProps> = (props) => {
   return (
     <SaknotoContext.Provider value={context}>

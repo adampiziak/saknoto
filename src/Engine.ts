@@ -487,35 +487,39 @@ export class Engine {
   }
 
   async cloud_evaluation(task: Task) {
-    let query = `https://lichess.org/api/cloud-eval?fen=${encodeURIComponent(task.fen)}&multiPv=3`;
+    try {
+      let query = `https://lichess.org/api/cloud-eval?fen=${encodeURIComponent(task.fen)}&multiPv=3`;
 
-    const elapsed_time = Date.now() - this.last_cloud_request.getTime();
+      const elapsed_time = Date.now() - this.last_cloud_request.getTime();
 
-    if (elapsed_time < 500) {
+      if (elapsed_time < 500) {
+        return null;
+      }
+
+      const response = await fetch(query);
+      const json = await response.json();
+
+      if (!json?.pvs) {
+        return null;
+      }
+
+      let evaluation = createEmptyEvaluation();
+      evaluation.depth = json.depth ?? 0;
+      evaluation.fen = json.fen;
+      evaluation.mode = "cloud";
+
+      for (const line of json.pvs.slice(0, 3)) {
+        let moves = line.moves.split(" ");
+        evaluation.lines.push({
+          score: Math.round(line.cp / 10) / 10,
+          lan: moves,
+          san: parse_moves(evaluation.fen, moves),
+        });
+      }
+
+      return evaluation;
+    } catch {
       return null;
     }
-
-    const response = await fetch(query);
-    const json = await response.json();
-
-    if (!json?.pvs) {
-      return null;
-    }
-
-    let evaluation = createEmptyEvaluation();
-    evaluation.depth = json.depth ?? 0;
-    evaluation.fen = json.fen;
-    evaluation.mode = "cloud";
-
-    for (const line of json.pvs.slice(0, 3)) {
-      let moves = line.moves.split(" ");
-      evaluation.lines.push({
-        score: Math.round(line.cp / 10) / 10,
-        lan: moves,
-        san: parse_moves(evaluation.fen, moves),
-      });
-    }
-
-    return evaluation;
   }
 }

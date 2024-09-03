@@ -9,10 +9,9 @@ import {
 } from "culori";
 
 const toGamut = _toGamut as (...args: unknown[]) => (color: string) => Color;
-
 const lightness = [
-  97, //50
-  93, //100
+  96, //50
+  91, //100
   88.3, //200
   80.7, //300
   73.2, //400
@@ -21,7 +20,7 @@ const lightness = [
   44.5, //700
   37.5, //800
   30.5, //900
-  23.5, //950,
+  21.5, //950,
 ];
 
 const chroma = [
@@ -72,7 +71,7 @@ export function applyNeutralTheme(hue: number, mode: "light" | "dark") {
   let hexstrings = [];
 
   for (let i = 0; i < shades.length; i++) {
-    let clr = `oklch(${lightness[i]}% ${chroma[i] * 0.2} ${hue})`;
+    let clr = `oklch(${lightness[i]}% ${chroma[i] * 0.1} ${hue})`;
     let d = serializeColor(
       oklch(toGamut("p3", "oklch", differenceEuclidean("oklch"), 0)(clr)),
     );

@@ -12,8 +12,9 @@ import { startingFen } from "~/utils";
 import EngineCard from "./EngineCard";
 import GameInterfaceCard from "./GameInterfaceCard";
 import { useGame } from "~/GameProvider";
+import { PositionOpenings } from "./PositionOpenings";
 
-const PositionContext: Component = () => {
+const ExploreBottomSheet: Component = () => {
   const game = useGame()!;
   const [fen, setFen] = createSignal(startingFen());
   const [rep, setRep] = createSignal<any>(null);
@@ -42,7 +43,10 @@ const PositionContext: Component = () => {
     props,
   ) => {
     return (
-      <div class="bg-lum-200 p-2 rounded active:bg-lum-300" {...props}>
+      <div
+        class="bg-lum-200 p-2 hover:cursor-pointer rounded active:bg-lum-300"
+        {...props}
+      >
         {props.children}
       </div>
     );
@@ -60,8 +64,8 @@ const PositionContext: Component = () => {
   };
 
   return (
-    <div class="flex flex-col bg-lum-100 text-lum-900 grow px-4">
-      <div class="flex py-1 gap-5 mb-2 justify-start w-screen overflow-auto">
+    <div class="flex flex-col bg-lum-100 text-lum-900 grow px-4 max-h-screen">
+      <div class="flex py-1 gap-5 mb-2 justify-start w-screen overflow-auto grow shrink-0">
         <ViewAction onclick={() => setCurrentView("position")}>
           position
         </ViewAction>
@@ -71,12 +75,7 @@ const PositionContext: Component = () => {
         </ViewAction>
       </div>
       <Show when={currentView() === "position"}>
-        <div class="">
-          <div class="text-lum-700 font-semibold mb-1">repertoire</div>
-          <div>
-            <For each={rep()}>{(it, _) => response(it)}</For>
-          </div>
-        </div>
+        <PositionOpenings />
       </Show>
       <Show when={currentView() === "engine"}>
         <EngineCard />
@@ -88,4 +87,4 @@ const PositionContext: Component = () => {
   );
 };
 
-export default PositionContext;
+export default ExploreBottomSheet;

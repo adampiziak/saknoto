@@ -90,7 +90,7 @@ export class Game {
   once_listeners: any[] = [];
   state_listener: any[] = [];
   boardRef: HTMLElement | undefined;
-  key: string | null = null;
+  gameId: string | null = null;
   gid: number;
   lastApiRequest = new Date(0);
   requestInProgress = false;
@@ -100,7 +100,7 @@ export class Game {
     this.chess = new Chess();
     this.state = defaultGameState();
     this.appContext = context;
-    this.key = key;
+    this.gameId = key;
     this.gid = gameinstances;
     gameinstances += 1;
 
@@ -110,6 +110,11 @@ export class Game {
     };
   }
 
+  setGameId(id: string) {
+    this.gameId = id;
+    this.loadState();
+  }
+
   setRepertoireAutoPlay(val: boolean) {
     this.updateState((state) => {
       state.autoplayRepertoire = val;
@@ -117,15 +122,15 @@ export class Game {
   }
 
   saveState() {
-    if (window && this.key !== null) {
-      const key = `game-state-${this.key}`;
+    if (window && this.gameId !== null) {
+      const key = `game-state-${this.gameId}`;
       window.localStorage.setItem(key, JSON.stringify(this.state));
     }
   }
 
   loadState() {
-    if (window && this.key !== null) {
-      const key = `game-state-${this.key}`;
+    if (window && this.gameId !== null) {
+      const key = `game-state-${this.gameId}`;
       const saved = window.localStorage.getItem(key);
       if (saved) {
         this.state = JSON.parse(saved);
@@ -168,7 +173,7 @@ export class Game {
     this.state.notifyEngine = val;
   }
 
-  attach(element: HTMLElement) {
+  attach(element: HTMLElement, gameId: string | undefined = undefined) {
     this.boardRef = element;
     this.api = Chessground(element, {});
     this.cache = new LRUCache("computer-move");
@@ -337,6 +342,14 @@ export class Game {
     this.state.useNextMoveAsRep = false;
     if (this.boardRef) {
       this.boardRef.classList.remove("repertoire-board-mode");
+    }
+  }
+
+  toggleRepertoireMode() {
+    if (this.state.useNextMoveAsRep) {
+      this.unsetRepertoireMode();
+    } else {
+      this.setRepertoireMode();
     }
   }
 
