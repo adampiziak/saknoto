@@ -94,9 +94,9 @@ const HomeMobile: Component = (props) => {
           boardClass="overflow-hidden flex  w-full"
         />
       </div>
-      <div class="bg-lum-50 text-lum-800 grow mx-2 rounded-2xl shrink flex min-w-0 overflow-hidden">
+      <div class="bg-lum-50 text-lum-800 grow mx-2 rounded-2xl shrink flex min-w-0 min-h-0 overflow-hidden">
         <div
-          class="content grow bg-lum-100 rounded-2xl shrink min-w-0 overflow-hidden"
+          class="content grow bg-lum-100 rounded-2xl shrink min-w-0 overflow-hidden min-h-0 max-h-[50vh]"
           ontouchstart={fromTouchStart}
           ontouchmove={onMainScroll}
         >
