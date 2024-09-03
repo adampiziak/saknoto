@@ -55,7 +55,7 @@ const RootLayout = (props: any) => {
         ref={rootContainer}
         saknoto_color={saknotoColor()}
         saknoto_mode={saknotoMode()}
-        class="h-screen w-screen relative overflow-hidden"
+        class="h-dvh w-screen relative overflow-hidden"
       >
         <Show
           when={mobile()}

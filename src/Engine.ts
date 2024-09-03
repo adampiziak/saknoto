@@ -214,7 +214,7 @@ export class Engine {
   }
 
   async handleMessage(message: string) {
-    console.log(EngineMode[this.mode]);
+    // console.log(EngineMode[this.mode]);
     // Engine has loaded successfully.
     if (message.includes("uciok")) {
       this.engine?.uci("setoption name Threads value 2");

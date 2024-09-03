@@ -1,6 +1,5 @@
 import {
   Component,
-  createEffect,
   createSignal,
   Match,
   onMount,
@@ -8,21 +7,16 @@ import {
   Switch,
 } from "solid-js";
 import { BoardView, BoardViewMode } from "~/BoardView";
-import BottomSheet from "./BottomSheet";
-import BottomActions from "./BottomActions";
-import { GameProvider, useGame } from "~/GameProvider";
-import ExploreBottomSheet from "./ExploreBottomSheet";
+import { useGame } from "~/GameProvider";
 import {
-  FaBrandsYoast,
-  FaSolidCheckDouble,
   FaSolidChessPawn,
-  FaSolidChevronLeft,
   FaSolidComputer,
+  FaSolidEllipsis,
   FaSolidFloppyDisk,
-  FaSolidGear,
   FaSolidGears,
+  FaSolidGrip,
   FaSolidSquarePollHorizontal,
-  FaSolidUserGroup,
+  FaSolidUpLong,
 } from "solid-icons/fa";
 import { useDeviceWidth } from "~/lib/hooks";
 import OpeningCard from "./OpeningCard";
@@ -30,6 +24,12 @@ import RepertoireCard from "./RepertoireCard";
 import EngineCard from "./EngineCard";
 import ExplorerCard from "./ExplorerCard";
 import GameInterfaceCard from "./GameInterfaceCard";
+import {
+  RiArrowsDragMove2Fill,
+  RiArrowsExpandUpDownFill,
+  RiArrowsExpandUpDownLine,
+} from "solid-icons/ri";
+import { BiSolidChevronsUp } from "solid-icons/bi";
 
 const HomeMobile: Component = (props) => {
   const [boardRect, setBoardRect] = createSignal(0);
@@ -40,28 +40,55 @@ const HomeMobile: Component = (props) => {
 
   const game = useGame();
 
-  let startY = 0;
+  let startY = undefined;
   let initialSize = 0;
+  let boardMin = 100;
+  let boardMax = 1000;
   const clamp = (val: number, min: number, max: number) =>
     Math.min(Math.max(val, min), max);
 
-  const onMainScroll = (e) => {
+  const fromTouchMove = (e: TouchEvent) => {
     const deltaY = startY - e.targetTouches[0].clientY;
-    setContainerSize(
-      nearest(clamp(initialSize - deltaY, 200, windowWidth()), 8),
-    );
+    // console.log(deltaY);
+    const newsize = clamp(initialSize - deltaY, 200, windowWidth());
+    console.log(newsize);
+    setContainerSize(newsize);
   };
+
+  const [isMaxSize, setIsMaxSize] = createSignal(true);
 
   const nearest = (val: number, roundTo: number) =>
     Math.floor(val * roundTo) / roundTo;
 
-  const fromTouchStart = (e) => {
+  const fromTouchStart = (e: TouchEvent) => {
     initialSize = nearest(clamp(containerSize(), 100, windowWidth()), 8);
-    startY = e.touches[0].clientY;
+    startY = e.targetTouches[0].clientY;
+    boardMax = windowWidth();
+  };
+  const fromTouchEnd = () => {
+    setIsMaxSize(containerSize() >= windowWidth());
+  };
+
+  const fromMouseMove = (e: MouseEvent) => {
+    if (e.buttons === 1 && startY !== undefined) {
+      // const newsize = clamp(initialSize + e.movementY * 2, 200, windowWidth());
+      // console.log(newsize);
+      setContainerSize((prev) => clamp(prev + e.movementY, boardMin, boardMax));
+    }
+  };
+
+  const fromMouseEnd = (e: MouseEvent) => {
+    startY = undefined;
+  };
+
+  const fromMouseStart = (e: MouseEvent) => {
+    initialSize = nearest(clamp(containerSize(), 100, windowWidth()), 8);
+    startY = e.clientY;
+    boardMax = windowWidth();
   };
 
   onMount(() => {
-    setContainerSize((prev) => clamp(prev, 100, windowWidth()));
+    setContainerSize(windowWidth());
   });
 
   const TabButton: ParentComponent<{ val: string }> = (props) => {
@@ -77,13 +104,17 @@ const HomeMobile: Component = (props) => {
   const iconSize = 18;
 
   return (
-    <div class="home-mobile flex-col max-w-screen w-full grow relative bg-lum-50 min-h-0 shrink gap-2">
+    <div
+      class="home-mobile flex-col max-w-screen w-full grow relative bg-lum-50 min-h-0 "
+      onmousemove={fromMouseMove}
+      onmouseup={fromMouseEnd}
+    >
       <div
         style={{
           height: `${containerSize()}px`,
           width: `100vw`,
         }}
-        class="flex shrink max-h-[100vw] min-h-[200px]  items-center justify-center"
+        class="flex max-h-[100vw] min-h-[200px] grow-0 shrink-0 items-center justify-center"
       >
         <BoardView
           mode={BoardViewMode.COLUMN}
@@ -91,15 +122,23 @@ const HomeMobile: Component = (props) => {
           rounded={true}
           gameId="home"
           class="items-center justify-center min-h-[200px]"
-          boardClass="overflow-hidden flex  w-full"
+          boardClass={`overflow-hidden flex  w-full rounded-lg`}
         />
       </div>
-      <div class="bg-lum-50 text-lum-800 grow mx-2 rounded-2xl shrink flex min-w-0 min-h-0 overflow-hidden">
-        <div
-          class="content grow bg-lum-100 rounded-2xl shrink min-w-0 overflow-hidden min-h-0 max-h-[50vh]"
-          ontouchstart={fromTouchStart}
-          ontouchmove={onMainScroll}
-        >
+      <div
+        class="text-lum-800 flex justify-center py-3 gap-2"
+        ontouchstart={fromTouchStart}
+        ontouchmove={fromTouchMove}
+        ontouchend={fromTouchEnd}
+        onmousedown={fromMouseStart}
+      >
+        <div class="drag-dot bg-lum-300 rounded-full"></div>
+        <div class="drag-dot bg-lum-300 rounded-full"></div>
+        <div class="drag-dot bg-lum-300 rounded-full"></div>
+        <div class="drag-dot bg-lum-300 rounded-full"></div>
+      </div>
+      <div class="bg-lum-50 text-lum-800 grow rounded-2xl shrink flex min-w-0 min-h-0 overflow-hidden gap-2 mx-2">
+        <div class="flex content grow bg-lum-100 rounded-2xl shrink min-w-0 overflow-hidden min-h-0">
           <Switch>
             <Match when={selected() === "opening"}>
               <OpeningCard />
@@ -118,7 +157,7 @@ const HomeMobile: Component = (props) => {
             </Match>
           </Switch>
         </div>
-        <div class="tabs flex flex-col justify-start items-start text-lum-600 mr-2 gap-2">
+        <div class="tabs flex flex-col justify-start  text-lum-600 items-center gap-2">
           <TabButton val="opening">
             <FaSolidChessPawn size={iconSize} />
           </TabButton>

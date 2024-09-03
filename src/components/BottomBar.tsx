@@ -35,11 +35,11 @@ const BottomBar: Component = () => {
 
   return (
     <div
-      class={`overflow-hidden items-center z-40 bg-lum-50 text-lum-950 bottom-0 flex shadow-lg gap-2 px-2 py-2 ${open() ? "justify-center" : "justify-normal"}`}
+      class={`overflow-hidden items-center z-40 bg-lum-50 text-lum-950 bottom-0 flex shadow-lg gap-2 px-2 py-2 shrink-0 grow-0  ${open() ? "justify-center" : "justify-between"}`}
     >
-      <div class={`bottom-actions grow shrink ${open() ? "nav-mode" : "flex"}`}>
+      <div class={`bottom-actions  shrink ${open() ? "nav-mode" : "flex"}`}>
         <div
-          class={`text-lum-700 font-medium bg-lum-100 h-10 flex rounded-full  items-center grow justify-between gap-0`}
+          class={`text-lum-700 font-medium bg-lum-100 h-10 flex rounded-full  items-center grow justify-start gap-1`}
         >
           <ActionButton onclick={() => game.undoMove()}>
             <FaSolidChevronLeft size={iconSize} />
@@ -50,7 +50,7 @@ const BottomBar: Component = () => {
           <ActionButton onclick={() => game.restartSlow()}>
             <FaSolidArrowRotateLeft size={iconSize} />
           </ActionButton>
-          <ActionButton>
+          <ActionButton onclick={() => game.toggleRepertoireMode()}>
             <FaSolidPlus size={iconSize} />
           </ActionButton>
           <ActionButton>

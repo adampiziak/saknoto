@@ -11,14 +11,18 @@ const HomeDesktop: Component = (props) => {
   return (
     <GameProvider game_id="home">
       <div class="home-desktop flex min-h-0 shrink w-screen pb-4 px-4 bg-lum-50 sn-main relative">
-        <div class="home-left-column flex sk-fit shrink overflow-visible sn-opening-card">
+        <div class="home-left-column grow flex sk-fit shrink overflow-visible sn-opening-card max-w-[400px]">
           <OpeningCard
             pgn={[]}
             on_select={(move) => props.game.handle_move(move)}
           />
         </div>
-        <BoardView class="grow shrink" rounded={true} useEngine={true} />
-        <div class="flex flex-col gap-4 w-[500px] h-[100%] min-h-0 shrink px-4 sn-info-card">
+        <BoardView
+          class="grow-[2] min-w-[400px] shrink"
+          rounded={true}
+          useEngine={true}
+        />
+        <div class="flex grow flex-col gap-4 max-w-[400px] h-[100%] min-h-0 shrink px-4 sn-info-card">
           <GameInterfaceCard />
           <RepertoireCard />
           <EngineCard

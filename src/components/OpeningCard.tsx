@@ -437,7 +437,7 @@ const OpeningCard: Component<{
   };
 
   return (
-    <div class="flex flex-col shrink grow min-h-0  w-[20vw] overflow-visible">
+    <div class="flex flex-col   shrink grow min-h-0  overflow-scroll">
       <Show when={opening() !== null}>{CurrentOpeningCard(opening())}</Show>
       <div class="text-lum-600 mx-5 my-1">Named openings in this position</div>
       <div class="flex flex-col shrink min-h-0 overflow-visible overflow-y-scroll px-4">

@@ -32,7 +32,7 @@ const MobileLayout: ParentComponent = (props) => {
 
   return (
     <GameProvider>
-      <div class="bg-lum-50 h-screen w-screen flex flex-col">
+      <div class="bg-lum-50 h-dvh w-screen flex flex-col">
         <div class={`grow min-h-0 shrink overflow-hidden`}>
           <div
             class={`mobile-container flex h-full w-[200vw] ${openNav() ? "nav" : ""}`}

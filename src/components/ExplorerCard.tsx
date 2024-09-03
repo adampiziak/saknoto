@@ -6,67 +6,75 @@ import "./ExplorerCard.scss";
 import { Move } from "~/OpeningGraph";
 import { DraggableIcon } from "~/icons";
 import { STARTING_FEN } from "~/constants";
+import { useGame } from "~/GameProvider";
+import { parseLab } from "culori";
 
 const ExplorerCard: Component<{
-  fen: string | undefined | null;
   playerColor: "white" | "black";
   onSelect?: (m: string) => any;
 }> = (props) => {
   const [selectedTab, setSelectedTab] = createSignal("player");
   const context = useSaknotoContext();
   let db_ready = false;
+  const game = useGame();
+  const [position, setPosition] = createSignal(STARTING_FEN);
+  game.subscribe(({ fen }) => {
+    setPosition(fen);
+  });
 
   const [moves, setMoves] = createSignal([]);
   const [nextMove, setNextMove] = createSignal(null);
   let lastgame = null;
 
   createEffect(async () => {
-    const fen = props.fen;
-    const player = props.playerColor;
+    const fen = position();
+    // const player = props.playerColor;
+    const color = game.getTurnColor();
 
-    const g = new Chess();
-    g.load(fen);
-    const turn = g.turn() === "w" ? "white" : "black";
-    if (lastgame?.moves) {
-      const test = new Chess();
-      for (const m of lastgame.moves) {
-        const san = m.notation.notation;
-        if (test.fen() === fen) {
-          setNextMove(san);
-          break;
-        }
+    // const g = new Chess();
+    // g.load(fen);
+    // const turn = g.turn() === "w" ? "white" : "black";
+    // if (lastgame?.moves) {
+    //   const test = new Chess();
+    //   for (const m of lastgame.moves) {
+    //     const san = m.notation.notation;
+    //     if (test.fen() === fen) {
+    //       setNextMove(san);
+    //       break;
+    //     }
 
-        test.move(san);
-      }
-    }
+    //     test.move(san);
+    //   }
+    // }
 
-    await set_position(fen, player, turn);
+    await set_position(fen, color, color);
   });
 
   onMount(async () => {
     await context.openingGraph.load_wait();
     db_ready = true;
     lastgame = JSON.parse(localStorage.getItem("lastgame"));
-    const fen = props.fen;
-    const player = props.playerColor;
+    const color = game.getTurnColor();
+    // const fen = position();
+    // const player = game.getTurnColor();
 
-    const g = new Chess();
-    g.load(fen);
+    // const g = new Chess();
+    // g.load(fen);
 
-    const test = new Chess();
-    for (const m of lastgame.moves) {
-      const san = m.notation.notation;
-      if (test.fen() === fen) {
-        setNextMove(san);
-        break;
-      }
+    // const test = new Chess();
+    // for (const m of lastgame.moves) {
+    //   const san = m.notation.notation;
+    //   if (test.fen() === fen) {
+    //     setNextMove(san);
+    //     break;
+    //   }
 
-      test.move(san);
-    }
+    //   test.move(san);
+    // }
 
-    const turn = g.turn() === "w" ? "white" : "black";
+    // const turn = g.turn() === "w" ? "white" : "black";
 
-    await set_position(fen, player, turn);
+    await set_position(position(), color, color);
   });
 
   const set_position = async (
@@ -77,6 +85,10 @@ const ExplorerCard: Component<{
     if (!db_ready) {
       await context.openingGraph.load_wait();
       db_ready = true;
+    }
+
+    if (!player || !turn) {
+      return;
     }
 
     // console.log(fen);
@@ -140,7 +152,7 @@ const ExplorerCard: Component<{
   };
 
   return (
-    <div class="bg-accent-100 text-accent-800 dark:bg-accent-800 dark:text-accent-100 border border-accent-200 dark:border-accent-700 rounded">
+    <div class="bg-accent-100 text-accent-800 dark:bg-accent-800 dark:text-accent-100 border border-accent-200 dark:border-accent-700 rounded grow">
       <div class="bg-lum-200 card-header flex  items-center">
         <DraggableIcon class=" mr-1" />
         <div>Explorer</div>

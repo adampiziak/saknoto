@@ -117,7 +117,7 @@ export class Repertoire {
   getLine(fen: string): Promise<RepCard | null> {
     return new Promise(async (resolve, reject) => {
       if (!this.db) {
-        console.log("loading");
+        // console.log("loading");
         await this.load();
       }
 

@@ -82,7 +82,7 @@ const RepertoireCard: Component = (props) => {
   };
 
   return (
-    <div class="bg-lum-100 rounded min dark:border-accent-700 border text-accent-800 dark:text-accent-100">
+    <div class="bg-lum-100 rounded min dark:border-accent-700 border text-accent-800 dark:text-accent-100 grow">
       <div class="bg-lum-200 py-1 px-2  font-medium">Repertoire</div>
       <div class="p-2">
         <div class="flex flex-col gap-2 items-start">

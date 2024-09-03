@@ -49,7 +49,7 @@ const GameInterfaceCard: Component = (props) => {
   }, 500);
 
   return (
-    <div class="card bg-lum-100 border-lum-200 text-lum-900">
+    <div class="card bg-lum-100 border-lum-200 text-lum-900 grow">
       <div class="card-header bg-lum-200">Game</div>
 
       <div class="p-2">

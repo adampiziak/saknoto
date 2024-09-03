@@ -35,7 +35,7 @@ $mobile-width: 1000px;
 
 body {
   position: relative;
-  height: 100vh;
+  height: 100dvh;
   overflow: hidden;
 }
 
@@ -743,4 +743,9 @@ $position_duration: 0.15s;
     margin: 0.1rem 0;
     border-radius: 10px;
   }
+}
+
+.drag-dot {
+  height: 0.25rem;
+  width: 0.25rem;
 }

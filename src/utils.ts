@@ -226,4 +226,4 @@ export const getLichessMoves = async (fen: string) => {
 };
 
 export const nearest = (val: number, roundTo: number) =>
-  Math.floor(val * roundTo) / roundTo;
+  Math.floor(val / roundTo) * roundTo;

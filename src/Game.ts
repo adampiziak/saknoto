@@ -178,6 +178,9 @@ export class Game {
     this.api = Chessground(element, {});
     this.cache = new LRUCache("computer-move");
     this.cache.load();
+    if (gameId) {
+      this.gameId = gameId;
+    }
     const self = this;
     this.api.set({
       movable: {
@@ -386,7 +389,6 @@ export class Game {
 
   updateState(modifier: (state: GameState) => void) {
     modifier(this.state);
-    console.log("updated state");
     this.saveState();
     this.emitState();
     setTimeout(() => {

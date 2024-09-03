@@ -54,7 +54,7 @@ export const BoardView: Component<{
         setContainerSize(rect.height);
       }
 
-      setBoardSize(minsize);
+      setBoardSize(nearest(minsize, 8));
     }
   };
 
@@ -123,12 +123,12 @@ export const BoardView: Component<{
         "max-width": mobile() ? "" : `${containerSize()}px`,
         "max-height": mobile() ? `${containerSize()}px` : "",
       }}
-      class={`board-view min-h-0 min-w-0 max-w-full  self-stretch max-h-full grow shrink flex ${props.class ?? ""}`}
+      class={`board-view min-h-0 min-w-0 text-lum-500 max-w-full  self-stretch max-h-full grow shrink flex ${props.class ?? ""}`}
     >
       <div
         ref={element}
         style={{ height: `${boardSize()}px`, width: `${boardSize()}px` }}
-        class={`board-view-board ${props.boardClass ?? ""}`}
+        class={`board-view-board ${props.boardClass ? props.boardClass : ""}`}
       ></div>
     </div>
   );
