@@ -68,7 +68,7 @@ const UserView: Component = () => {
   };
 
   return (
-    <div class="p-2 w-60">
+    <div class="p-2 w-60 w-full">
       <Show when={user()?.name === null}>
         <div class="flex flex-col gap-2">
           <TextField
@@ -76,13 +76,13 @@ const UserView: Component = () => {
             onChange={set_input_username}
             class="flex flex-col"
           >
-            <TextField.Label>username</TextField.Label>
-            <TextField.Input class="lvl-2 rounded" />
+            <TextField.Label class="text-lum-800">username</TextField.Label>
+            <TextField.Input class="bg-lum-200 text-lum-800 rounded" />
           </TextField>
           <div class="text-green-500 text-right">{valid() ? "valid" : ""}</div>
           <Button
             onClick={set_username}
-            class="bg-blue-300 rounded font-medium text-blue-900 hover:bg-blue-400"
+            class="bg-lum-800 rounded font-medium text-lum-200 hover:bg-blue-400"
           >
             set username
           </Button>
@@ -91,7 +91,7 @@ const UserView: Component = () => {
           <For each={autocomplete()}>
             {(item, index) => (
               <div
-                class="hoverable lvl-1 opacity-70"
+                class="hoverable text-lum-800 opacity-70"
                 onClick={() => set_input_username(item?.name)}
               >
                 {item?.name}
@@ -102,7 +102,7 @@ const UserView: Component = () => {
       </Show>
       <Show when={user()?.name !== null}>
         <div
-          class="hoverable lvl-1 rounded p-2 border"
+          class="hoverable bg-lum-100 text-lum-800 border-lum-200 rounded p-2 border"
           onClick={() => setUser({ name: null })}
         >
           <div class="text-sm -mb-0.5 opacity-80">username</div>

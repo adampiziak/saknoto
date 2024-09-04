@@ -1,6 +1,7 @@
 import { Component, Show, createSignal, onMount } from "solid-js";
 import { Rating } from "ts-fsrs";
 import { BoardView } from "~/BoardView";
+import BottomBarContent from "~/components/BottomBarContent";
 import { useSaknotoContext } from "~/Context";
 import { Game } from "~/Game";
 import { GameProvider } from "~/GameProvider";
@@ -132,6 +133,7 @@ const Study: Component = () => {
             All done for today!
           </div>
         </Show>
+        <BottomBarContent mode="main" />
       </div>
     </GameProvider>
   );

@@ -5,6 +5,7 @@ import {
   createEffect,
   createSignal,
   For,
+  on,
   onMount,
   Setter,
   Show,
@@ -49,14 +50,13 @@ interface CurrentPosition {
   variations: PositionTreeNode[];
 }
 
-const OpeningCard: Component<{
-  pgn: string[];
-  on_select?: (move: string) => void;
-}> = (props) => {
+const OpeningCard: Component = (props) => {
   const game = useGame();
   const context = useSaknotoContext();
   const [opening, setOpening] = createSignal<CurrentPosition | null>(null);
   const [pgn, setPgn] = createSignal([]);
+  const [selected, setSelected] = createSignal<number | null>(null);
+  let openingContainer: any;
 
   const names: Map<string, any> = new Map();
   const [omap, setOMap] = createSignal<Map<string, PositionTreeRoot>>(
@@ -67,12 +67,35 @@ const OpeningCard: Component<{
   const [winrate, setWinrate] = createSignal(50);
   game.subscribe(({ history }) => {
     setPgn(history);
+    setTimeout(() => {
+      setSelected(0);
+    }, 100);
   });
+
+  let selectedEl;
 
   createEffect(async () => {
     await update(pgn());
   });
 
+  createEffect(
+    on(selected, () => {
+      const index = selected();
+      if (index !== null) {
+        const elements = document.getElementsByClassName("sk-position-item");
+        if (elements.length > index) {
+          setTimeout(() => {
+            const target = elements[index];
+            if (!target) {
+              return
+            }
+            const top = target.offsetTop;
+            openingContainer.scrollTo({ top, left: 0, behavior: "smooth" });
+          }, 150);
+        }
+      }
+    }),
+  );
   const flatten_openings = (nodes: PositionTreeNode[], level: number) => {
     const groups = {};
 
@@ -248,7 +271,6 @@ const OpeningCard: Component<{
     }
     return count;
   };
-
   const PositionName = (
     basename: string,
     node: PositionTreeNode,
@@ -281,7 +303,7 @@ const OpeningCard: Component<{
     for (const c of children) {
       max_count = Math.max(max_count, c.count);
     }
-    let childcount = node.slice(0, 5).length;
+    let childcount = node.slice(0, 8).length;
     let percentage = (max_count * 100) / total;
     let fmt_per =
       percentage > 10
@@ -290,23 +312,25 @@ const OpeningCard: Component<{
 
     return (
       <div
-        class={`mono hover:cursor-pointer text-accent-700 dark:text-accent-200  sk-position-item ${isFirst() ? "rounded-t-lg border-t" : ""} ${isLast() ? "rounded-b-lg border-b" : ""} border-b border-x   ${active() ? "bg-lum-200 rounded-lg my-4 border border-lum-300" : " hover:bg-lum-200 bg-lum-100 my-0 dark:border-accent-800  border-accent-200"} ${active() && index == 0 ? "mt-0" : ""}`}
+        class={`sk-position-item ${active() ? "active" : ""} rounded-xl bg-lum-100`}
         onClick={() => {
-          // console.log(selected);
           set_selected((prev) => (index === prev ? null : index));
         }}
       >
-        <div class="px-3 py-2 flex items-center">
-          <div
-            class={`text-md ${active() ? "text-lg font-semibold dark:text-accent-300" : "font-normal"} grow`}
-          >
+        <div class={`px-3 py-2 flex items-center ${active() ? "mt-2" : ""}`}>
+          <div class={`text-md ${active() ? "text-lg text-lum-900 pl-2" : ""} grow`}>
             {basename}
           </div>
-          <div class="">{fmt_per}%</div>
+          <div class={`${active() ? "pr-2" : ""}`}>{fmt_per}%</div>
         </div>
-        <div class={`variations-container ${active() ? "active" : ""}`}>
+      <Show when={active() && index === 0}>
+        <div class="bg-lum-600 rounded-full inline-block text-lum-100 ml-4 mb-1 px-3 py-0.5 text-sm font-medium">common continuation</div>
+      </Show>
+        <div
+          class={`variations-container ${active() ? "active pb-4 pt-2" : ""}`}
+        >
           <div
-            class={`sk-position-child rounded-b-lg flex flex-col gap-1 bg-accent-100 dark:bg-accent-700  dark:text-accent-300 ${active() ? "active" : ""}`}
+            class={`sk-position-child rounded-b-lg px-3 flex min-w-0 shrink flex-col gap-2 ${active() ? "active" : ""}`}
           >
             <For each={children.slice(0, 5)}>
               {(n, index) =>
@@ -330,23 +354,34 @@ const OpeningCard: Component<{
       percentage > 10
         ? Math.round(percentage)
         : Math.round(percentage * 10) / 10;
+    let fmt_per2 = fmt_per > 0.2 ? fmt_per : "<.1";
     let mainline = node.name.length > 1 ? "" : node.name.at(0);
-    return (
-      <div class="font-medium flex gap-3 items-center p-2 ">
-        <div class="ml-2 font-bold ">{node.moves.at(0)}</div>
-        <div class="ml-2 font-bold ">{node.eco}</div>
 
-        <div class="grow">
-          {mainline} {node.name.slice(1).join(", ")}
+    const fromVariationClick = (e: Event) => {
+      game.playMove(node.moves[0]);
+      e.preventDefault();
+    };
+
+    return (
+      <div
+        class="flex gap-2 items-center p-1 min-w-0 shrink bg-lum-200 rounded-xl overflow-hidden"
+        onclick={fromVariationClick}
+      >
+        <div class="flex flex-col grow  shrink  min-w-0 min-h-0 overflow-hidden pl-2">
+          <div class="grow font-medium text-wrap shrink text-lum-900">
+            {mainline} {node.name.slice(1).join(", ")}
+          </div>
+          <div class="flex gap-3 text-lum-700">
+            <div class="">{node.eco}</div>
+            <div class="min-w-10 shrink-0 ">{fmt_per2}%</div>
+          </div>
         </div>
-        <div class="w-11 px-0 text-center rounded-lg  dark:text-accent-300">
-          {fmt_per}%
+        <div class="font-medium mr-3 text-center shrink-0">
+          -> { node.moves.at(0)}
         </div>
       </div>
     );
   };
-
-  const [selected, setSelected] = createSignal<number | null>(null);
 
   const addArrow = (move: string) => {
     arrows.add(move);
@@ -437,10 +472,11 @@ const OpeningCard: Component<{
   };
 
   return (
-    <div class="flex flex-col   shrink grow min-h-0  overflow-scroll">
-      <Show when={opening() !== null}>{CurrentOpeningCard(opening())}</Show>
-      <div class="text-lum-600 mx-5 my-1">Named openings in this position</div>
-      <div class="flex flex-col shrink min-h-0 overflow-visible overflow-y-scroll px-4">
+    <div class="flex flex-col   shrink grow min-h-0 w-full overflow-scroll text-lum-800">
+      <div
+        class="flex flex-col shrink min-h-0 overflow-visible overflow-y-scroll relative gap-2"
+        ref={openingContainer}
+      >
         <For each={Object.entries(positionTree())}>
           {([basename, node], i) =>
             PositionName(

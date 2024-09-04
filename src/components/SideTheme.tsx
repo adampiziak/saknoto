@@ -45,7 +45,7 @@ const SideTheme: Component = (props: any) => {
   });
 
   return (
-    <div class="w-96">
+    <div class="w-full max-w-96 text-lum-800 bg-lum-50 h-dvh overflow-y-auto self-center">
       <div class="font-semibold text-accent-700 bg-accent-100 dark:bg-accent-800 dark:text-accent-200  p-2 border-b border-accent-200 dark:border-accent-700 flex justify-between items-center">
         <div>Theme: {selected()}</div>
         <Button

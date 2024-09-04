@@ -84,6 +84,7 @@ const GameInterfaceCard: Component = (props) => {
           >
             Autoplay repertoire
           </SaknotoSwitch>
+          <Button onclick={() => game.cache?.clear()}>clear cache</Button>
         </div>
       </div>
     </div>

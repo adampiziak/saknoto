@@ -9,12 +9,17 @@ import {
 import { BoardView, BoardViewMode } from "~/BoardView";
 import { useGame } from "~/GameProvider";
 import {
+  FaSolidAnglesUp,
+  FaSolidArrowRotateLeft,
   FaSolidChessPawn,
+  FaSolidChevronLeft,
+  FaSolidChevronRight,
   FaSolidComputer,
   FaSolidEllipsis,
   FaSolidFloppyDisk,
   FaSolidGears,
   FaSolidGrip,
+  FaSolidPlus,
   FaSolidSquarePollHorizontal,
   FaSolidUpLong,
 } from "solid-icons/fa";
@@ -30,6 +35,7 @@ import {
   RiArrowsExpandUpDownLine,
 } from "solid-icons/ri";
 import { BiSolidChevronsUp } from "solid-icons/bi";
+import BottomBarContent from "./BottomBarContent";
 
 const HomeMobile: Component = (props) => {
   const [boardRect, setBoardRect] = createSignal(0);
@@ -53,6 +59,16 @@ const HomeMobile: Component = (props) => {
     const newsize = clamp(initialSize - deltaY, 200, windowWidth());
     console.log(newsize);
     setContainerSize(newsize);
+  };
+  const ActionButton: ParentComponent<{ onclick: any }> = (props) => {
+    return (
+      <div
+        class="h-full w-12  rounded-full flex items-center justify-center active:bg-lum-200 border-lum-200 "
+        onclick={props.onclick}
+      >
+        {props.children}
+      </div>
+    );
   };
 
   const [isMaxSize, setIsMaxSize] = createSignal(true);
@@ -138,7 +154,7 @@ const HomeMobile: Component = (props) => {
         <div class="drag-dot bg-lum-300 rounded-full"></div>
       </div>
       <div class="bg-lum-50 text-lum-800 grow rounded-2xl shrink flex min-w-0 min-h-0 overflow-hidden gap-2 mx-2">
-        <div class="flex content grow bg-lum-100 rounded-2xl shrink min-w-0 overflow-hidden min-h-0">
+        <div class="flex content grow rounded-2xl shrink min-w-0 overflow-hidden mb-2 min-h-0">
           <Switch>
             <Match when={selected() === "opening"}>
               <OpeningCard />
@@ -175,6 +191,27 @@ const HomeMobile: Component = (props) => {
           </TabButton>
         </div>
       </div>
+      <BottomBarContent mode="main">
+        <div
+          class={`text-lum-700 font-medium bg-lum-100 my-2 ml-2 flex rounded-full  items-center  justify-start gap-1`}
+        >
+          <ActionButton onclick={() => game.undoMove()}>
+            <FaSolidChevronLeft size={iconSize} />
+          </ActionButton>
+          <ActionButton onclick={() => game.redoMove()}>
+            <FaSolidChevronRight size={iconSize} />
+          </ActionButton>
+          <ActionButton onclick={() => game.restartSlow()}>
+            <FaSolidArrowRotateLeft size={iconSize} />
+          </ActionButton>
+          <ActionButton onclick={() => game.toggleRepertoireMode()}>
+            <FaSolidPlus size={iconSize} />
+          </ActionButton>
+          <ActionButton>
+            <FaSolidAnglesUp size={iconSize} />
+          </ActionButton>
+        </div>
+      </BottomBarContent>
     </div>
   );
 };

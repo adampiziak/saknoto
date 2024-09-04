@@ -10,8 +10,8 @@ import { GameProvider } from "~/GameProvider";
 const HomeDesktop: Component = (props) => {
   return (
     <GameProvider game_id="home">
-      <div class="home-desktop flex min-h-0 shrink w-screen pb-4 px-4 bg-lum-50 sn-main relative">
-        <div class="home-left-column grow flex sk-fit shrink overflow-visible sn-opening-card max-w-[400px]">
+      <div class="home-desktop flex min-h-0 shrink w-screen pb-4 px-4 bg-lum-50 gap-2 sn-main relative">
+        <div class="home-left-column grow flex sk-fit shrink overflow-hidden sn-opening-card max-w-[400px] rounded-xl">
           <OpeningCard
             pgn={[]}
             on_select={(move) => props.game.handle_move(move)}
