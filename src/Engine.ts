@@ -66,7 +66,7 @@ export enum EngineMode {
   STOPPING,
 }
 
-const devmode = false;
+const devmode = true;
 export class Engine {
   subscribers = new Map<string, any[]>();
   engine: StockfishWeb | undefined;
@@ -330,6 +330,10 @@ export class Engine {
       callback(evaluation);
     }
   }, 300);
+
+  getEvaluation() {
+    return { ...this.boardEvaluation };
+  }
 
   emitSecondaryEvaluation(evaluation: Evaluation) {
     const listeners = this.subscribers.get(evaluation.fen);

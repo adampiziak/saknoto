@@ -4,6 +4,8 @@ import UserManager from "./UserMananger";
 import { STARTING_FEN } from "./constants";
 import { Positioner } from "@kobalte/core/popper";
 
+const API_GAME_TIMESTAMP_KEY = "api-game-timestamp";
+
 export interface Position {
   fen: string;
   count: number;
@@ -297,9 +299,21 @@ class OpeningGraph {
       ? new Date(last_refresh_string)
       : new Date(0);
 
-    const timestamp = last_refresh.getTime();
+    const apiTimestampString = localStorage.getItem(API_GAME_TIMESTAMP_KEY);
+    let apiTimestamp: number;
+    if (apiTimestampString) {
+      apiTimestamp = Number(apiTimestampString);
+    } else {
+      const threeMonthsAgo = new Date();
+      threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
+      apiTimestamp = threeMonthsAgo.getTime();
+    }
 
-    const since = (today - last_refresh) / 1000;
+    console.log("last api timestamp");
+    console.log(apiTimestamp);
+    console.log(new Date(apiTimestamp));
+
+    const since = (today.getTime() - last_refresh.getTime()) / 1000;
     const mins = since / 60;
 
     if (mins < 10) {
@@ -307,7 +321,8 @@ class OpeningGraph {
     }
 
     localStorage.setItem("last_refresh", new Date().toString());
-    const url = `https://lichess.org/api/games/user/${this.username}?since=${timestamp}&max=700&perfType=blitz?rated=true`;
+    const url = `https://lichess.org/api/games/user/${this.username}?since=${apiTimestamp}&max=500&perfType=blitz?rated=true&sort=dateAsc`;
+    // const url = `https://lichess.org/api/games/user/${this.username}?max=1&perfType=blitz?rated=true`;
     // const url = `https://lichess.org/api/games/user/${this.username}?max=10&perfType=blitz`;
     try {
       const res = await fetch(url);
@@ -332,7 +347,9 @@ class OpeningGraph {
         }
 
         const chunk = new TextDecoder().decode(value);
-        const pgns = parse(chunk, { startRule: "games" });
+        const pgns: ParseTree[] = parse(chunk, {
+          startRule: "games",
+        }) as ParseTree[];
         if (first) {
           localStorage.setItem("lastgame", JSON.stringify(pgns[0]));
           first = false;
@@ -427,6 +444,31 @@ class OpeningGraph {
       if (p.tags?.Variant != "Standard") {
         continue;
       }
+
+      console.log(p);
+      const dt = new Date();
+      const { year, month, day } = p.tags.UTCDate;
+      const { hour, minute, second } = p.tags.UTCTime;
+
+      if (
+        year !== undefined &&
+        month !== undefined &&
+        day !== undefined &&
+        hour !== undefined &&
+        minute !== undefined &&
+        second !== undefined
+      ) {
+        dt.setUTCFullYear(year, month - 1, day);
+        dt.setUTCHours(hour, minute, second);
+        console.log(dt);
+
+        const timestamp = dt.getTime();
+
+        localStorage.setItem(API_GAME_TIMESTAMP_KEY, timestamp.toString());
+      } else {
+        console.log("no date");
+      }
+
       // console.log(p.tags?.Result);
       const resultTag = p.tags?.Result;
       const info = p.tags?.Site;

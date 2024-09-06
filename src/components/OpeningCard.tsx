@@ -312,7 +312,7 @@ const OpeningCard: Component = (props) => {
 
     return (
       <div
-        class={`sk-position-item ${active() ? "active" : ""} rounded-xl bg-lum-100`}
+        class={`sk-position-item ${active() ? "active" : "hover:bg-lum-200"} rounded-xl bg-lum-100 hover:cursor-pointer`}
         onClick={() => {
           set_selected((prev) => (index === prev ? null : index));
         }}
@@ -323,9 +323,6 @@ const OpeningCard: Component = (props) => {
           </div>
           <div class={`${active() ? "pr-2" : ""}`}>{fmt_per}%</div>
         </div>
-      <Show when={active() && index === 0}>
-        <div class="bg-lum-600 rounded-full inline-block text-lum-100 ml-4 mb-1 px-3 py-0.5 text-sm font-medium">common continuation</div>
-      </Show>
         <div
           class={`variations-container ${active() ? "active pb-4 pt-2" : ""}`}
         >
@@ -364,7 +361,7 @@ const OpeningCard: Component = (props) => {
 
     return (
       <div
-        class="flex gap-2 items-center p-1 min-w-0 shrink bg-lum-200 rounded-xl overflow-hidden"
+        class="flex gap-2 items-center p-1 min-w-0 shrink bg-lum-200 rounded-xl overflow-hidden hover:bg-lum-300"
         onclick={fromVariationClick}
       >
         <div class="flex flex-col grow  shrink  min-w-0 min-h-0 overflow-hidden pl-2">

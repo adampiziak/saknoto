@@ -26,7 +26,6 @@ export default function Header() {
   onMount(async () => {
     try {
       await context.openingGraph.load_wait();
-      await refresh();
       context.userManager.load();
       let u = context.userManager.get();
 

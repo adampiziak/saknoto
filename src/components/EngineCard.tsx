@@ -1,14 +1,10 @@
-import { Button } from "@kobalte/core/button";
-import { Skeleton } from "@kobalte/core/skeleton";
-import { Component, For, Show, createSignal, onMount } from "solid-js";
+import { Component, For, createSignal, onMount } from "solid-js";
 import { useSaknotoContext } from "~/Context";
 import { Evaluation, EvaluationLine } from "~/Engine";
-import { Game } from "~/Game";
 import { useGame } from "~/GameProvider";
 import { STARTING_EVAL, STARTING_FEN } from "~/constants";
-import { DraggableIcon } from "~/icons";
 
-const EngineCard: Component = (props) => {
+const EngineCard: Component = () => {
   const game = useGame();
   const context = useSaknotoContext();
   const [boardFen, setBoardFen] = createSignal<string | null>(STARTING_FEN);
@@ -23,7 +19,7 @@ const EngineCard: Component = (props) => {
       setEvaluation(newEval);
       arrows.clear();
     });
-    game.subscribe(({ fen, _ }: any) => {
+    game.subscribe(({ fen }: any) => {
       setBoardFen(fen);
     });
   });

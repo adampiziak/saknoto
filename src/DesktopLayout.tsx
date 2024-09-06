@@ -1,7 +1,6 @@
 import { ParentComponent } from "solid-js";
 import SideBar from "./components/SideBar";
 import Header from "./components/Header";
-import { Portal } from "solid-js/web";
 import { GameProvider } from "./GameProvider";
 
 const DesktopLayout: ParentComponent = (props) => {

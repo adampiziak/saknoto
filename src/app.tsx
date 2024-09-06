@@ -21,6 +21,13 @@ const RootLayout = (props: any) => {
   const [skv, setskn] = createSignal("");
 
   const mobile = useMobile();
+  const refresh = async () => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    await ctx.openingGraph.refresh();
+  };
+
   onMount(async () => {
     ctx.openingGraph.load_wait();
     ctx.themeManager.loadSaved();
@@ -46,6 +53,10 @@ const RootLayout = (props: any) => {
       }
     });
     await ctx.engine.start();
+    try {
+      await ctx.openingGraph.load_wait();
+      await refresh();
+    } catch {}
   });
 
   return (

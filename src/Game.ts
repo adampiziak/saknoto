@@ -95,6 +95,7 @@ export class Game {
   lastApiRequest = new Date(0);
   requestInProgress = false;
   moveListeners: any[] = [];
+  active: boolean;
 
   constructor(context: SaknotoContextKind, key: string | null = null) {
     this.chess = new Chess();
@@ -103,11 +104,16 @@ export class Game {
     this.gameId = key;
     this.gid = gameinstances;
     gameinstances += 1;
+    this.active = true;
 
     this.history = {
       index: 0,
       moves: [],
     };
+  }
+
+  cleanup() {
+    this.active = false;
   }
 
   setGameId(id: string) {
@@ -153,11 +159,13 @@ export class Game {
       turn.side === Side.Opponent &&
       this.state.opponent.kind === PlayerKind.Lichess
     ) {
+      console.log("play commmon move");
       this.playCommonMove();
       return;
     }
 
     if (turn.side === Side.Player && this.state.autoplayRepertoire) {
+      console.log("play repertoire");
       this.appContext.repertoire.getLine(fen).then((result) => {
         if (result) {
           const move = result.response.at(0);
@@ -546,6 +554,7 @@ export class Game {
 
     // make move
     this.chess.move(move);
+    console.log(`move is ${move}: new fen is -> ${this.chess.fen()}`);
     this.notifyEngine();
     this.history.moves = this.chess.history();
     this.history.index = this.history.moves.length;
@@ -555,7 +564,11 @@ export class Game {
   }
 
   notifyEngine() {
-    // console.log("notify" + this.chess.fen());
+    if (!this.active) {
+      return;
+    }
+    console.log(this.boardRef);
+    console.log(`[${this.gid}]: notify -> ` + this.chess.fen());
     if (this.state.notifyEngine) {
       this.appContext.engine.setBoardPosition(this.chess.fen());
     }
