@@ -1,14 +1,14 @@
 import { Select } from "@kobalte/core/select";
-import { Component } from "solid-js";
+import { Component, ParentComponent } from "solid-js";
 
 export interface SelectDropdownProps {
-  label: string | undefined;
+  label?: string;
   options: string[];
   value: string;
   on_update?: (arg0: string) => any;
 }
 
-const SelectDropdown: Component<SelectDropdownProps> = (props) => {
+const SelectDropdown: ParentComponent<SelectDropdownProps> = (props) => {
   const update_value = (val: any) => {
     if (val) {
       if (props.on_update) {
@@ -20,7 +20,7 @@ const SelectDropdown: Component<SelectDropdownProps> = (props) => {
   return (
     <div class="flex flex-col">
       <div class="pb-0.5 ml-1 opacity-60 text-sm font-medium">
-        {props.label}
+        {props.label ?? props.children}
       </div>
       <Select
         options={props.options}

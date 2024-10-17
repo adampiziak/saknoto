@@ -13,7 +13,7 @@ import { useSaknotoContext } from "~/Context";
 import { SideBarState } from "~/data/UIManager";
 import UserView from "./UserView";
 import QuickBoard from "./QuickBoardView";
-import SideTheme from "./SideTheme";
+import ThemePicker from "./ThemePicker";
 
 const SideBar: Component<{}> = (_props) => {
   const context = useSaknotoContext();
@@ -41,7 +41,7 @@ const SideBar: Component<{}> = (_props) => {
 
   return (
     <div
-      class={`h-screen  z-50 min-w-24 w-fit absolute bg-accent-50 dark:bg-accent-900 dark:text-accent-100 text-accent-800 shadow  sidebar ${state().active ? "active" : ""}`}
+      class={`h-screen  z-50 min-w-24 max-w-96 w-fit absolute bg-accent-50 dark:bg-accent-900 dark:text-accent-100 text-accent-800 shadow  sidebar ${state().active ? "active" : ""}`}
     >
       <Switch>
         <Match when={state().view === "user"}>
@@ -51,7 +51,7 @@ const SideBar: Component<{}> = (_props) => {
           <QuickBoard />
         </Match>
         <Match when={state().view === "theme"}>
-          <SideTheme />
+          <ThemePicker />
         </Match>
       </Switch>
     </div>

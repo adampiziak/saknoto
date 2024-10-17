@@ -161,7 +161,7 @@ export default function QuickBoard() {
     }
 
     if (isRepState()) {
-      context.repertoire.addLine(fen, m);
+      context.repertoire.add(fen, m);
       setIsRepState(false);
       return;
     }

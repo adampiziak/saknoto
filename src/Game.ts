@@ -16,6 +16,7 @@ import { LRUCache } from "./data/Cache";
 import { ChessColor } from "./lib/common";
 import { DrawShape } from "chessground/draw";
 import { SaknotoContextKind } from "./Context";
+import { SubscriberManager } from "./lib/SubscriberManager";
 
 interface History {
   index: number;
@@ -25,6 +26,7 @@ interface History {
 interface GameEvent {
   fen: string;
   history: string[];
+  pendingMove: PositionMove | null;
 }
 
 interface Turn {
@@ -44,6 +46,7 @@ export interface GameState {
   autoplayRepertoire: boolean;
   startingFen: string;
   useNextMoveAsRep: boolean;
+  confirmRepMove: boolean;
   notifyEngine: boolean;
 }
 
@@ -73,11 +76,19 @@ export const defaultGameState = (): GameState => {
     autoplayRepertoire: false,
     startingFen: startingFen(),
     useNextMoveAsRep: false,
+    confirmRepMove: false,
     notifyEngine: false,
   };
 };
 
 let gameinstances = 0;
+
+export interface PositionMove {
+  fen: string;
+  move: string;
+}
+
+export type UnSubKind = (() => void) | undefined;
 
 export class Game {
   chess: Chess;
@@ -86,7 +97,8 @@ export class Game {
   history: History;
   state: GameState;
   cache?: LRUCache<any>;
-  listeners: any[] = [];
+  listeners: SubscriberNode[] = [];
+  subManager: SubscriberManager;
   once_listeners: any[] = [];
   state_listener: any[] = [];
   boardRef: HTMLElement | undefined;
@@ -94,8 +106,9 @@ export class Game {
   gid: number;
   lastApiRequest = new Date(0);
   requestInProgress = false;
-  moveListeners: any[] = [];
+  moveListeners: SubscriberManager;
   active: boolean;
+  pendingRepMove: PositionMove | null = null;
 
   constructor(context: SaknotoContextKind, key: string | null = null) {
     this.chess = new Chess();
@@ -105,6 +118,8 @@ export class Game {
     this.gid = gameinstances;
     gameinstances += 1;
     this.active = true;
+    this.subManager = new SubscriberManager();
+    this.moveListeners = new SubscriberManager();
 
     this.history = {
       index: 0,
@@ -159,14 +174,12 @@ export class Game {
       turn.side === Side.Opponent &&
       this.state.opponent.kind === PlayerKind.Lichess
     ) {
-      console.log("play commmon move");
       this.playCommonMove();
       return;
     }
 
     if (turn.side === Side.Player && this.state.autoplayRepertoire) {
-      console.log("play repertoire");
-      this.appContext.repertoire.getLine(fen).then((result) => {
+      this.appContext.repertoire.get(fen).then((result) => {
         if (result) {
           const move = result.response.at(0);
           if (move) {
@@ -177,8 +190,23 @@ export class Game {
     }
   }, 400);
 
+  reset() {
+    this.chess.reset();
+    this.state = defaultGameState();
+    this.chess = new Chess();
+    this.history = {
+      index: 0,
+      moves: [],
+    };
+  }
+
   useEngine(val: boolean) {
     this.state.notifyEngine = val;
+  }
+
+  detachAll() {
+    this.boardRef = undefined;
+    this.reset();
   }
 
   attach(element: HTMLElement, gameId: string | undefined = undefined) {
@@ -189,6 +217,7 @@ export class Game {
     if (gameId) {
       this.gameId = gameId;
     }
+    this.appContext.repertoire.load();
     const self = this;
     this.api.set({
       movable: {
@@ -203,18 +232,23 @@ export class Game {
     this.updateBoard();
 
     // listen for key events
-    addEventListener("keydown", (ev: KeyboardEvent) => {
-      if (ev.key === "ArrowLeft") {
-        this.undoMove();
-      }
+    // this.boardRef.addEventListener("keydown", (ev: KeyboardEvent) => {
+    //   if (ev.key === "ArrowLeft") {
+    //     this.undoMove();
+    //   }
 
-      if (ev.key === "ArrowRight") {
-        this.redoMove();
-      }
-    });
+    //   if (ev.key === "ArrowRight") {
+    //     this.redoMove();
+    //   }
+    // });
     this.loadState();
     // this.checkIfComputerMove();
     this.emitState();
+    if (this.state.useNextMoveAsRep) {
+      this.setRepertoireMode();
+    } else {
+      this.unsetRepertoireMode();
+    }
   }
 
   clearArrows() {
@@ -284,7 +318,7 @@ export class Game {
       this.chess.move(m);
     }
     this.history.index = Math.max(0, this.history.index - 1);
-    this.notifyEngine();
+    this.tryNotifyEngine();
     this.updateBoard();
     this.emit();
   }
@@ -299,7 +333,7 @@ export class Game {
       this.history.moves.length,
       this.history.index + 1,
     );
-    this.notifyEngine();
+    this.tryNotifyEngine();
     this.updateBoard();
     this.emit();
   }
@@ -310,14 +344,13 @@ export class Game {
     this.api?.set({
       fen: this.state.startingFen,
     });
-    this.notifyEngine();
+    this.tryNotifyEngine();
     setTimeout(() => {
       this.restart();
     }, 600);
   }
 
   restart() {
-    console.log("RESTART");
     this.chess.reset();
     this.chess.load(this.state.startingFen);
     this.history.index = 0;
@@ -326,21 +359,28 @@ export class Game {
     this.api?.set({
       lastMove: undefined,
     });
-    this.notifyEngine();
+    this.tryNotifyEngine();
     setTimeout(() => {
       this.checkIfComputerMove();
     }, 200);
   }
 
   subscribe(callback: (event: GameEvent) => void) {
-    this.listeners.push(callback);
+    const unsub = this.subManager.add(callback);
     setTimeout(() => {
       this.emit();
     }, 100);
+
+    return unsub;
   }
 
   onMove(callback: (san: string) => any) {
-    this.moveListeners.push(callback);
+    const unsub = this.moveListeners.add(callback);
+    setTimeout(() => {
+      this.emit();
+    }, 100);
+
+    return unsub;
   }
 
   setRepertoireMode() {
@@ -349,6 +389,25 @@ export class Game {
       this.boardRef.classList.add("repertoire-board-mode");
     }
   }
+
+  confirmPendingRepMove() {
+    if (this.pendingRepMove) {
+      this.appContext.repertoire.add(
+        this.pendingRepMove.fen,
+        this.pendingRepMove.move,
+      );
+      this.pendingRepMove = null;
+      this.emit();
+    }
+  }
+
+  setConfirmRep() {
+    this.state.confirmRepMove = true;
+  }
+  unsetConfirmRep() {
+    this.state.confirmRepMove = false;
+  }
+
   unsetRepertoireMode() {
     this.state.useNextMoveAsRep = false;
     if (this.boardRef) {
@@ -357,6 +416,7 @@ export class Game {
   }
 
   toggleRepertoireMode() {
+    console.log("TOGGGLE");
     if (this.state.useNextMoveAsRep) {
       this.unsetRepertoireMode();
     } else {
@@ -369,9 +429,10 @@ export class Game {
   }
 
   loadPosition(fen: string) {
+    // console.log("loading...");
     try {
       this.chess.load(fen);
-      this.state.orientation = this.getTurn().color;
+      // this.state.orientation = this.getTurn().color;
       this.updateBoard();
     } catch {
       this.restart();
@@ -381,8 +442,12 @@ export class Game {
   emit() {
     const fen = this.chess.fen();
     const history = this.history.moves.slice(0, this.history.index);
-    for (const callback of this.listeners) {
-      callback({ fen, history });
+    for (const callback of this.subManager.all()) {
+      callback({
+        fen,
+        history,
+        pendingMove: this.pendingRepMove,
+      });
     }
     for (const callback of this.once_listeners) {
       callback({ fen, history });
@@ -457,8 +522,8 @@ export class Game {
   }
 
   emitMove(san: string) {
-    for (const listener of this.moveListeners) {
-      listener(san);
+    for (const callback of this.moveListeners.all()) {
+      callback(san);
     }
   }
 
@@ -548,14 +613,23 @@ export class Game {
     // check if move is for rep
     const turn = this.getTurn();
     if (turn.side === Side.Player && this.state.useNextMoveAsRep) {
-      this.appContext.repertoire.addLine(this.chess.fen(), san);
+      if (this.state.confirmRepMove) {
+        this.pendingRepMove = {
+          fen: this.chess.fen(),
+          move: san,
+        };
+      } else {
+        console.log("adding move to fen" + this.chess.fen());
+        console.log(san);
+        this.appContext.repertoire.add(this.chess.fen(), san);
+      }
     }
-    this.unsetRepertoireMode();
 
     // make move
     this.chess.move(move);
-    console.log(`move is ${move}: new fen is -> ${this.chess.fen()}`);
-    this.notifyEngine();
+    this.unsetRepertoireMode();
+    // console.log(`move is ${move}: new fen is -> ${this.chess.fen()}`);
+    this.tryNotifyEngine();
     this.history.moves = this.chess.history();
     this.history.index = this.history.moves.length;
     this.updateBoard();
@@ -563,15 +637,17 @@ export class Game {
     this.emitMove(san);
   }
 
-  notifyEngine() {
+  tryNotifyEngine() {
     if (!this.active) {
       return;
     }
-    console.log(this.boardRef);
-    console.log(`[${this.gid}]: notify -> ` + this.chess.fen());
     if (this.state.notifyEngine) {
       this.appContext.engine.setBoardPosition(this.chess.fen());
     }
+  }
+
+  notifyEngine() {
+    this.appContext.engine.setBoardPosition(this.chess.fen());
   }
 
   getTurnColor(): ChessColor {

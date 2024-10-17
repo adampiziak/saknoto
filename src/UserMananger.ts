@@ -2,6 +2,9 @@ export default class UserManager {
   username: string | null = null;
 
   load() {
+    if (typeof window === "undefined") {
+      return;
+    }
     this.username = localStorage.getItem("username");
   }
 

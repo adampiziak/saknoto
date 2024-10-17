@@ -30,7 +30,7 @@ export default function ExploreListPage() {
 
     const openings = await context.openingGraph.getAllSplit();
 
-    const reps = (await context.repertoire.getAll()).reduce((m, o) => {
+    const reps = (await context.repertoire.all()).reduce((m, o) => {
       m.set(o.fen, o);
       return m;
     }, new Map());

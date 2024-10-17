@@ -13,7 +13,7 @@ import BottomBarContent from "./BottomBarContent";
 import { FaSolidArrowLeft } from "solid-icons/fa";
 import UserView from "./UserView";
 import ThemeSelector from "./ThemeSelector";
-import SideTheme from "./SideTheme";
+import ThemePicker from "./ThemePicker";
 
 const MobileSideView: Component = () => {
   const ui = useUserInterface();
@@ -65,10 +65,11 @@ const MobileSideView: Component = () => {
           <div class="flex flex-col mt-8 gap-3">
             <NavAction dest="/">Home</NavAction>
             <NavAction dest="/study/flashcards">Study</NavAction>
+            <NavAction dest="/repertoire">repertoire</NavAction>
           </div>
         </Match>
         <Match when={activeView() === "theme"}>
-          <SideTheme />
+          <ThemePicker />
         </Match>
         <Match when={activeView() === "username"}>
           <UserView />

@@ -11,7 +11,7 @@ import { Repertoire } from "~/Repertoire";
 import UserManager from "~/UserMananger";
 import { Engine } from "./Engine";
 import { UIManager } from "./data/UIManager";
-import ThemeManager from "./data/ThemeManager";
+import Theme from "./lib/Theme";
 import { BottomBarController } from "./lib/BottomBarController";
 
 const context = {
@@ -20,7 +20,7 @@ const context = {
   repertoire: new Repertoire(),
   engine: new Engine(),
   ui: new UIManager(),
-  themeManager: new ThemeManager(),
+  themeManager: new Theme(),
   bottomBarController: new BottomBarController(),
 };
 
@@ -32,9 +32,13 @@ export interface SaknotoContextKind {
   repertoire: Repertoire;
   engine: Engine;
   ui: UIManager;
-  themeManager: ThemeManager;
+  themeManager: Theme;
   bottomBarController: BottomBarController;
 }
+
+export const useTheme = (): Theme => {
+  return useContext(SaknotoContext).themeManager;
+};
 
 export const useBottomBar = (): BottomBarController => {
   return useContext(SaknotoContext).bottomBarController;

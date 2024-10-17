@@ -9,7 +9,7 @@ const Explore: Component = () => {
   const [lines, setLines] = createSignal<RepCard[]>([]);
 
   const load_repertoire = async () => {
-    const reps = await context.repertoire.getAll();
+    const reps = await context.repertoire.all();
     reps.sort((a, b) => a.card.due - b.card.due);
     setLines(reps);
   };

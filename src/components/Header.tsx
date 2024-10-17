@@ -77,10 +77,7 @@ export default function Header() {
                     quiz yourself on positions from your repertoire
                   </NavigationMenu.ItemDescription>
                 </NavigationMenu.Item>
-                <NavigationMenu.Item
-                  class="sn-nav-item"
-                  href="/study/repertoire"
-                >
+                <NavigationMenu.Item class="sn-nav-item" href="/repertoire">
                   <NavigationMenu.ItemLabel class="sn-nav-label">
                     repertoire
                   </NavigationMenu.ItemLabel>

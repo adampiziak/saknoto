@@ -6,6 +6,7 @@ import GameInterfaceCard from "./GameInterfaceCard";
 import EngineCard from "./EngineCard";
 import RepertoireCard from "./RepertoireCard";
 import { GameProvider } from "~/GameProvider";
+import ExplorerCard from "./ExplorerCard";
 
 const HomeDesktop: Component = (props) => {
   return (
@@ -25,6 +26,7 @@ const HomeDesktop: Component = (props) => {
       <div class="flex grow flex-col gap-4 max-w-[400px] h-[100%] min-h-0 shrink px-4 sn-info-card">
         <GameInterfaceCard />
         <RepertoireCard />
+        <ExplorerCard />
         <EngineCard
         // onSelect={(move: string) => props.game.playMove(move)}
         // onHover={(moves) => props.game.drawArrows(moves)}

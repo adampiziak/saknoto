@@ -5,6 +5,7 @@ import {
   Show,
   createEffect,
   createSignal,
+  onCleanup,
   onMount,
 } from "solid-js";
 import { useSaknotoContext } from "~/Context";
@@ -43,31 +44,31 @@ const RepertoireCard: Component = (props) => {
 
   const update = async (fen: string | undefined) => {
     if (fen) {
-      const res = await context.repertoire.getLine(fen);
+      const res = await context.repertoire.get(fen);
       setResponses(res?.response ?? []);
     }
   };
+  const unsub = game().subscribe(({ fen }) => {
+    setFen(fen);
+  });
 
   onMount(() => {
     context.engine.onBoardEvaluation((ev) => {
       setEvaluation(ev);
     });
-    game.subscribe(({ fen }) => {
-      setFen(fen);
-    });
   });
   const add_line = () => {
-    game.setRepertoireMode();
+    game().setRepertoireMode();
   };
 
   const add_engine_line = () => {
     const move = bestMove();
     const f = fen();
     if (f && move) {
-      context.repertoire.addLine(f, move);
+      context.repertoire.add(f, move);
       setTimeout(() => {
         update(fen());
-        game?.checkIfComputerMove();
+        game()?.checkIfComputerMove();
       }, 200);
     }
   };
@@ -77,12 +78,16 @@ const RepertoireCard: Component = (props) => {
       return;
     }
     if (game && bestMove()) {
-      game.drawArrowsFen(fen(), [move]);
+      game().drawArrowsFen(fen(), [move]);
     }
   };
 
+  onCleanup(() => {
+    unsub();
+  });
+
   return (
-    <div class="bg-lum-100 rounded min dark:border-accent-700 border text-accent-800 dark:text-accent-100 grow">
+    <div class="bg-lum-100 rounded min border-lum-300 border text-lum-800 grow">
       <div class="bg-lum-200 py-1 px-2  font-medium">Repertoire</div>
       <div class="p-2">
         <div class="flex flex-col gap-2 items-start">
@@ -98,7 +103,7 @@ const RepertoireCard: Component = (props) => {
               addArrow(bestMove());
             }}
             onmouseleave={() => {
-              game.clearArrows();
+              game().clearArrows();
             }}
             onClick={() => add_engine_line()}
           >
@@ -123,7 +128,7 @@ const RepertoireCard: Component = (props) => {
                 }, 100);
               }}
               onmouseleave={() => {
-                game.clearArrows();
+                game().clearArrows();
               }}
               onclick={() => game?.playMove(item)}
             >

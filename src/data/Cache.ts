@@ -50,7 +50,7 @@ export class LRUCache<T> {
     }
 
     if (this.size > this.maxsize) {
-      const all: CacheItem<T>[] = await this.db.getAll();
+      const all: CacheItem<T>[] = await this.db.all();
       all.sort((a, b) => b.datetime.getTime() - a.datetime.getTime());
 
       const marked = all.slice(0, 100);

@@ -124,7 +124,7 @@ export default function Board() {
     }
 
     if (isRepState()) {
-      context.repertoire.addLine(fen, m);
+      context.repertoire.add(fen, m);
       setIsRepState(false);
       return;
     }

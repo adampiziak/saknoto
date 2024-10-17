@@ -66,7 +66,7 @@ export enum EngineMode {
   STOPPING,
 }
 
-const devmode = true;
+const devmode = false;
 export class Engine {
   subscribers = new Map<string, any[]>();
   engine: StockfishWeb | undefined;

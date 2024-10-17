@@ -26,12 +26,14 @@ export class StudySession {
   repertoire: Repertoire | undefined;
   currentType: StudyStage | undefined = StudyStage.TODO;
 
-  f: FSRS = fsrs(generatorParameters({ enable_fuzz: true }));
+  // f: FSRS = fsrs(generatorParameters({ enable_fuzz: true }));
+  f: FSRS;
   midnight: Date;
 
   constructor() {
     this.midnight = new Date();
     this.midnight.setHours(24, 0, 0, 0);
+    this.f = fsrs();
   }
 
   load(rep: Repertoire) {
@@ -46,7 +48,7 @@ export class StudySession {
     const now = new Date();
     now.setHours(24, 0, 0, 0);
 
-    const reps = await this.repertoire.getAll();
+    const reps = await this.repertoire.all();
     for (const r of reps) {
       const rep_due = new Date(r.card.due);
       if (rep_due < now) {
@@ -100,8 +102,9 @@ export class StudySession {
 
     const scheduling = this.f.repeat(this.current.card, this.current.card.due);
     this.current.card = scheduling[rating].card;
+    this.current.card = scheduling[rating].card;
 
-    this.repertoire.updateRep(this.current, this.current.card);
+    this.repertoire.schedule(this.current, this.current.card);
 
     // if incorrect do again
     if (rating == Rating.Again) {

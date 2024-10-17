@@ -1,6 +1,13 @@
 import { Tabs } from "@kobalte/core/tabs";
 import { Chess } from "chess.js";
-import { Component, For, createEffect, createSignal, onMount } from "solid-js";
+import {
+  Component,
+  For,
+  createEffect,
+  createSignal,
+  onCleanup,
+  onMount,
+} from "solid-js";
 import { useSaknotoContext } from "~/Context";
 import "./ExplorerCard.scss";
 import { Move } from "~/OpeningGraph";
@@ -18,7 +25,7 @@ const ExplorerCard: Component<{
   let db_ready = false;
   const game = useGame();
   const [position, setPosition] = createSignal(STARTING_FEN);
-  game.subscribe(({ fen }) => {
+  const unsubscribe = game().subscribe(({ fen }) => {
     setPosition(fen);
   });
 
@@ -29,7 +36,7 @@ const ExplorerCard: Component<{
   createEffect(async () => {
     const fen = position();
     // const player = props.playerColor;
-    const color = game.getTurnColor();
+    const color = game().getTurnColor();
 
     // const g = new Chess();
     // g.load(fen);
@@ -47,14 +54,18 @@ const ExplorerCard: Component<{
     //   }
     // }
 
-    await set_position(fen, color, color);
+    await set_position(fen, "white", color);
+  });
+
+  onCleanup(() => {
+    unsubscribe();
   });
 
   onMount(async () => {
     await context.openingGraph.load_wait();
     db_ready = true;
     lastgame = JSON.parse(localStorage.getItem("lastgame"));
-    const color = game.getTurnColor();
+    const color = game().getTurnColor();
     // const fen = position();
     // const player = game.getTurnColor();
 
@@ -119,7 +130,11 @@ const ExplorerCard: Component<{
     const blackPercentText = blackPercent > 5 ? `${blackPercent}%` : "";
 
     return (
-      <tr class="lvl-1 hoverable" onClick={() => emitSelection(move.uci)}>
+      <tr
+        class="bg-lum-100 hover:bg-lum-200 hover:cursor-pointer hoverable"
+        onClick={() => game()?.playMove(move.uci)}
+        onmouseover={() => game()?.drawArrowsFen(position(), [move.uci])}
+      >
         <td class="font-medium">
           {move.uci}
           <span class="px-1">{move.uci === nextMove() ? "*" : ""}</span>
@@ -152,7 +167,10 @@ const ExplorerCard: Component<{
   };
 
   return (
-    <div class="bg-accent-100 text-accent-800 dark:bg-accent-800 dark:text-accent-100 border border-accent-200 dark:border-accent-700 rounded grow">
+    <div
+      class="bg-accent-100 text-accent-800 dark:bg-accent-800 dark:text-accent-100 border border-accent-200 dark:border-accent-700 rounded grow"
+      onmouseleave={() => game()?.clearArrows()}
+    >
       <div class="bg-lum-200 card-header flex  items-center">
         <DraggableIcon class=" mr-1" />
         <div>Explorer</div>

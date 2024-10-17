@@ -100,5 +100,5 @@ export function applyNeutralTheme(hue: number, mode: "light" | "dark") {
 }
 
 function serializeColor(c: Oklch) {
-  return `${c.l.toFixed(3)} ${c.c.toFixed(3)} ${c.h?.toFixed(3)}`;
+  return `${c.l.toFixed(3)} ${c.c.toFixed(3)} ${c.h?.toFixed(3) ?? "none"}`;
 }

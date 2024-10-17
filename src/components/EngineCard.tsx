@@ -1,4 +1,4 @@
-import { Component, For, createSignal, onMount } from "solid-js";
+import { Component, For, createSignal, onCleanup, onMount } from "solid-js";
 import { useSaknotoContext } from "~/Context";
 import { Evaluation, EvaluationLine } from "~/Engine";
 import { useGame } from "~/GameProvider";
@@ -12,6 +12,7 @@ const EngineCard: Component = () => {
   const [evaluation, setEvaluation] = createSignal<Evaluation>({
     ...STARTING_EVAL,
   });
+  let unsubscribe: any;
 
   let arrows = new Set<string>();
   onMount(() => {
@@ -19,14 +20,20 @@ const EngineCard: Component = () => {
       setEvaluation(newEval);
       arrows.clear();
     });
-    game.subscribe(({ fen }: any) => {
+    unsubscribe = game().subscribe(({ fen }: any) => {
       setBoardFen(fen);
     });
   });
 
   const emitSelection = (dest: string) => {
-    game.playMove(dest);
+    game().playMove(dest);
   };
+
+  onCleanup(() => {
+    if (unsubscribe) {
+      unsubscribe();
+    }
+  });
 
   const addArrow = (move: string) => {
     arrows.add(move);
@@ -38,7 +45,7 @@ const EngineCard: Component = () => {
   };
 
   const emitHover = (moves: string[]) => {
-    game.drawArrowsFen(evaluation().fen, moves);
+    game().drawArrowsFen(evaluation().fen, moves);
   };
 
   const Line = (line: EvaluationLine) => {

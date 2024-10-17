@@ -25,7 +25,7 @@ const Graph: Component = () => {
     await context.repertoire.load();
 
     const split = await context.openingGraph.getAllSplit();
-    const reps = await context.repertoire.getAll();
+    const reps = await context.repertoire.all();
 
     /* setMyList(graph.whiteOpenings.positions.size); */
     if (pageRef) {

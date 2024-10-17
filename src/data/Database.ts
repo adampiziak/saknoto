@@ -4,14 +4,35 @@ enum DatabaseStatus {
   ERROR,
 }
 
+export class Table<T> {
+  store: IDBObjectStore;
+
+  constructor(store: IDBObjectStore) {
+    this.store = store;
+  }
+}
+
 export class Database<T> {
-  tablename: string;
+  name: string;
   db?: IDBDatabase;
   status: DatabaseStatus;
 
   constructor(tablename: string) {
-    this.tablename = tablename;
+    this.name = tablename;
     this.status = DatabaseStatus.LOADING;
+  }
+
+  async table<O>(tableName: string): Promise<Table<O> | undefined> {
+    return new Promise((resolve) => {
+      const transaction = this.db?.transaction(tableName);
+      const store = transaction?.objectStore(tableName);
+
+      if (!store) {
+        return resolve(undefined);
+      }
+
+      resolve(new Table(store));
+    });
   }
 
   get(key: string): Promise<T | undefined> {
@@ -21,8 +42,8 @@ export class Database<T> {
       }
 
       const store = this.db
-        ?.transaction(this.tablename, "readonly")
-        .objectStore(this.tablename);
+        ?.transaction(this.name, "readonly")
+        .objectStore(this.name);
 
       if (!store) {
         rej("UNDEFINED STORE");
@@ -50,11 +71,13 @@ export class Database<T> {
   }
 
   async size(): Promise<number> {
-    return await this.request<number>((store: IDBObjectStore) => store.count());
+    return (await this.request<number>((store: IDBObjectStore) =>
+      store.count(),
+    )) as number;
   }
 
-  async getAll() {
-    return await this.request<any>((store) => store.getAll());
+  async all(): Promise<T[]> {
+    return (await this.request<T[]>((store) => store.getAll())) ?? [];
   }
 
   async remove(key: string) {
@@ -64,24 +87,22 @@ export class Database<T> {
     return await this.request<undefined>((store) => store.clear());
   }
 
-  request<R>(callback: (store: IDBObjectStore) => IDBRequest<R>): Promise<R> {
+  request<R>(
+    callback: (store: IDBObjectStore) => IDBRequest<R>,
+  ): Promise<R | undefined> {
     return new Promise((resolve, reject) => {
       if (!this.ready()) {
-        return reject(`Database <${this.tablename}> is not ready.}`);
+        return reject(`Database <${this.name}> is not ready.}`);
       }
 
       const store = this.store();
       if (!store) {
-        return reject(`Database <${this.tablename}> could not open store.`);
+        return reject(`Database <${this.name}> could not open store.`);
       }
 
       const request: IDBRequest<R> = callback(store);
       request.onsuccess = () => {
         const result = request.result;
-
-        if (result === undefined) {
-          return reject("No result for request.");
-        }
 
         return resolve(result);
       };
@@ -93,12 +114,10 @@ export class Database<T> {
   }
 
   store(): IDBObjectStore | undefined {
-    return this.db
-      ?.transaction(this.tablename, "readwrite")
-      .objectStore(this.tablename);
+    return this.db?.transaction(this.name, "readwrite").objectStore(this.name);
   }
 
-  insert(key: string, value: any) {
+  insert(key: string, value: T) {
     return new Promise((res, rej) => {
       if (this.status !== DatabaseStatus.READY) {
         rej("NOT READY");
@@ -106,8 +125,8 @@ export class Database<T> {
       }
 
       const store = this.db
-        ?.transaction(this.tablename, "readwrite")
-        .objectStore(this.tablename);
+        ?.transaction(this.name, "readwrite")
+        .objectStore(this.name);
 
       if (!store) {
         rej("UNDEFINED STORE");
@@ -137,18 +156,21 @@ export class Database<T> {
   load() {
     return new Promise<void>((res, rej) => {
       if (this.status === DatabaseStatus.ERROR) {
-        rej();
+        return rej();
       }
 
       if (this.status === DatabaseStatus.READY) {
-        res();
+        return res();
+      }
+      if (typeof window === "undefined") {
+        return res();
       }
 
-      const request: IDBOpenDBRequest = window.indexedDB.open(this.tablename);
+      const request: IDBOpenDBRequest = window.indexedDB.open(this.name);
 
       request.onerror = (e) => {
-        rej(e);
         this.status = DatabaseStatus.ERROR;
+        return rej(e);
       };
 
       request.onsuccess = (e) => {
@@ -159,7 +181,7 @@ export class Database<T> {
 
       request.onupgradeneeded = (e) => {
         this.db = (e.target as IDBOpenDBRequest).result;
-        this.db.createObjectStore(this.tablename);
+        this.db.createObjectStore(this.name);
         this.status = DatabaseStatus.READY;
         res();
       };

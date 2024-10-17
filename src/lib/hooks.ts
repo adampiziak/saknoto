@@ -30,6 +30,7 @@ export const useMobile = (): Accessor<boolean> => {
   const [mode, setMode] = createSignal(true);
 
   onMount(() => {
+    setMode(window.innerWidth < 1000);
     window.addEventListener("resize", () => {
       const width = window.innerWidth;
       if (width < 1000) {

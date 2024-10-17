@@ -30,7 +30,7 @@ const ExploreBottomSheet: Component = () => {
   createEffect(() => {
     // on fen
 
-    context.repertoire.getLine(fen()).then((val) => {
+    context.repertoire.get(fen()).then((val) => {
       if (val?.response) {
         setRep(val?.response);
       } else {

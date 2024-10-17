@@ -1,14 +1,15 @@
 import { ParseTree, parse } from "@mliebelt/pgn-parser";
 import { Chess } from "chess.js";
 import UserManager from "./UserMananger";
-import { STARTING_FEN } from "./constants";
-import { Positioner } from "@kobalte/core/popper";
+import { Database } from "./data/Database";
+import { getTurn } from "./utils";
 
 const API_GAME_TIMESTAMP_KEY = "api-game-timestamp";
 
 export interface Position {
   fen: string;
   count: number;
+  date_last_played: string;
   moves: { [key: string]: Move };
   result: Result;
 }
@@ -28,6 +29,7 @@ export interface Split {
 
 class OpeningGraph {
   db: IDBDatabase | null = null;
+  new_db: Database<Position>;
   username = "";
 
   lastChange = {
@@ -50,7 +52,12 @@ class OpeningGraph {
 
   ready = false;
 
+  constructor() {
+    this.new_db = new Database("player-graph");
+  }
+
   load_wait() {
+    this.new_db.load();
     return new Promise<void>((resolve, reject) => {
       if (this.ready) {
         resolve();
@@ -126,9 +133,8 @@ class OpeningGraph {
   async getPosition(
     fen: string,
     playerColor: string,
-    turn: string,
   ): Promise<Position | undefined> {
-    // console.log(`GET FEN: ${playerColor} ${turn}`);
+    const turn = getTurn(fen);
     return new Promise((resolve, reject) => {
       const store_name = playerColor + turn;
       // console.log(store_name);
@@ -309,19 +315,19 @@ class OpeningGraph {
       apiTimestamp = threeMonthsAgo.getTime();
     }
 
-    console.log("last api timestamp");
-    console.log(apiTimestamp);
-    console.log(new Date(apiTimestamp));
+    // console.log("last api timestamp");
+    // console.log(apiTimestamp);
+    // console.log(new Date(apiTimestamp));
 
     const since = (today.getTime() - last_refresh.getTime()) / 1000;
     const mins = since / 60;
 
-    if (mins < 10) {
+    if (mins < 1) {
       return;
     }
 
     localStorage.setItem("last_refresh", new Date().toString());
-    const url = `https://lichess.org/api/games/user/${this.username}?since=${apiTimestamp}&max=500&perfType=blitz?rated=true&sort=dateAsc`;
+    const url = `https://lichess.org/api/games/user/${this.username}?since=${apiTimestamp}&max=1000&perfType=blitz?rated=true&sort=dateAsc`;
     // const url = `https://lichess.org/api/games/user/${this.username}?max=1&perfType=blitz?rated=true`;
     // const url = `https://lichess.org/api/games/user/${this.username}?max=10&perfType=blitz`;
     try {
@@ -356,8 +362,6 @@ class OpeningGraph {
         }
         await this.parseGames(pgns);
       }
-
-      console.log("done");
     } catch (err) {
       console.error(err);
     }
@@ -370,6 +374,7 @@ class OpeningGraph {
     turn: string,
     r: Result,
     site: string,
+    last_played: Date | undefined,
   ) {
     return new Promise<void>((res, rej) => {
       if (
@@ -392,6 +397,7 @@ class OpeningGraph {
             fen,
             count: 0,
             moves: {},
+            date_last_played: last_played,
             result: {
               white: 0,
               black: 0,
@@ -403,6 +409,7 @@ class OpeningGraph {
           position.result.black += r.black;
           position.result.draw += r.draw;
           position.count += 1;
+          position.date_last_played = last_played?.toISOString()!;
 
           if (!position.moves[uci]) {
             position.moves[uci] = {
@@ -446,7 +453,7 @@ class OpeningGraph {
       }
 
       console.log(p);
-      const dt = new Date();
+      let dt: Date | undefined = undefined;
       const { year, month, day } = p.tags.UTCDate;
       const { hour, minute, second } = p.tags.UTCTime;
 
@@ -458,6 +465,7 @@ class OpeningGraph {
         minute !== undefined &&
         second !== undefined
       ) {
+        dt = new Date();
         dt.setUTCFullYear(year, month - 1, day);
         dt.setUTCHours(hour, minute, second);
         console.log(dt);
@@ -501,7 +509,7 @@ class OpeningGraph {
         const fen = game.fen();
         game.move(uci);
 
-        await this.addMoveAsColor(fen, uci, color, turn, r2, info);
+        await this.addMoveAsColor(fen, uci, color, turn, r2, info, dt);
       }
     }
   }

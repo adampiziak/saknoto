@@ -1,5 +1,8 @@
 import {
+  Accessor,
   createContext,
+  createEffect,
+  createSignal,
   onCleanup,
   onMount,
   ParentComponent,
@@ -7,10 +10,14 @@ import {
 } from "solid-js";
 import { Game } from "./Game";
 import { useSaknotoContext } from "./Context";
+import { useLocation } from "@solidjs/router";
 
-const GameContext = createContext<Game>();
+export type GameOption = Game | undefined;
+export type GameGetter = Accessor<Game>;
 
-export const useGame = (): Game => {
+const GameContext = createContext<Accessor<Game>>();
+
+export const useGame = (): Accessor<Game> => {
   const g = useContext(GameContext);
 
   return g!;
@@ -18,10 +25,19 @@ export const useGame = (): Game => {
 
 export const GameProvider: ParentComponent<{
   game_id?: string;
-  onGame?: (g: Game) => any;
+  onGame?: (g: Accessor<Game | undefined>) => any;
 }> = (props) => {
   const context = useSaknotoContext();
-  let game = new Game(context, props.game_id ?? null);
+  const [game, setGame] = createSignal<Game>(
+    new Game(context, props.game_id ?? null),
+  );
+
+  const location = useLocation();
+
+  createEffect(() => {
+    location.pathname;
+    game().reset();
+  });
 
   onMount(() => {
     if (props.onGame) {
@@ -30,9 +46,7 @@ export const GameProvider: ParentComponent<{
   });
 
   onCleanup(() => {
-    console.log("GAME CLEANUP");
-    game.cleanup();
-    game = undefined;
+    setGame(undefined!);
   });
 
   return (

@@ -65,7 +65,7 @@ const OpeningCard: Component = (props) => {
   const [positionTree, setPositionTree] = createSignal<PositionTreeNode[]>([]);
   const [totalGames, setTotalGames] = createSignal(1);
   const [winrate, setWinrate] = createSignal(50);
-  game.subscribe(({ history }) => {
+  game().subscribe(({ history }) => {
     setPgn(history);
     setTimeout(() => {
       setSelected(0);
@@ -318,7 +318,7 @@ const OpeningCard: Component = (props) => {
         }}
       >
         <div class={`px-3 py-2 flex items-center ${active() ? "mt-2" : ""}`}>
-          <div class={`text-md ${active() ? "text-lg text-lum-900 pl-2" : ""} grow`}>
+          <div class={`text-md ${active() ? "text-lg text-lum-800 pl-2" : ""} grow`}>
             {basename}
           </div>
           <div class={`${active() ? "pr-2" : ""}`}>{fmt_per}%</div>
@@ -365,7 +365,7 @@ const OpeningCard: Component = (props) => {
         onclick={fromVariationClick}
       >
         <div class="flex flex-col grow  shrink  min-w-0 min-h-0 overflow-hidden pl-2">
-          <div class="grow font-medium text-wrap shrink text-lum-900">
+          <div class="grow font-medium text-wrap shrink text-lum-800">
             {mainline} {node.name.slice(1).join(", ")}
           </div>
           <div class="flex gap-3 text-lum-700">

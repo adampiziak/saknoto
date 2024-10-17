@@ -1,138 +1,76 @@
 import { Card, createEmptyCard } from "ts-fsrs";
+import { Database } from "./data/Database";
 
 export interface RepCard {
   fen: string;
   response: string[];
   card: Card;
 }
+
+export const emptyRepCard = (fen: string): RepCard => {
+  return {
+    fen,
+    response: [],
+    card: createEmptyCard(new Date()),
+  };
+};
+
 export class Repertoire {
   db: IDBDatabase | null = null;
+  new_db: Database<RepCard>;
 
-  constructor() {}
+  constructor() {
+    this.new_db = new Database("repertoire");
+  }
 
   ready() {
     return this.db !== null && this.db !== undefined;
   }
 
-  load() {
-    return new Promise<void>((resolve, reject) => {
-      if (this.db) {
-        resolve();
-      }
-      const req = window.indexedDB.open("repertoire", 2);
-      req.onerror = (e) => {
-        console.error("DB ERROR");
-      };
-
-      req.onsuccess = (e: Event) => {
-        if (!this.db) {
-          this.db = e.target?.result;
-        }
-
-        resolve();
-      };
-
-      req.onupgradeneeded = (e) => {
-        console.log("UPGRADE NEEDED");
-
-        const db = e.target.result;
-
-        const objectStore = db.createObjectStore("position", {
-          keyPath: "fen",
-        });
-      };
-    });
+  async clear() {
+    await this.new_db.removeAll();
   }
 
-  load_json(repertoires: RepCard[]) {
+  async load() {
+    return this.new_db.load();
+  }
+
+  async load_json(repertoires: RepCard[]) {
     for (const r of repertoires) {
-      const transaction = this.db.transaction("position", "readwrite");
-      const objectStore = transaction.objectStore("position");
-      const typed_rep: RepCard = {
-        card: {
-          due: new Date(r.card.due),
-          last_review: new Date(r.card.last_review),
-          ...r.card,
-        },
-        ...r,
-      };
-      console.log(typed_rep);
-      objectStore.put(typed_rep);
+      await this.new_db.insert(r.fen, r);
     }
   }
 
-  addLine(fen: string, response: string) {
-    if (this.db) {
-      console.log(this.db);
-      const transaction = this.db.transaction("position", "readwrite");
-      const objectStore = transaction.objectStore("position");
-      const card = createEmptyCard();
+  async add(fen: string, move: string) {
+    const existing = (await this.new_db.get(fen)) ?? emptyRepCard(fen);
+    if (!existing.response.includes(move)) {
+      existing.response.push(move);
+    }
 
-      objectStore.put({ fen, response: [response], card });
+    await this.new_db.insert(fen, existing);
+  }
+
+  async remove(fen: string, move: string) {
+    const existing = await this.new_db.get(fen);
+    if (existing) {
+      existing.response = existing.response.filter((m) => m !== move);
+      await this.new_db.insert(fen, existing);
     }
   }
 
-  removeLine(fen: string) {
-    console.log("adding response to LINE");
-    if (this.db) {
-      console.log(this.db);
-      const transaction = this.db.transaction("position", "readwrite");
-      const objectStore = transaction.objectStore("position");
-
-      objectStore.delete(fen);
+  async schedule(repertoire: RepCard, card: Card) {
+    const existing = await this.new_db.get(repertoire.fen);
+    if (existing) {
+      existing.card = card;
+      await this.new_db.insert(repertoire.fen, repertoire);
     }
   }
 
-  updateRep(rep: RepCard, card: Card) {
-    if (this.db) {
-      const transaction = this.db.transaction("position", "readwrite");
-      const objectStore = transaction.objectStore("position");
-
-      objectStore.put({ fen: rep.fen, response: rep.response, card });
-    }
+  async all(): Promise<RepCard[]> {
+    return await this.new_db.all();
   }
 
-  getAll(): Promise<RepCard[]> {
-    if (this.db) {
-      const transaction = this.db.transaction("position", "readonly");
-      const objectStore = transaction.objectStore("position");
-      const req = objectStore.getAll();
-      return new Promise((resolve, reject) => {
-        req.onsuccess = (e) => {
-          resolve(req.result);
-        };
-
-        req.onerror = (e) => {
-          reject();
-        };
-      });
-    } else {
-      console.error("ERROR");
-      return new Promise((resolve, reject) => {
-        reject();
-      });
-    }
-  }
-
-  getLine(fen: string): Promise<RepCard | null> {
-    return new Promise(async (resolve, reject) => {
-      if (!this.db) {
-        // console.log("loading");
-        await this.load();
-      }
-
-      const transaction = this.db!.transaction("position", "readonly");
-      const objectStore = transaction.objectStore("position");
-      const req = objectStore.get(fen);
-
-      req.onsuccess = () => {
-        const result = req.result ?? null;
-        resolve(result);
-      };
-
-      req.onerror = (e) => {
-        reject(e);
-      };
-    });
+  async get(fen: string): Promise<RepCard | undefined> {
+    return await this.new_db.get(fen);
   }
 }

@@ -11,7 +11,7 @@ const RepertoirePage: Component = () => {
 
   onMount(async () => {
     await context.repertoire.load();
-    const all = await context.repertoire.getAll();
+    const all = await context.repertoire.all();
 
     setReps(all);
   });

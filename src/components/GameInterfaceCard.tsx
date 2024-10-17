@@ -15,8 +15,10 @@ import { QRCodeSVG } from "solid-qr-code";
 import SaknotoSwitch from "./SaknotoSwitch";
 import { useGame } from "~/GameProvider";
 import { getEnumKeys, chessMoveThrottle } from "~/utils";
+import { useSaknotoContext } from "~/Context";
 
 const GameInterfaceCard: Component = (props) => {
+  const context = useSaknotoContext();
   const game = useGame()!;
   const [state, setState] = createSignal<GameState>(defaultGameState());
   const [playerColor, setPlayerColor] = createSignal(ChessColor.White);
@@ -25,19 +27,28 @@ const GameInterfaceCard: Component = (props) => {
   const [peerstatus, setPeerStatus] = createSignal<string>("Waiting");
   const [playuntilrep, setplayuntilrep] = createSignal<boolean>(false);
 
-  game.subscribeState((s) => {
+  game().subscribeState((s) => {
     setState(s);
   });
 
   const setOpponentKind = (key: string) => {
     const opt: PlayerKind = PlayerKind[key as PlayerKindKey];
-    game.setOpponentType(opt);
+    game().setOpponentType(opt);
   };
 
   const set_color = (color: ChessColor) => {
     setPlayerColor(color);
-    game.setPlayerColor(color);
-    game.setOrientation(color);
+    game().setPlayerColor(color);
+    game().setOrientation(color);
+  };
+
+  const logResult = async () => {
+    const fen = game()?.chess.fen();
+
+    const openingraph = (
+      await context.openingGraph.getAllSplit()
+    ).whitewhite.get(fen);
+    console.log(openingraph);
   };
 
   let t = new Date();
@@ -68,19 +79,25 @@ const GameInterfaceCard: Component = (props) => {
         <div class="flex flex-col">
           <Button
             class="button mt-2 bg-lum-200 border-lum-300 text-lum-600"
-            onClick={() => game.restartSlow()}
+            onClick={() => game().restartSlow()}
           >
             Restart
           </Button>
           <Button
             class="button mt-2 bg-lum-200 border-lum-300 text-lum-600"
-            onClick={() => game.playCommonMove()}
+            onClick={() => game().playCommonMove()}
           >
             Play common move
           </Button>
+          <Button
+            class="button mt-2 bg-lum-200 border-lum-300 text-lum-600"
+            onClick={() => logResult()}
+          >
+            log result
+          </Button>
           <SaknotoSwitch
             checked={state().autoplayRepertoire}
-            onChange={(val) => game.setRepertoireAutoPlay(val)}
+            onChange={(val) => game().setRepertoireAutoPlay(val)}
           >
             Autoplay repertoire
           </SaknotoSwitch>

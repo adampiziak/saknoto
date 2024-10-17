@@ -1,6 +1,6 @@
 import { Chessground } from "chessground";
 import { Api } from "chessground/api";
-import { Component, Setter, createSignal, onMount } from "solid-js";
+import { Component, Setter, createSignal, onCleanup, onMount } from "solid-js";
 
 import "~/styles/chessground.base.css";
 import "~/styles/chessground.brown.css";
@@ -58,14 +58,18 @@ export const BoardView: Component<{
     }
   };
 
+  onCleanup(() => {
+    game().detachAll();
+  });
+
   onMount(() => {
     if (element) {
       const api = Chessground(element, {});
 
       if (game) {
-        game.attach(element, props.gameId);
+        game().attach(element, props.gameId);
         if (props.useEngine) {
-          game.useEngine(props.useEngine);
+          game().useEngine(props.useEngine);
         }
         api.set({ addDimensionsCssVarsTo: container });
       }

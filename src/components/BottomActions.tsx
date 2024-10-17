@@ -28,7 +28,7 @@ const BottomActions: Component = () => {
     let rep: string | null = evl();
     let f = game.chess.fen();
     if (rep !== null && rep.length > 0 && f != undefined) {
-      context.repertoire.addLine(f, rep);
+      context.repertoire.add(f, rep);
       setTimeout(() => {
         game?.checkIfComputerMove();
       }, 500);

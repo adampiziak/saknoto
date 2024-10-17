@@ -227,3 +227,7 @@ export const getLichessMoves = async (fen: string) => {
 
 export const nearest = (val: number, roundTo: number) =>
   Math.floor(val / roundTo) * roundTo;
+
+export function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
