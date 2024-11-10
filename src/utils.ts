@@ -1,5 +1,6 @@
 import { Chess, SQUARES } from "chess.js";
 import * as cg from "chessground/types";
+import { ChessColor } from "./lib/common";
 
 export function startingFen() {
   return new Chess().fen();
@@ -100,6 +101,12 @@ export const getTurn = (fen: string) => {
   game.load(fen);
 
   return game.turn() === "w" ? "white" : "black";
+};
+export const getTurnChessColor = (fen: string) => {
+  const game = new Chess();
+  game.load(fen);
+
+  return game.turn() === "w" ? ChessColor.White : ChessColor.Black;
 };
 
 export const dest_fen = (fen: string, move: string) => {

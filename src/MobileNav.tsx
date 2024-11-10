@@ -63,6 +63,9 @@ const MobileNav: Component = () => {
         <Link class="sn-link" href="/explore" onClick={close}>
           Explore
         </Link>
+        <Link class="sn-link" href="/learn" onClick={close}>
+          learn
+        </Link>
       </nav>
       <Button
         class="button border-lum-300 text-lum-700 bg-lum-100 mt-10"

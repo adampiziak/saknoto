@@ -32,7 +32,7 @@ export class StudySession {
 
   constructor() {
     this.midnight = new Date();
-    this.midnight.setHours(24, 0, 0, 0);
+    // this.midnight.setHours(24, 0, 0, 0);
     this.f = fsrs();
   }
 
@@ -46,7 +46,7 @@ export class StudySession {
     }
 
     const now = new Date();
-    now.setHours(24, 0, 0, 0);
+    // now.setHours(24, 0, 0, 0);
 
     const reps = await this.repertoire.all();
     for (const r of reps) {

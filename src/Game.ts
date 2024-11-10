@@ -98,7 +98,7 @@ export class Game {
   state: GameState;
   cache?: LRUCache<any>;
   listeners: SubscriberNode[] = [];
-  subManager: SubscriberManager;
+  subManager: SubscriberManager<any>;
   once_listeners: any[] = [];
   state_listener: any[] = [];
   boardRef: HTMLElement | undefined;
@@ -366,7 +366,7 @@ export class Game {
   }
 
   subscribe(callback: (event: GameEvent) => void) {
-    const unsub = this.subManager.add(callback);
+    const unsub = this.subManager.on(callback);
     setTimeout(() => {
       this.emit();
     }, 100);
@@ -375,7 +375,7 @@ export class Game {
   }
 
   onMove(callback: (san: string) => any) {
-    const unsub = this.moveListeners.add(callback);
+    const unsub = this.moveListeners.on(callback);
     setTimeout(() => {
       this.emit();
     }, 100);
@@ -428,11 +428,13 @@ export class Game {
     this.once_listeners.push(callback);
   }
 
-  loadPosition(fen: string) {
+  loadPosition(fen: string, syncOrientation = false) {
     // console.log("loading...");
     try {
       this.chess.load(fen);
-      // this.state.orientation = this.getTurn().color;
+      if (syncOrientation) {
+        this.state.orientation = this.getTurn().color;
+      }
       this.updateBoard();
     } catch {
       this.restart();
@@ -442,17 +444,19 @@ export class Game {
   emit() {
     const fen = this.chess.fen();
     const history = this.history.moves.slice(0, this.history.index);
-    for (const callback of this.subManager.all()) {
-      callback({
-        fen,
-        history,
-        pendingMove: this.pendingRepMove,
-      });
-    }
-    for (const callback of this.once_listeners) {
-      callback({ fen, history });
-    }
-    this.once_listeners = [];
+    this.subManager.emit({ fen, history, pendingMove: this.pendingRepMove });
+    // this.subManager.
+    // for (const callback of this.subManager.all()) {
+    //   callback({
+    //     fen,
+    //     history,
+    //     pendingMove: this.pendingRepMove,
+    //   });
+    // }
+    // for (const callback of this.once_listeners) {
+    //   callback({ fen, history });
+    // }
+    // this.once_listeners = [];
   }
 
   subscribeState(callback: any) {
@@ -460,14 +464,16 @@ export class Game {
     this.emitState();
   }
 
-  updateState(modifier: (state: GameState) => void) {
+  updateState(modifier: (state: GameState) => void, update = false) {
     modifier(this.state);
     this.saveState();
-    this.emitState();
-    setTimeout(() => {
-      this.updateBoard();
-      this.checkIfComputerMove();
-    }, 500);
+    if (update) {
+      this.emitState();
+      setTimeout(() => {
+        this.updateBoard();
+        this.checkIfComputerMove();
+      }, 500);
+    }
   }
 
   emitState() {
@@ -495,7 +501,7 @@ export class Game {
   setOrientation(color: ChessColor) {
     this.updateState((state) => {
       state.orientation = color;
-    });
+    }, true);
   }
 
   toggleOrientation() {

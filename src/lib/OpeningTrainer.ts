@@ -1,11 +1,21 @@
 import { Database } from "~/data/Database";
 import OpeningGraph from "~/OpeningGraph";
 import { Repertoire } from "~/Repertoire";
-import { dest_fen, getTurn, sleep, startingFen } from "~/utils";
+import {
+  dest_fen,
+  getTurn,
+  getTurnChessColor,
+  sleep,
+  startingFen,
+} from "~/utils";
 import LichessExplorer from "./LichessExplorer";
 import { isServer } from "solid-js/web";
 import { ChessColor } from "./common";
-import { Subscriber, SubscriberManagerMixin } from "./SubscriberManager";
+import {
+  Subscriber,
+  SubscriberManager,
+  SubscriberManagerMixin,
+} from "./SubscriberManager";
 
 export interface OpeningPositionCandidate {
   fen: string;
@@ -27,7 +37,6 @@ export enum SearchState {
   NONE_FOUND,
 }
 
-@Subscriber
 class OpeningTrainer {
   db: Database<PositionCandidate>;
   dbTodo: Database<CandidateTodo>;
@@ -42,6 +51,7 @@ class OpeningTrainer {
   todoQueue: string[];
   playerColor: ChessColor = ChessColor.White;
   state: SearchState = SearchState.NOT_SEARCHING;
+  manager: SubscriberManager<string>;
 
   constructor() {
     this.db = new Database("opening-queue");
@@ -53,6 +63,7 @@ class OpeningTrainer {
     this.searching = false;
     this.stopSearching = false;
     this.searchQueue = [];
+    this.manager = new SubscriberManager();
   }
 
   async load() {
@@ -78,7 +89,6 @@ class OpeningTrainer {
       reviewed: false,
     });
   }
-  emit(val: any) {}
 
   async startSearch() {
     if (!this.searching) {
@@ -87,23 +97,32 @@ class OpeningTrainer {
     }
   }
 
-  async setStartingPosition(fen: string) {
+  async setStartingPosition(fen: string, color: ChessColor) {
     console.log(`starting position is ${fen}`);
-    if (this.startingFen !== fen) {
+    if (this.startingFen !== fen || this.playerColor !== color) {
       this.startingFen = fen;
       const node = await this.explorer.get(this.startingFen);
       this.searchQueue = [];
       this.todoQueue = [];
-      this.playerColor =
-        getTurn(fen) === "white" ? ChessColor.Black : ChessColor.White;
-      console.log(`player color is ${this.playerColor}`);
-      for (const m of node.moves) {
-        this.searchQueue.push({
-          fen: dest_fen(this.startingFen, m.san),
-          count: total(m),
-        });
+      this.playerColor = color;
+      const turn = getTurnChessColor(fen);
+      if (this.playerColor == turn) {
+        console.log("TURN");
+        this.searchQueue.push({ fen, count: total(node) });
+      } else {
+        console.log("SIDE TURN");
+        for (const m of node.moves) {
+          this.searchQueue.push({
+            fen: dest_fen(this.startingFen, m.san),
+            count: total(m),
+          });
+        }
       }
       this.search();
+    } else {
+      console.log("ALREADY SET");
+      console.log(this.startingFen);
+      console.log(this.playerColor);
     }
   }
 
@@ -112,7 +131,58 @@ class OpeningTrainer {
   }
 
   async search() {
-    this.searching = true;
+    console.log("SEARCH");
+    console.log(this.searchQueue.length);
+    for (let i = 0; i < 20; i++) {
+      console.log(this.searchQueue.length);
+      this.searchQueue.sort((a, b) => b.count - a.count);
+      const node = this.searchQueue.shift();
+      console.log(node);
+      if (node) {
+        const rep = await this.repertoire.get(node.fen);
+        const history = await this.openingGraph.getPosition(
+          node.fen,
+          this.playerColor.toString(),
+        );
+        const last_played = history?.date_last_played;
+        if (last_played) {
+          let dt = Date.parse(last_played);
+          let now = new Date();
+          const diff = now.getTime() - dt;
+          const days = Math.round(diff / (1000 * 3600 * 24));
+          if (days > 60) {
+            console.log("TOO OLD");
+            continue;
+          }
+        } else {
+          console.log("NOT PLAYED. SKIPPING");
+          continue;
+        }
+
+        if (rep) {
+          console.log("REP");
+          const dest = dest_fen(node.fen, rep.response.at(0)!);
+          const linode = await this.explorer.get(dest);
+          console.log(linode);
+          for (const m of linode.moves.slice(0, 5)) {
+            this.searchQueue.push({
+              count: total(m),
+              fen: dest_fen(dest, m.san),
+            });
+          }
+        } else {
+          console.log("PLAYED AND NO REP. EMIT");
+          this.searchQueue.unshift(node);
+          return this.manager.emit(node.fen);
+        }
+      } else {
+        console.log("UNDEFINED");
+        break;
+      }
+    }
+
+    this.manager.emit(undefined);
+    // this.searching = true;
     // console.log(this.searchQueue.length);
     // this.searchQueue.sort((a, b) => b.count - a.count);
 
@@ -166,7 +236,7 @@ class OpeningTrainer {
 
   async next(): Promise<string | undefined> {
     this.searchQueue.sort((a, b) => b.count - a.count);
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 100; i++) {
       const node = this.searchQueue.shift();
       if (node) {
         const rep = await this.repertoire.get(node.fen);

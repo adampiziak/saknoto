@@ -64,8 +64,7 @@ const MobileSideView: Component = () => {
           </div>
           <div class="flex flex-col mt-8 gap-3">
             <NavAction dest="/">Home</NavAction>
-            <NavAction dest="/study/flashcards">Study</NavAction>
-            <NavAction dest="/repertoire">repertoire</NavAction>
+            <NavAction dest="/learn">Learn</NavAction>
           </div>
         </Match>
         <Match when={activeView() === "theme"}>

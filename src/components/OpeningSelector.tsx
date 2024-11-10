@@ -113,7 +113,6 @@ const OpeningSelector: Component<{ onSelect?: any }> = (props) => {
   });
   return (
     <div>
-      <div>opening: </div>
       <Show when={!open()}>
         <div class="flex bg-lum-300 border border-lum-400 p-2 rounded-lg items-center justify-center">
           <div class="flex flex-col grow">

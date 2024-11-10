@@ -1,10 +1,10 @@
-export interface SubscriberNode {
+export interface SubscriberNode<T> {
   id: number;
-  callback: any;
+  callback: (val: T) => any;
 }
 
-export class SubscriberManager {
-  subscribers: SubscriberNode[];
+export class SubscriberManager<T> {
+  subscribers: SubscriberNode<T>[];
   nextId: number;
 
   constructor() {
@@ -20,8 +20,8 @@ export class SubscriberManager {
     this.subscribers = [];
   }
 
-  add(callback: any) {
-    const node: SubscriberNode = {
+  on(callback: (val: T) => any) {
+    const node: SubscriberNode<T> = {
       id: this.nextId,
       callback,
     };
@@ -31,6 +31,12 @@ export class SubscriberManager {
     return () => {
       this.remove(node.id);
     };
+  }
+
+  emit(val: T) {
+    for (const node of this.subscribers) {
+      node.callback(val);
+    }
   }
 
   all() {
@@ -65,18 +71,10 @@ export function SubscriberManagerMixin<TBase extends Construtor>(Base: TBase) {
   };
 }
 
-export function Subscriber(target: any) {
-  let count = 0;
-  target.prototype.incrementCounter = function () {
-    count++;
+export function Subscriber<T extends { new (...args: any[]): {} }>(
+  constructor: T,
+) {
+  return class extends constructor {
+    reportingURL = "hey";
   };
-
-  const originalConstructor = target;
-
-  function newConstructor(...args: any[]) {
-    return new originalConstructor(...args);
-  }
-  newConstructor.prototype = originalConstructor.prototype;
-
-  return newConstructor;
 }

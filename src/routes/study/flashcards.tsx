@@ -27,7 +27,7 @@ const Study: Component = () => {
   const setPosition = () => {
     const fen = flashcard()?.fen;
     if (fen) {
-      game()?.loadPosition(fen);
+      game()?.loadPosition(fen, true);
     }
   };
 

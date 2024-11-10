@@ -3,17 +3,26 @@ import { useNavigate } from "@solidjs/router";
 import { Chess } from "chess.js";
 import { BiRegularLoaderAlt } from "solid-icons/bi";
 import { FaSolidCircleCheck } from "solid-icons/fa";
-import { Component, createSignal, onCleanup, onMount, Show } from "solid-js";
+import {
+  Component,
+  createEffect,
+  createSignal,
+  onCleanup,
+  onMount,
+  Show,
+} from "solid-js";
 import { BoardView } from "~/BoardView";
 import BottomBarContent from "~/components/BottomBarContent";
 import EngineCard from "~/components/EngineCard";
 import OpeningSelector from "~/components/OpeningSelector";
+import SaknotoSwitch from "~/components/SaknotoSwitch";
 import SelectDropdown from "~/components/SelectDropdown";
 import { useSaknotoContext } from "~/Context";
 import { useGame } from "~/GameProvider";
+import { ChessColor } from "~/lib/common";
 import OpeningQueue from "~/lib/OpeningTrainer";
 import { CandidateTodo, RepertoireQueue } from "~/lib/RepertoireWorker";
-import { sleep } from "~/utils";
+import { getTurn, sleep } from "~/utils";
 
 const RepertoirePage: Component = () => {
   let context = useSaknotoContext();
@@ -22,9 +31,14 @@ const RepertoirePage: Component = () => {
   let [loading, setLoading] = createSignal(false);
   const repQueue = new RepertoireQueue();
   const openingQueue = new OpeningQueue();
+  console.log(openingQueue.reportingURL);
   const [needsConfirm, setNeedsConfirm] = createSignal(false);
+  const [switchColor, setSwitchColor] = createSignal(true);
   const options = ["worse positions", "from position"];
   const [selectedOption, setSelectedOption] = createSignal(options[1]);
+  const [playerColor, setPlayerColor] = createSignal<ChessColor>(
+    ChessColor.White,
+  );
   const [selectedOpening, setSelectedOpening] = createSignal({
     value: "English Opening",
     label: "English Opening",
@@ -41,11 +55,12 @@ const RepertoirePage: Component = () => {
 
   const setOpening = async (obj: any) => {
     setSelectedOpening(obj);
-    await practiceOpening();
-    await getNextOpeningPosition();
+    // await practiceOpening();
+    // await getNextOpeningPosition();
   };
 
-  const practiceOpening = async () => {
+  createEffect(async () => {
+    console.log(playerColor());
     const opening = selectedOpening();
     const pgn = opening.pgn;
 
@@ -62,17 +77,24 @@ const RepertoirePage: Component = () => {
       newGame.move(m);
     }
     await openingQueue.load();
-    await openingQueue.setStartingPosition(newGame.fen());
+    await openingQueue.setStartingPosition(newGame.fen(), playerColor());
     await openingQueue.search();
-  };
+  });
+
+  createEffect(() => {
+    game()?.setPlayerColor(playerColor());
+    game()?.setOrientation(playerColor());
+  });
+
   const getNextOpeningPosition = async () => {
-    const nxt = await openingQueue.next();
-    if (nxt) {
-      setTodoFen({ fen: nxt });
-      game()?.loadPosition(nxt);
-      game()?.setRepertoireMode();
-      game()?.notifyEngine();
-    }
+    console.log("GET NEXT");
+    openingQueue.search();
+    // if (nxt) {
+    //   // setTodoFen({ fen: nxt });
+    //   game()?.loadPosition(nxt);
+    //   game()?.setRepertoireMode();
+    //   game()?.notifyEngine();
+    // }
   };
 
   const getNext = async () => {
@@ -111,10 +133,27 @@ const RepertoirePage: Component = () => {
     }));
     console.log(all_names.length);
     console.log("hello?");
+    openingQueue.manager.on(async (fen) => {
+      console.log("NEXT IS " + fen);
+      setTodoFen({ fen });
+      if (fen) {
+        game()?.loadPosition(fen, false);
+        game()?.setRepertoireMode();
+        // game()?.setPlayerColor(
+        //   getTurn(fen) == "white" ? ChessColor.White : ChessColor.Black,
+        // );
+        // game()?.setOrientation(
+        //   getTurn(fen) == "white" ? ChessColor.White : ChessColor.Black,
+        // );
+        game()?.notifyEngine();
+      }
+    });
 
     setOpeningNames(all_names);
     // setSelectedOpening(all_names.at(0));
-    unsubscribe = game().subscribe(({ fen, pendingMove }) => {
+    unsubscribe = game()?.subscribe(({ fen, pendingMove }) => {
+      console.log("GAME: ");
+      console.log(fen);
       if (pendingMove !== null) {
         setNeedsConfirm(true);
       } else {
@@ -145,6 +184,7 @@ const RepertoirePage: Component = () => {
       unsubscribe();
     }
     repQueue.stopSearch();
+    openingQueue.manager.clear();
   });
   // <Show when={selectedOption() === "from position"}>
   //   <VirtualSelectDropdown
@@ -167,44 +207,32 @@ const RepertoirePage: Component = () => {
             type
           </SelectDropdown>
         </div>
-        <div>
+        <div class="flex mt-2 gap-2">
+          <div
+            onclick={() => setPlayerColor(ChessColor.White)}
+            class={`hover:cursor-pointer grow text-center ${playerColor() === ChessColor.White ? "bg-lum-800 text-lum-200" : "bg-lum-200"} border-2 border-lum-300 rounded   `}
+          >
+            white
+          </div>
+          <div
+            onclick={() => setPlayerColor(ChessColor.Black)}
+            class={`hover:cursor-pointer  grow text-center ${playerColor() === ChessColor.Black ? "bg-lum-800 text-lum-200" : "bg-lum-200"} border-2 border-lum-300 rounded   `}
+          >
+            black
+          </div>
+        </div>
+        <div class="mt-2">
           <OpeningSelector onSelect={(val: any) => setOpening(val)} />
         </div>
-        <div>{selectedOpening().label}</div>
-        <button
-          class="button bg-blue-200 border-blue-300 text-blue-800"
-          onclick={practiceOpening}
-        >
-          practice opening
-        </button>
-        <button
-          class="button bg-blue-200 border-blue-300 text-blue-800"
-          onclick={getNextOpeningPosition}
-        >
-          next practice opening
-        </button>
-        <div>Opening depth</div>
-        <div class="flex gap-2">
-          <div class="grow flex flex-col bg-lum-200 p-2 rounded">
-            <div>white</div>
-            <div>depth: 3</div>
-          </div>
-          <div class="grow flex flex-col bg-lum-200 p-2 rounded">
-            <div>black</div>
-            <div>depth: 3</div>
-          </div>
-        </div>
 
-        <Show when={loading()}>
-          <div class="p-2 text-orange-700 flex gap-2 items-center">
-            <BiRegularLoaderAlt class={`${loading() ? "animate-spin" : ""}`} />
-            <div>searching...</div>
-          </div>
-        </Show>
-        <Show when={!loading()}>
-          <div class="p-2 text-green-700 flex gap-2 items-center">
-            <FaSolidCircleCheck />
-            <div>Position found</div>
+        <Show when={todoFen()?.fen === undefined}>
+          <div class="p-2 bg-lum-200 my-2 rounded border-lum-300 border">
+            <div>no position found with following criteria</div>
+            <div>{JSON.stringify(todoFen())}</div>
+            <ul>
+              <li>- played within 30 days</li>
+              <li>- not in repertoire</li>
+            </ul>
           </div>
         </Show>
         <div>games: {todoFen()?.playerGames}</div>
@@ -263,3 +291,15 @@ const RepertoirePage: Component = () => {
 };
 
 export default RepertoirePage;
+// <Show when={loading()}>
+//   <div class="p-2 text-orange-700 flex gap-2 items-center">
+//     <BiRegularLoaderAlt class={`${loading() ? "animate-spin" : ""}`} />
+//     <div>searching...</div>
+//   </div>
+// </Show>
+// <Show when={!loading()}>
+//   <div class="p-2 text-green-700 flex gap-2 items-center">
+//     <FaSolidCircleCheck />
+//     <div>Position found</div>
+//   </div>
+// </Show>

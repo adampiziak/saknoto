@@ -355,7 +355,7 @@ const OpeningCard: Component = (props) => {
     let mainline = node.name.length > 1 ? "" : node.name.at(0);
 
     const fromVariationClick = (e: Event) => {
-      game.playMove(node.moves[0]);
+      game().playMove(node.moves[0]);
       e.preventDefault();
     };
 

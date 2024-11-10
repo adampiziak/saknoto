@@ -109,6 +109,9 @@ export default function Header() {
               </NavigationMenu.Content>
             </NavigationMenu.Portal>
           </NavigationMenu.Menu>
+          <NavigationMenu.Trigger as="a" href="/learn" class="sn-menu-trigger">
+            learn
+          </NavigationMenu.Trigger>
           <NavigationMenu.Viewport class="sn-viewport">
             <NavigationMenu.Arrow size={20} class="sn-arrow" />
           </NavigationMenu.Viewport>

@@ -134,6 +134,9 @@ class OpeningGraph {
     fen: string,
     playerColor: string,
   ): Promise<Position | undefined> {
+    console.log("PLAYER COLOR IS :");
+    console.log(playerColor);
+    console.log(fen);
     const turn = getTurn(fen);
     return new Promise((resolve, reject) => {
       const store_name = playerColor + turn;

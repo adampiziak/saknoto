@@ -42,7 +42,9 @@ export class Repertoire {
   }
 
   async add(fen: string, move: string) {
+    console.log("ADD");
     const existing = (await this.new_db.get(fen)) ?? emptyRepCard(fen);
+    existing.response = [];
     if (!existing.response.includes(move)) {
       existing.response.push(move);
     }
