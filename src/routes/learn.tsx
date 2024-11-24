@@ -34,7 +34,9 @@ const Learn: Component = () => {
         review{" "}
         {todo() > 0 ? `(${todo()} positions)` : "(no positions need review)"}
       </div>
-      <div class={btnClass}>build</div>
+      <div class={btnClass} onclick={() => goto("/build")}>
+        build
+      </div>
       <BottomBarContent mode="main"></BottomBarContent>
     </div>
   );
